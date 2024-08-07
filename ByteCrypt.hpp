@@ -31,8 +31,13 @@
 namespace ByteCryptModule
 {
 
-    /*                      Macros                           *\
-    \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+/*                      Macros                           *\
+\*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+#define DEFAULT_RSA_KEY_SIZE 2048U
+#define DEFAULT_AES_CIPHER 256
+#define DEFAULT_SHA_CIPHER 256
+#define RSA_KEY_SIZE_OPTIONS \
+    std::array<std::uint16_t, 5> { 512u, 1024u, 2048u, 3072u, 4096u }
 
     /*                      Namespace                        *\
     \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -73,6 +78,8 @@ namespace ByteCryptModule
         bool state{false};
     } rsa_key_pair_struct;
 
+    /*                      Class                            *\
+    \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
     class ByteCrypt
     {
 
@@ -190,6 +197,8 @@ namespace ByteCryptModule
         rsa_key_pair_struct generate_rsa_key_der_pair(const std::size_t rsa_key_size = 2048U)
         {
             rsa_key_pair_struct local_kps{};
+            if (!this->__is_rsa_key_size_valid(rsa_key_size))
+                return local_kps;
             try
             {
                 entropy_seed_t entropy;
@@ -239,6 +248,8 @@ namespace ByteCryptModule
         const rsa_key_pair_struct generate_rsa_key_pem_pair(const std::size_t rsa_key_size = 2048U)
         {
             rsa_key_pair_struct rsa_keys = this->generate_rsa_key_der_pair(rsa_key_size);
+            if (!this->__is_rsa_key_size_valid(rsa_key_size))
+                return rsa_keys;
             try
             {
                 string_t private_decoded, public_decoded;
@@ -270,7 +281,7 @@ namespace ByteCryptModule
                 private_key.BERDecode(private_key_source);
                 CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Signer signer(private_key);
                 CryptoPP::AutoSeededRandomPool rng;
-                CryptoPP::StringSource(message, true,new CryptoPP::SignerFilter(rng, signer,new CryptoPP::StringSink(signature)));
+                CryptoPP::StringSource(message, true, new CryptoPP::SignerFilter(rng, signer, new CryptoPP::StringSink(signature)));
                 string_t encoded_signature;
                 CryptoPP::StringSource(signature, true, new base64_encoder_t(new string_sink_t(encoded_signature)));
                 return encoded_signature;
@@ -309,7 +320,6 @@ namespace ByteCryptModule
             }
         };
 
-        
         ~ByteCrypt() {};
 
     private:
@@ -387,6 +397,18 @@ namespace ByteCryptModule
                 rsa_key_var += "-----END PUBLIC KEY-----";
             else
                 rsa_key_var += "-----END RSA PRIVATE KEY-----";
+        };
+
+        constexpr bool __is_rsa_key_size_valid(const std::size_t &key_size) const noexcept
+        {
+            for (std::uint8_t ksi = 0; ksi < RSA_KEY_SIZE_OPTIONS.size(); ksi++)
+            {
+                if ((std::size_t)RSA_KEY_SIZE_OPTIONS[ksi] == key_size)
+                {
+                    return true;
+                }
+            }
+            return false;
         };
     };
 };
