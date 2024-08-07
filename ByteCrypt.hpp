@@ -1,6 +1,5 @@
 #pragma once
 
-#pragma once
 #include <cstdlib>
 #include <exception>
 #include <iostream>
@@ -86,39 +85,29 @@ namespace ByteCryptModule
     public:
         ByteCrypt() {};
 
-        inline const string_t hash_block(const string_t &buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256)
+        inline const string_t hash_block(const string_t &buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
         {
             string_t digest_block;
-            if (sha == e_hash_algo_option::SHA1)
+            std::unique_ptr<CryptoPP::HashTransformation> algo;
+            switch (sha)
             {
-                CryptoPP::SHA1 algo;
-                CryptoPP::StringSource dig_source(buffer, true, new CryptoPP::HashFilter(algo, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest_block))));
+            case e_hash_algo_option::SHA1:
+                algo = std::make_unique<CryptoPP::SHA1>();
+                break;
+            case e_hash_algo_option::SHA224:
+                algo = std::make_unique<CryptoPP::SHA224>();
+                break;
+            case e_hash_algo_option::SHA256:
+                algo = std::make_unique<CryptoPP::SHA256>();
+                break;
+            case e_hash_algo_option::SHA384:
+                algo = std::make_unique<CryptoPP::SHA384>();
+                break;
+            case e_hash_algo_option::SHA512:
+                algo = std::make_unique<CryptoPP::SHA512>();
+                break;
             }
-            else if (sha == e_hash_algo_option::SHA224)
-            {
-                CryptoPP::SHA224 algo;
-                CryptoPP::StringSource dig_source(buffer, true, new CryptoPP::HashFilter(algo, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest_block))));
-            }
-            else if (sha == e_hash_algo_option::SHA256)
-            {
-                CryptoPP::SHA256 algo;
-                CryptoPP::StringSource dig_source(buffer, true, new CryptoPP::HashFilter(algo, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest_block))));
-            }
-            else if (sha == e_hash_algo_option::SHA384)
-            {
-                CryptoPP::SHA384 algo;
-                CryptoPP::StringSource dig_source(buffer, true, new CryptoPP::HashFilter(algo, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest_block))));
-            }
-            else if (sha == e_hash_algo_option::SHA512)
-            {
-                CryptoPP::SHA512 algo;
-                CryptoPP::StringSource dig_source(buffer, true, new CryptoPP::HashFilter(algo, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest_block))));
-            }
-            else if (sha == e_hash_algo_option::SHA384)
-            {
-                CryptoPP::SHA384 algo;
-                CryptoPP::StringSource dig_source(buffer, true, new CryptoPP::HashFilter(algo, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest_block))));
-            }
+            CryptoPP::StringSource(buffer, true, new CryptoPP::HashFilter(*algo, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest_block))));
             return digest_block;
         };
 
@@ -272,7 +261,7 @@ namespace ByteCryptModule
         ~ByteCrypt() {};
 
     private:
-            void __derive_key_iv(const string_t &u_pwd, byte *key, byte *init_vector)
+        void __derive_key_iv(const string_t &u_pwd, byte *key, byte *init_vector) const
         {
             byte salt[16];
             entropy_seed_t entropy;
@@ -282,11 +271,11 @@ namespace ByteCryptModule
             transformer.DeriveKey(init_vector, default_sec_iv_size, 0, reinterpret_cast<const byte *>(u_pwd.data()), u_pwd.size(), salt, sizeof(salt), cipher_iteration_count);
         };
 
-        inline void __perform_keyiv_collision(cbc_aes_encryption_t &encryption_handler) noexcept
+        inline void __perform_keyiv_collision(cbc_aes_encryption_t &encryption_handler) const noexcept
         {
             encryption_handler.SetKeyWithIV(this->__key__, sizeof(this->__key__), this->__iv__);
         };
-        inline void __perform_keyiv_collision(cbc_aes_decryption_t &decryption_handler) noexcept
+        inline void __perform_keyiv_collision(cbc_aes_decryption_t &decryption_handler) const noexcept
         {
             decryption_handler.SetKeyWithIV(this->__key__, sizeof(this->__key__), this->__iv__);
         };
@@ -329,7 +318,7 @@ namespace ByteCryptModule
             return false;
         };
 
-        inline void __rsa_key_pem_set_header(string_t &rsa_key_var, const bool is_public_key) noexcept
+        inline void __rsa_key_pem_set_header(string_t &rsa_key_var, const bool is_public_key) const noexcept
         {
             rsa_key_var.clear();
             if (is_public_key)
@@ -338,7 +327,7 @@ namespace ByteCryptModule
                 rsa_key_var = "-----BEGIN RSA PRIVATE KEY-----\n";
         };
 
-        inline void __rsa_key_pem_set_footer(string_t &rsa_key_var, const bool is_public_key) noexcept
+        inline void __rsa_key_pem_set_footer(string_t &rsa_key_var, const bool is_public_key) const noexcept
         {
             if (rsa_key_var.empty())
                 return;
