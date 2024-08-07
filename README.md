@@ -61,3 +61,133 @@ generates a pair of RSA keys (public and private) using the generate_rsa_key_der
      3) Store the encrypted hash value (digital signature) in a buffer.
 2) Verification:
    uses the verify_signature function to verify the authenticity of a block of data by comparing its digital signature with a previously calculated digital signature.
+
+
+### Implement Library
+
+### Hashing
+> optional paramater(2) values:
+* e_hash_algo_option::SHA1
+* e_hash_algo_option::SHA224
+* e_hash_algo_option::SHA256
+* e_hash_algo_option::SHA384
+* e_hash_algo_option::SHA512
+  
+```cpp
+#include "/path/to/ByteCrypt.hpp"
+
+using namespace ByteCryptModule;
+
+int main(){
+
+ByteCrypt bCrypt; // create new instance of ByteCrypt
+
+string buffer = "your mother"; // some random text to hash
+
+string hashed = bCrypt.hash_block(buffer); // default hash with SHA256
+
+std::cout << "Hashed: " << hashed << "\n"; // print result
+
+return 0;
+
+}
+```
+
+### Encryption
+> CBC mode encryption
+```cpp
+#include "/path/to/ByteCrypt.hpp"
+
+using namespace ByteCryptModule;
+
+int main(){
+
+ByteCrypt bCrypt;
+
+string buffer = "your mother"; // buffer to encrypt using "secret" key
+
+string secret = "secret_key_for_decryption"; // this is the key used for encryption/decryption
+
+string encrypted = bCrypt.encrypt_block(buffer, secret); // encrypt buffer block and return result
+
+std::cout << "encrypted: " << encrypted << "\n"; // print result
+
+return 0;
+
+}
+```
+
+### Decryption
+> CBC mode decryption
+```cpp
+#include "/path/to/ByteCrypt.hpp"
+
+using namespace ByteCryptModule;
+
+int main(){
+
+ByteCrypt bCrypt;
+
+string buffer = "your mother";
+
+string secret = "secret_key_for_decryption";
+
+string encrypted = bCrypt.encrypt_block(buffer, secret);
+
+std::cout << "encrypted: " << encrypted << "\n";
+
+string decrypted = bCrypt.decrypt_block(encrypted, secret);
+
+std::cout << "decrypted: " << decrypted << "\n";
+
+return 0;
+
+}
+```
+
+### Encoding/Decoding
+> encoding schemes are:
+
+* base64
+* hex
+  
+```cpp
+#include "/path/to/ByteCrypt.hpp"
+
+using namespace ByteCryptModule;
+
+int main(){
+
+ByteCrypt bCrypt;
+string buffer = "plain text";
+string base64_encode = bCrypt.base64_encode(buffer);
+string base64_decode = bCrypt.base64_decode(base64_encode);
+string hex_encode = bCrypt.hex_encode(buffer);
+string hex_decode = bCrypt.hex_decode(hex_encode); 
+
+return 0;
+
+}
+```
+
+### RSA Key Generation
+
+  
+```cpp
+#include "/path/to/ByteCrypt.hpp"
+
+using namespace ByteCryptModule;
+
+int main(){
+
+ByteCrypt bCrypt;
+string buffer = "plain text";
+string base64_encode = bCrypt.base64_encode(buffer);
+string base64_decode = bCrypt.base64_decode(base64_encode);
+string hex_encode = bCrypt.hex_encode(buffer);
+string hex_decode = bCrypt.hex_decode(hex_encode); 
+
+return 0;
+
+}
+```
