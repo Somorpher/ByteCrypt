@@ -20,6 +20,7 @@
 #include <cryptopp/cryptlib.h>
 #include <crypto++/pwdbased.h>
 #include <crypto++/secblock.h>
+#include <cryptopp/pssr.h>
 
 #ifndef __MODULE_BYTE_CRYPT__
 
@@ -118,7 +119,7 @@ namespace ByteCryptModule
             {
                 this->__derive_key_iv(key, this->__key__, this->__iv__);
                 cbc_aes_encryption_t aes_encryption;
-                this->__perform_keyiv_collision(aes_encryption);
+                this->__perform_keyiv_collision<cbc_aes_encryption_t>(aes_encryption);
                 CryptoPP::StringSource(plain_text, true, new CryptoPP::StreamTransformationFilter(aes_encryption, new CryptoPP::StringSink(cipher)));
                 CryptoPP::StringSource(cipher, true, new CryptoPP::HexEncoder(new CryptoPP::StringSink(encoded_cipher)));
             }
@@ -135,7 +136,7 @@ namespace ByteCryptModule
             try
             {
                 cbc_aes_decryption_t aes_decryption;
-                this->__perform_keyiv_collision(aes_decryption);
+                this->__perform_keyiv_collision<cbc_aes_decryption_t>(aes_decryption);
                 CryptoPP::StringSource(cipher_block, true, new CryptoPP::HexDecoder(new CryptoPP::StringSink(decoded_cipher)));
                 CryptoPP::StringSource(decoded_cipher, true, new CryptoPP::StreamTransformationFilter(aes_decryption, new CryptoPP::StringSink(decrypted_cipher)));
             }
@@ -222,7 +223,6 @@ namespace ByteCryptModule
                 {
                     local_kps.private_key = std::move(private_key_result_encoded);
                     local_kps.public_key = std::move(public_key_result_encoded);
-
                     if (this->__rsa_key_pair_verify(local_kps))
                     {
                         local_kps.state = true;
@@ -258,6 +258,58 @@ namespace ByteCryptModule
             return rsa_keys;
         };
 
+        inline const string_t sign_message(const string_t &message, const string_t &private_key_str)
+        {
+            string_t signature;
+            try
+            {
+                string_t private_key_decoded;
+                string_source_t(private_key_str, true, new base64_decoder_t(new string_sink_t(private_key_decoded)));
+                rsa_private_key_t private_key;
+                string_source_t private_key_source(private_key_decoded, true);
+                private_key.BERDecode(private_key_source);
+                CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Signer signer(private_key);
+                CryptoPP::AutoSeededRandomPool rng;
+                CryptoPP::StringSource(message, true,new CryptoPP::SignerFilter(rng, signer,new CryptoPP::StringSink(signature)));
+                string_t encoded_signature;
+                CryptoPP::StringSource(signature, true, new base64_encoder_t(new string_sink_t(encoded_signature)));
+                return encoded_signature;
+            }
+            catch (const std::exception &e)
+            {
+                std::cerr << "Sign Error: " << e.what() << "\n";
+                return "";
+            }
+        };
+
+        inline const bool verify_signature(const string_t &message, const string_t &signature_str, const string_t &public_key_str)
+        {
+            try
+            {
+                string_t public_key_decoded;
+                string_source_t(public_key_str, true, new base64_decoder_t(new string_sink_t(public_key_decoded)));
+                rsa_public_key_t public_key;
+                string_source_t public_key_source(public_key_decoded, true);
+                public_key.BERDecode(public_key_source);
+                string_t signature_decoded;
+                string_source_t(signature_str, true, new base64_decoder_t(new string_sink_t(signature_decoded)));
+                CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier verifier(public_key);
+                bool result = verifier.VerifyMessage((const CryptoPP::byte *)message.data(), message.size(), (const CryptoPP::byte *)signature_decoded.data(), signature_decoded.size());
+                return result;
+            }
+            catch (const CryptoPP::Exception &e)
+            {
+                std::cerr << "CryptoPP Verify Error: " << e.what() << "\n";
+                return false;
+            }
+            catch (const std::exception &e)
+            {
+                std::cerr << "Verify Error: " << e.what() << "\n";
+                return false;
+            }
+        };
+
+        
         ~ByteCrypt() {};
 
     private:
@@ -271,17 +323,18 @@ namespace ByteCryptModule
             transformer.DeriveKey(init_vector, default_sec_iv_size, 0, reinterpret_cast<const byte *>(u_pwd.data()), u_pwd.size(), salt, sizeof(salt), cipher_iteration_count);
         };
 
-        inline void __perform_keyiv_collision(cbc_aes_encryption_t &encryption_handler) const noexcept
+        template <typename mT, typename = std::enable_if<std::is_same_v<mT, cbc_aes_decryption_t> || std::is_same_v<mT, cbc_aes_encryption_t>>>
+        inline void __perform_keyiv_collision(mT &decryption_handler) const noexcept
         {
-            encryption_handler.SetKeyWithIV(this->__key__, sizeof(this->__key__), this->__iv__);
+            if (std::is_same_v<mT, cbc_aes_encryption_t>)
+                decryption_handler.SetKeyWithIV(this->__key__, sizeof(this->__key__), this->__iv__);
+            else
+                decryption_handler.SetKeyWithIV(this->__key__, sizeof(this->__key__), this->__iv__);
         };
-        inline void __perform_keyiv_collision(cbc_aes_decryption_t &decryption_handler) const noexcept
-        {
-            decryption_handler.SetKeyWithIV(this->__key__, sizeof(this->__key__), this->__iv__);
-        };
+
         const bool __rsa_key_pair_verify(const rsa_key_pair_struct &key_block)
         {
-            if (key_block.public_key.has_value() || key_block.private_key.has_value())
+            if (!key_block.public_key.has_value() || !key_block.private_key.has_value())
                 return false;
 
             try
@@ -308,7 +361,6 @@ namespace ByteCryptModule
                 private_key_byte_size = rsa_private_key.GetModulus().ByteCount();
                 if (private_key_byte_size != public_key_byte_size)
                     throw std::runtime_error("RSA Byte Count error!");
-
                 return true;
             }
             catch (const std::exception &e)
