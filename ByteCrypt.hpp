@@ -1,5 +1,56 @@
 #pragma once
 
+/**
+ *
+ * @Somorpher
+ * 
+ * -------------------------
+ * Disclaimer of Warranty  |
+ * -------------------------
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * THE AUTHORS AND COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+ * IN THE SOFTWARE.
+ * 
+ *
+ * This code provides a comprehensive cryptographic library that implements a range of
+ * cryptographic operations, including hashing, encryption, and digital signatures, using 
+ * various algorithms such as SHA, AES, and RSA, which are widely used for secure data 
+ * transmission and storage, and are designed to provide high security, speed, and efficiency,
+ * with hashing algorithms producing fixed-size hash values from variable-size input messages,
+ * making it computationally infeasible to find two different input messages that produce 
+ * the same output hash value, and are often used in digital signatures, message authentication 
+ * codes, and data integrity checks, while encryption algorithms, such as AES, encrypt data in 
+ * blocks of 128 bits, using a variable block size and a key size of 128, 192, or 256 bits, making 
+ * it widely used for secure data transmission and storage, and digital signature algorithms, 
+ * such as RSA with SHA256, use a pair of keys, a public key and a private key, to encrypt and 
+ * decrypt data, making it widely used for secure data transmission and digital signatures, and 
+ * the library is designed to be highly flexible and easy to use for secure data storage, 
+ * communication, and digital signatures, with a range of cryptographic functions and operations 
+ * that can be used to provide secure data storage, communication, and digital signatures, including 
+ * functions for generating and verifying digital signatures, encrypting and decrypting data, and 
+ * hashing messages, and the library is widely used in a range of applications, including secure 
+ * data transmission, secure communication, and digital signatures, and is often used in conjunction 
+ * with other cryptographic algorithms and techniques, such as SHA, AES, and RSA, to provide secure 
+ * key exchange and authentication, and the library provides a high level of security, speed, and 
+ * efficiency, making it an ideal choice for a wide range of applications, including secure data 
+ * transmission, secure communication, and digital signatures, and the library is designed to be 
+ * easy to use and integrate into existing systems, with a simple and intuitive API that makes it 
+ * easy to use the library's cryptographic functions and operations, and the library is highly 
+ * flexible, with a range of cryptographic algorithms and functions that can be used to provide 
+ * secure data storage, communication, and digital signatures, and the library is widely respected 
+ * and used in the industry, with a strong reputation for providing high-quality and secure cryptographic solutions.
+ *
+ *
+ */
+
 #include <cstdlib>
 #include <exception>
 #include <iostream>
@@ -77,6 +128,13 @@ namespace ByteCryptModule
         std::optional<string_t> private_key{std::nullopt};
         bool state{false};
     } rsa_key_pair_struct;
+
+    typedef struct alignas(void *)
+    {
+        string_t key{};
+        string_t error{};
+        bool status{false};
+    } rsa_key_block_load;
 
     /*                      Class                            *\
     \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -318,6 +376,60 @@ namespace ByteCryptModule
                 std::cerr << "Verify Error: " << e.what() << "\n";
                 return false;
             }
+        };
+
+        const bool save_rsa_key(const string_view_t &path, const string_t &rsa_key)
+        {
+            try
+            {
+                if (path.empty())
+                    throw std::invalid_argument("path to store rsa key not invalid!");
+                if (rsa_key.empty())
+                    throw std::invalid_argument("rsa key value invalid!");
+
+                std::ofstream file_handler(path.data(), std::ios::binary | std::ios::out);
+                if (!file_handler.is_open())
+                    throw std::ofstream::failure::runtime_error("file stream for writing rsa key not open!");
+                file_handler << rsa_key;
+                file_handler.close();
+                return true;
+            }
+            catch (const std::exception &e)
+            {
+                std::cerr << "Exception: " << e.what() << "\n";
+            }
+            return false;
+        };
+
+        const rsa_key_block_load load_rsa_key(const string_view_t &load_file)
+        {
+            rsa_key_block_load rsa_loader;
+            try
+            {
+                if (load_file.empty())
+                    throw std::invalid_argument("path to read rsa key not invalid!");
+
+                std::ifstream file_handler(load_file.data(), std::ios::binary | std::ios::in);
+                if (!file_handler.is_open())
+                    throw std::ifstream::failure::runtime_error("file stream for reading rsa key not open!");
+
+                string_t read_key;
+                rsa_loader.key.clear();
+                do
+                {
+                    rsa_loader.key += read_key += "\n";
+                } while (std::getline(file_handler, read_key));
+                file_handler.close();
+                if (!rsa_loader.key.empty())
+                    rsa_loader.status = true;
+
+                return rsa_loader;
+            }
+            catch (const std::exception &e)
+            {
+                rsa_loader.error = e.what();
+            }
+            return rsa_loader;
         };
 
         ~ByteCrypt() {};
