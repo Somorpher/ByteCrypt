@@ -171,7 +171,36 @@ return 0;
 ```
 
 ### RSA Key Generation
+> Generate a pair of RSA Key Pair
+```cpp
+#include "/path/to/ByteCrypt.hpp"
 
+using namespace ByteCryptModule;
+
+int main(){
+
+ByteCrypt bCrypt;
+
+// generate RSA 2048 BS kp(key-pair) and store value into structure(rsa_key_pair_struct)
+const rsa_key_pair_struct key_pair = bCrypt.generate_rsa_key_der_pair(2048);
+
+// using keys...
+const string public_key  = key_pair.public_key;   // public key string
+const string private_key = key_pair.private_key;  // private key string
+
+// rsa_key_pair_struct returns a struct with the following members:
+// optional<string>: public_key
+// optional<string>: private_key
+// bool state      : state
+
+return 0;
+
+}
+```
+
+### RSA Key Store/Load
+
+> store or load RSA keys...
   
 ```cpp
 #include "/path/to/ByteCrypt.hpp"
@@ -181,11 +210,75 @@ using namespace ByteCryptModule;
 int main(){
 
 ByteCrypt bCrypt;
-string buffer = "plain text";
-string base64_encode = bCrypt.base64_encode(buffer);
-string base64_decode = bCrypt.base64_decode(base64_encode);
-string hex_encode = bCrypt.hex_encode(buffer);
-string hex_decode = bCrypt.hex_decode(hex_encode); 
+
+const rsa_key_pair_struct key_pair = bCrypt.generate_rsa_key_der_pair(3072); // 3072 BS
+
+const string public_key  = key_pair.public_key,  private_key = key_pair.private_key;
+
+// --- Store ---
+bCrypt.save_rsa_key("/home/user/Documents/RSA/priv.pem", key_pair.private_key.value()); // private_key has optional value...
+bCrypt.save_rsa_key("/home/user/Documents/RSA/pub.pem", key_pair.public_key.value());
+
+// --- Load ---
+const rsa_key_block_load gpublic_key = bCrypt.load_rsa_key("/home/user/Documents/RSA/pub.pem"); // rsa_key_block_load is a struct returning:
+// string: key
+// string: error
+// bool  : status
+
+
+return 0;
+}
+```
+
+
+### Signature, verification...
+
+> block signing with private key, signature generation, signature verification, message authentication, message signing, etc...
+  
+```cpp
+#include "/path/to/ByteCrypt.hpp"
+
+using namespace ByteCryptModule;
+
+int main(){
+
+ByteCrypt bCrypt;
+
+const rsa_key_pair_struct key_pair = bCrypt.generate_rsa_key_der_pair(3072); // 3072 BS
+
+const string public_key  = key_pair.public_key,  private_key = key_pair.private_key;
+
+// either use load_rsa_key() or generate keys to sign and verify
+
+// ------------- Fresh Generate --------------
+ByteCryptModule::ByteCrypt byte_crypt;
+{
+	rsa_key_pair_struct rsa_keys = byte_crypt.generate_rsa_key_der_pair(2048);
+	bc.save_rsa_key("/home/user/Documents/RSA/pub.pem", rsa_keys.public_key.value());
+	bc.save_rsa_key("/home/user/Documents/RSA/priv.pem", rsa_keys.private_key.value());
+}
+
+// ------------- OR LOAD ---------------
+ByteCryptModule::rsa_key_block_load rsa_private_key = byte_crypt.load_rsa_key("/home/user/Documents/RSA/priv.pem");
+ByteCryptModule::rsa_key_block_load rsa_public_key = byte_crypt.load_rsa_key("/home/user/Documents/RSA/pub.pem");
+
+if (!rsa_public_key.status || !rsa_private_key.status)
+    return EXIT_FAILURE;
+
+// --- PREPARE MESSAGE ---
+std::string private_key = rsa_private_key.key, public_key = rsa_public_key.key;
+std::cout << "RSA Private Key: " << rsa_private_key.key << std::endl;
+std::string message = "This is a test message.";
+
+// --- SIGN MESSAGE ---
+std::string signature = byte_crypt.sign_message(message, private_key);
+if (signature.empty()) return EXIT_FAILURE;
+std::cout << "Signature: " << signature << std::endl;
+
+// --- VERIFY SIGNATURE/MESSAGE ---
+bool is_verified = byte_crypt.verify_signature(message, signature, public_key);
+if (is_verified) std::cout << "Signature verification succeeded." << std::endl;
+else std::cerr << "Signature verification failed." << std::endl;
 
 return 0;
 
