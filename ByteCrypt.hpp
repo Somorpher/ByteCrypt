@@ -105,15 +105,24 @@
 // Encryption Libraries
 #include <crypto++/aes.h>
 #include <crypto++/base64.h>
+#include <crypto++/blowfish.h>
+#include <crypto++/cast.h>
 #include <crypto++/filters.h>
 #include <crypto++/hex.h>
+#include <crypto++/idea.h>
+#include <crypto++/mars.h>
 #include <crypto++/modes.h>
 #include <crypto++/osrng.h>
 #include <crypto++/pwdbased.h>
+#include <crypto++/rc2.h>
+#include <crypto++/rc5.h>
+#include <crypto++/rc6.h>
 #include <crypto++/rijndael.h>
 #include <crypto++/rsa.h>
+#include <crypto++/seal.h>
 #include <crypto++/secblock.h>
 #include <crypto++/sha.h>
+#include <crypto++/twofish.h>
 #include <cryptopp/cryptlib.h>
 #include <cryptopp/pssr.h>
 
@@ -131,7 +140,11 @@ namespace ByteCryptModule
 #define DEFAULT_RSA_KEY_SIZE 2048U
 #define DEFAULT_AES_CIPHER 256
 #define DEFAULT_SHA_CIPHER 256
-#define RSA_KEY_SIZE_OPTIONS std::array<std::uint16_t, 5>  {  512u, 1024u, 2048u, 3072u, 4096u }
+#define RSA_KEY_SIZE_OPTIONS                                                                                                                                                                                               \
+    std::array<std::uint16_t, 5>                                                                                                                                                                                           \
+    {                                                                                                                                                                                                                      \
+        512u, 1024u, 2048u, 3072u, 4096u                                                                                                                                                                                   \
+    }
 #define RSA_PUBLIC_KEY_HEADER "-----BEGIN PUBLIC KEY-----\n"
 #define RSA_PRIVATE_KEY_HEADER "-----BEGIN RSA PRIVATE KEY-----\n"
 #define RSA_PUBLIC_KEY_FOOTER "-----END PUBLIC KEY-----\n"
@@ -157,12 +170,28 @@ enum class e_rsa_key_pem_version
     PRIVATE
 };
 
+enum class e_symmetric_algo
+{
+    AES = 0,
+    BLOWFISH,
+    TWOFISH,
+    CAST128,
+    CAST256,
+    IDEA,
+    RC2,
+    RC5,
+    RC6,
+    MARS,
+    SEAL
+};
+
 /*                      Type Alias                       *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 using byte = CryptoPP::byte;
 using string_t = std::basic_string<char>;
 using string_view_t = std::basic_string_view<char>;
 using cbc_cipher_t = CryptoPP::Rijndael;
+using transformer_filter_t = CryptoPP::StreamTransformationFilter;
 using cbc_aes_encryption_t = CryptoPP::CBC_Mode<cbc_cipher_t>::Encryption;
 using cbc_aes_decryption_t = CryptoPP::CBC_Mode<cbc_cipher_t>::Decryption;
 using rsa_public_key_t = CryptoPP::RSA::PublicKey;
@@ -180,6 +209,46 @@ using rsa_signature_filter_t = CryptoPP::SignerFilter;
 using rsa_signature_verify_t = CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier;
 using crypto_exception_t = CryptoPP::Exception;
 using sha256_hmac_t = CryptoPP::PKCS5_PBKDF2_HMAC<CryptoPP::SHA256>;
+
+using seal_encryption_t = CryptoPP::SEAL<CryptoPP::BigEndian>::Encryption;
+using blowfish_encryption_t = CryptoPP::CBC_Mode<CryptoPP::Blowfish>::Encryption;
+using twofish_encryption_t = CryptoPP::CBC_Mode<CryptoPP::Twofish>::Encryption;
+using cast128_encryption_t = CryptoPP::CBC_Mode<CryptoPP::CAST128>::Encryption;
+using cast256_encryption_t = CryptoPP::CBC_Mode<CryptoPP::CAST256>::Encryption;
+using idea_encryption_t = CryptoPP::CBC_Mode<CryptoPP::IDEA>::Encryption;
+using rc2_encryption_t = CryptoPP::CBC_Mode<CryptoPP::RC2>::Encryption;
+using rc5_encryption_t = CryptoPP::CBC_Mode<CryptoPP::RC5>::Encryption;
+using rc6_encryption_t = CryptoPP::CBC_Mode<CryptoPP::RC6>::Encryption;
+using mars_encryption_t = CryptoPP::CBC_Mode<CryptoPP::MARS>::Encryption;
+
+using seal_decryption_t = CryptoPP::SEAL<CryptoPP::BigEndian>::Decryption;
+using blowfish_decryption_t = CryptoPP::CBC_Mode<CryptoPP::Blowfish>::Decryption;
+using twofish_decryption_t = CryptoPP::CBC_Mode<CryptoPP::Twofish>::Decryption;
+using cast128_decryption_t = CryptoPP::CBC_Mode<CryptoPP::CAST128>::Decryption;
+using cast256_decryption_t = CryptoPP::CBC_Mode<CryptoPP::CAST256>::Decryption;
+using idea_decryption_t = CryptoPP::CBC_Mode<CryptoPP::IDEA>::Decryption;
+using rc2_decryption_t = CryptoPP::CBC_Mode<CryptoPP::RC2>::Decryption;
+using rc5_decryption_t = CryptoPP::CBC_Mode<CryptoPP::RC5>::Decryption;
+using rc6_decryption_t = CryptoPP::CBC_Mode<CryptoPP::RC6>::Decryption;
+using mars_decryption_t = CryptoPP::CBC_Mode<CryptoPP::MARS>::Decryption;
+
+/*                      Type Traits                      *\
+\*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+template <typename mT> static constexpr bool encryption_algo_accept()
+{
+    return std::is_same_v<mT, cbc_aes_encryption_t> || std::is_same_v<mT, blowfish_encryption_t> || std::is_same_v<mT, twofish_encryption_t> || std::is_same_v<mT, cast128_encryption_t> ||
+           std::is_same_v<mT, cast256_encryption_t> || std::is_same_v<mT, idea_encryption_t> || std::is_same_v<mT, rc2_encryption_t> || std::is_same_v<mT, rc5_encryption_t> || std::is_same_v<mT, rc6_encryption_t> ||
+           std::is_same_v<mT, mars_encryption_t> || std::is_same_v<mT, cbc_aes_decryption_t> || std::is_same_v<mT, blowfish_decryption_t> || std::is_same_v<mT, twofish_decryption_t> ||
+           std::is_same_v<mT, cast128_decryption_t> || std::is_same_v<mT, cast256_decryption_t> || std::is_same_v<mT, idea_decryption_t> || std::is_same_v<mT, rc2_decryption_t> || std::is_same_v<mT, rc5_decryption_t> ||
+           std::is_same_v<mT, rc6_decryption_t> || std::is_same_v<mT, mars_decryption_t>;
+};
+
+template <typename mT> struct is_accepted_encryption_algorithm
+{
+    static constexpr bool value = encryption_algo_accept<mT>();
+};
+
+template <typename mT> constexpr bool is_accepted_encryption_algorithm_v = is_accepted_encryption_algorithm<mT>::value;
 
 /*                      Structure                        *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -211,13 +280,12 @@ class ByteCrypt
 
   public:
     ByteCrypt() = default;
-    ByteCrypt(const ByteCrypt&) = delete;
-    ByteCrypt &operator=(const ByteCrypt&) = delete;
-    ByteCrypt(ByteCrypt&&) = delete;
-    ByteCrypt &operator=(ByteCrypt&&) = delete;
+    ByteCrypt(const ByteCrypt &) = delete;
+    ByteCrypt &operator=(const ByteCrypt &) = delete;
+    ByteCrypt(ByteCrypt &&) = delete;
+    ByteCrypt &operator=(ByteCrypt &&) = delete;
 
-    inline const string_t hash_block(const string_t &buffer,
-                                     const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
+    inline const string_t hash_block(const string_t &buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
     {
         string_t digest_block;
         std::unique_ptr<CryptoPP::HashTransformation> algo;
@@ -239,9 +307,7 @@ class ByteCrypt
             algo = std::make_unique<CryptoPP::SHA512>();
             break;
         }
-        CryptoPP::StringSource(
-            buffer, true,
-            new CryptoPP::HashFilter(*algo, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest_block))));
+        CryptoPP::StringSource(buffer, true, new CryptoPP::HashFilter(*algo, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest_block))));
         return digest_block;
     };
 
@@ -252,11 +318,9 @@ class ByteCrypt
         {
             this->__derive_key_iv(key, this->__key__, this->__iv__);
             cbc_aes_encryption_t aes_encryption;
-            this->__perform_keyiv_collision<cbc_aes_encryption_t>(aes_encryption);
-            CryptoPP::StringSource(
-                plain_text, true,
-                new CryptoPP::StreamTransformationFilter(aes_encryption, new CryptoPP::StringSink(cipher)));
-            CryptoPP::StringSource(cipher, true, new CryptoPP::HexEncoder(new CryptoPP::StringSink(encoded_cipher)));
+            this->__perform_keyiv_intersection<cbc_aes_encryption_t>(aes_encryption);
+            string_source_t(plain_text, true, new transformer_filter_t(aes_encryption, new string_sink_t(cipher)));
+            string_source_t(cipher, true, new hex_encoder_t(new string_sink_t(encoded_cipher)));
         }
         catch (const std::exception &e)
         {
@@ -271,12 +335,9 @@ class ByteCrypt
         try
         {
             cbc_aes_decryption_t aes_decryption;
-            this->__perform_keyiv_collision<cbc_aes_decryption_t>(aes_decryption);
-            CryptoPP::StringSource(cipher_block, true,
-                                   new CryptoPP::HexDecoder(new CryptoPP::StringSink(decoded_cipher)));
-            CryptoPP::StringSource(
-                decoded_cipher, true,
-                new CryptoPP::StreamTransformationFilter(aes_decryption, new CryptoPP::StringSink(decrypted_cipher)));
+            this->__perform_keyiv_intersection<cbc_aes_decryption_t>(aes_decryption);
+            string_source_t(cipher_block, true, new hex_decoder_t(new string_sink_t(decoded_cipher)));
+            string_source_t(decoded_cipher, true, new transformer_filter_t(aes_decryption, new string_sink_t(decrypted_cipher)));
         }
         catch (const std::exception &e)
         {
@@ -285,7 +346,77 @@ class ByteCrypt
         return decrypted_cipher;
     };
 
-    inline const string_t base64_encode(const string_t &plain_text)
+    inline const string_t encrypt(const string_t &plain_text, const string_t &key, const e_symmetric_algo algo)
+    {
+        string_t cipher, encoded_cipher;
+        try
+        {
+            this->__derive_key_iv(key, this->__key__, this->__iv__);
+
+            switch (algo)
+            {
+#define _case(algorithm, encryption_type)                                                                                                                                                                                  \
+    case e_symmetric_algo::algorithm:                                                                                                                                                                                      \
+        this->__perform_encryption<encryption_type>(plain_text, cipher, encoded_cipher);                                                                                                                                   \
+        break
+                _case(AES, cbc_aes_encryption_t);
+                _case(BLOWFISH, blowfish_encryption_t);
+                _case(TWOFISH, twofish_encryption_t);
+                _case(CAST128, cast128_encryption_t);
+                _case(CAST256, cast256_encryption_t);
+                _case(IDEA, idea_encryption_t);
+                _case(RC2, rc2_encryption_t);
+                _case(RC5, rc5_encryption_t);
+                _case(RC6, rc6_encryption_t);
+                _case(MARS, mars_encryption_t);
+#undef _case
+            default:
+                std::cerr << "Unsupported encryption algorithm" << std::endl;
+                return "";
+            }
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Encrypt Error: " << e.what() << "\n";
+        }
+        return encoded_cipher;
+    };
+
+    inline const string_t decrypt(const string_t &cipher_block, const string_t &u_key, const e_symmetric_algo algo)
+    {
+        string_t decrypted_cipher, decoded_cipher;
+        try
+        {
+            switch (algo)
+            {
+#define _case(algorithm, decryption_type)                                                                                                                                                                                  \
+    case e_symmetric_algo::algorithm:                                                                                                                                                                                      \
+        this->__perform_decryption<decryption_type>(cipher_block, decrypted_cipher, decoded_cipher);                                                                                                                       \
+        break
+                _case(AES, cbc_aes_decryption_t);
+                _case(BLOWFISH, blowfish_decryption_t);
+                _case(TWOFISH, twofish_decryption_t);
+                _case(CAST128, cast128_decryption_t);
+                _case(CAST256, cast256_decryption_t);
+                _case(IDEA, idea_decryption_t);
+                _case(RC2, rc2_decryption_t);
+                _case(RC5, rc5_decryption_t);
+                _case(RC6, rc6_decryption_t);
+                _case(MARS, mars_decryption_t);
+#undef _case
+            default:
+                std::cerr << "Invalid decryption algorithm!\n";
+                return "";
+            }
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Decryption Error: " << e.what() << "\n";
+        }
+        return decrypted_cipher;
+    };
+
+        inline const string_t base64_encode(const string_t &plain_text)
     {
         string_t b64_encoded;
         CryptoPP::StringSource(plain_text, true, new CryptoPP::Base64Encoder(new CryptoPP::StringSink(b64_encoded)));
@@ -295,8 +426,7 @@ class ByteCrypt
     inline const string_t base64_decode(const string_t &encoded_cipher)
     {
         string_t b64_decoded;
-        CryptoPP::StringSource(encoded_cipher, true,
-                               new CryptoPP::Base64Decoder(new CryptoPP::StringSink(b64_decoded)));
+        CryptoPP::StringSource(encoded_cipher, true, new CryptoPP::Base64Decoder(new CryptoPP::StringSink(b64_decoded)));
         return b64_decoded;
     };
 
@@ -341,8 +471,7 @@ class ByteCrypt
             string_sink_t private_key_sink(private_key_result);
             private_key.DEREncode(private_key_sink);
             private_key_sink.MessageEnd();
-            string_source_t(private_key_result, true,
-                            new base64_encoder_t(new string_sink_t(private_key_result_encoded)));
+            string_source_t(private_key_result, true, new base64_encoder_t(new string_sink_t(private_key_result_encoded)));
 
             if (!private_key_result.empty())
             {
@@ -352,8 +481,7 @@ class ByteCrypt
                     string_sink_t public_key_sink(public_key_result);
                     public_key.DEREncode(public_key_sink);
                     public_key_sink.MessageEnd();
-                    string_source_t(public_key_result, true,
-                                    new base64_encoder_t(new string_sink_t(public_key_result_encoded)));
+                    string_source_t(public_key_result, true, new base64_encoder_t(new string_sink_t(public_key_result_encoded)));
                 }
                 catch (const std::exception &e)
                 {
@@ -448,9 +576,7 @@ class ByteCrypt
             string_t signature_decoded;
             string_source_t(signature_str, true, new base64_decoder_t(new string_sink_t(signature_decoded)));
             rsa_signature_verify_t verifier(public_key);
-            const bool result =
-                verifier.VerifyMessage((const byte *)message.data(), message.size(),
-                                       (const byte *)signature_decoded.data(), signature_decoded.size());
+            const bool result = verifier.VerifyMessage((const byte *)message.data(), message.size(), (const byte *)signature_decoded.data(), signature_decoded.size());
             return result;
         }
         catch (const crypto_exception_t &e)
@@ -528,20 +654,13 @@ class ByteCrypt
         entropy_seed_t entropy;
         entropy.GenerateBlock(salt, sizeof(salt));
         sha256_hmac_t transformer;
-        transformer.DeriveKey(key, default_sec_key_size, 0, reinterpret_cast<const byte *>(u_pwd.data()), u_pwd.size(),
-                              salt, sizeof(salt), cipher_iteration_count);
-        transformer.DeriveKey(init_vector, default_sec_iv_size, 0, reinterpret_cast<const byte *>(u_pwd.data()),
-                              u_pwd.size(), salt, sizeof(salt), cipher_iteration_count);
+        transformer.DeriveKey(key, default_sec_key_size, 0, reinterpret_cast<const byte *>(u_pwd.data()), u_pwd.size(), salt, sizeof(salt), cipher_iteration_count);
+        transformer.DeriveKey(init_vector, default_sec_iv_size, 0, reinterpret_cast<const byte *>(u_pwd.data()), u_pwd.size(), salt, sizeof(salt), cipher_iteration_count);
     };
 
-    template <typename mT, typename = std::enable_if<std::is_same_v<mT, cbc_aes_decryption_t> ||
-                                                     std::is_same_v<mT, cbc_aes_encryption_t>>>
-    inline void __perform_keyiv_collision(mT &decryption_handler) const noexcept
+    template <typename cipherT, typename = std::enable_if_t<std::is_class_v<cipherT> && is_accepted_encryption_algorithm_v<cipherT>>> inline void __perform_keyiv_intersection(cipherT &decryption_handler) const noexcept
     {
-        if (std::is_same_v<mT, cbc_aes_encryption_t>)
-            decryption_handler.SetKeyWithIV(this->__key__, sizeof(this->__key__), this->__iv__);
-        else
-            decryption_handler.SetKeyWithIV(this->__key__, sizeof(this->__key__), this->__iv__);
+        decryption_handler.SetKeyWithIV(this->__key__, sizeof(this->__key__), this->__iv__);
     };
 
     const bool __rsa_key_pair_verify(const rsa_key_pair_struct &key_block)
@@ -555,10 +674,8 @@ class ByteCrypt
             rsa_public_key_t rsa_public_key;
             std::size_t private_key_byte_size, public_key_byte_size;
 
-            string_source_t(key_block.private_key.value(), true,
-                            new base64_decoder_t(new string_sink_t(private_key_decoded_result)));
-            string_source_t(key_block.public_key.value(), true,
-                            new base64_decoder_t(new string_sink_t(public_key_decoded_result)));
+            string_source_t(key_block.private_key.value(), true, new base64_decoder_t(new string_sink_t(private_key_decoded_result)));
+            string_source_t(key_block.public_key.value(), true, new base64_decoder_t(new string_sink_t(public_key_decoded_result)));
 
             {
                 string_source_t rsa_key_source(private_key_decoded_result, true, nullptr);
@@ -618,16 +735,14 @@ class ByteCrypt
     {
         if (version == e_rsa_key_pem_version::PUBLIC)
         {
-            if (!rsa_key.empty() && (rsa_key.find(RSA_PUBLIC_KEY_FOOTER) != std::string::npos &&
-                                     rsa_key.find(RSA_PUBLIC_KEY_HEADER) != std::string::npos))
+            if (!rsa_key.empty() && (rsa_key.find(RSA_PUBLIC_KEY_FOOTER) != std::string::npos && rsa_key.find(RSA_PUBLIC_KEY_HEADER) != std::string::npos))
             {
                 return true;
             }
         }
         else if (version == e_rsa_key_pem_version::PRIVATE)
         {
-            if (!rsa_key.empty() && (rsa_key.find(RSA_PRIVATE_KEY_FOOTER) != std::string::npos &&
-                                     rsa_key.find(RSA_PRIVATE_KEY_HEADER) != std::string::npos))
+            if (!rsa_key.empty() && (rsa_key.find(RSA_PRIVATE_KEY_FOOTER) != std::string::npos && rsa_key.find(RSA_PRIVATE_KEY_HEADER) != std::string::npos))
             {
                 return true;
             }
@@ -648,8 +763,7 @@ class ByteCrypt
             string_t wipe_rsa_meta(rsa_key.c_str());
             wipe_rsa_meta.erase(0, std::strlen(RSA_PRIVATE_KEY_HEADER));
             wipe_rsa_meta.erase(wipe_rsa_meta.find(RSA_PRIVATE_KEY_FOOTER), std::strlen(RSA_PRIVATE_KEY_FOOTER));
-            std::size_t expected_rsa_key_size(
-                rsa_key.length() - (std::strlen(RSA_PRIVATE_KEY_HEADER) + std::strlen(RSA_PRIVATE_KEY_FOOTER)));
+            std::size_t expected_rsa_key_size(rsa_key.length() - (std::strlen(RSA_PRIVATE_KEY_HEADER) + std::strlen(RSA_PRIVATE_KEY_FOOTER)));
             if (wipe_rsa_meta.length() == expected_rsa_key_size)
             {
                 return wipe_rsa_meta;
@@ -660,14 +774,29 @@ class ByteCrypt
             string_t wipe_rsa_meta(rsa_key.c_str());
             wipe_rsa_meta.erase(0, std::strlen(RSA_PUBLIC_KEY_HEADER));
             wipe_rsa_meta.erase(wipe_rsa_meta.find(RSA_PUBLIC_KEY_FOOTER), std::strlen(RSA_PUBLIC_KEY_FOOTER));
-            std::size_t expected_rsa_key_size(
-                rsa_key.length() - (std::strlen(RSA_PUBLIC_KEY_HEADER) + std::strlen(RSA_PUBLIC_KEY_FOOTER)));
+            std::size_t expected_rsa_key_size(rsa_key.length() - (std::strlen(RSA_PUBLIC_KEY_HEADER) + std::strlen(RSA_PUBLIC_KEY_FOOTER)));
             if (wipe_rsa_meta.length() == expected_rsa_key_size)
             {
                 return wipe_rsa_meta;
             }
         }
         return std::move(rsa_key);
+    };
+
+    template <typename encryptionType> void __perform_encryption(const string_t &plain_text, string_t &cipher, string_t &encoded_cipher)
+    {
+        encryptionType encryption;
+        __perform_keyiv_intersection<encryptionType>(encryption);
+        string_source_t(plain_text, true, new transformer_filter_t(encryption, new string_sink_t(cipher)));
+        string_source_t(cipher, true, new hex_encoder_t(new string_sink_t(encoded_cipher)));
+    };
+
+    template <typename decryptionType> void __perform_decryption(const string_t &cipher_text, string_t &decrypted_data, string_t &decoded_data)
+    {
+        decryptionType decryption;
+        __perform_keyiv_intersection<decryptionType>(decryption);
+        string_source_t(cipher_text, true, new transformer_filter_t(decryption, new string_sink_t(decoded_data)));
+        string_source_t(decoded_data, true, new hex_encoder_t(new string_sink_t(decrypted_data)));
     };
 };
 }; // namespace ByteCryptModule
