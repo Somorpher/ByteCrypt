@@ -155,6 +155,12 @@ enum class e_hash_algo_option
     SHA512,
 };
 
+enum class e_rsa_key_pem_version
+{
+    PUBLIC = 0,
+    PRIVATE
+};
+
 /*                      Type Alias                       *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 using byte = CryptoPP::byte;
@@ -208,7 +214,11 @@ class ByteCrypt
     byte __iv__[CryptoPP::AES::BLOCKSIZE];
 
   public:
-    ByteCrypt() {};
+    ByteCrypt() = default;
+    ByteCrypt(const ByteCrypt&) = delete;
+    ByteCrypt &operator=(const ByteCrypt&) = delete;
+    ByteCrypt(ByteCrypt&&) = delete;
+    ByteCrypt &operator=(ByteCrypt&&) = delete;
 
     inline const string_t hash_block(const string_t &buffer,
                                      const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
@@ -397,10 +407,12 @@ class ByteCrypt
         return rsa_keys;
     };
 
-    inline const string_t sign_message(const string_t &message, const string_t &private_key)
+    inline const string_t sign_message(const string_t &message, const string_t &rsa_key)
     {
         string_t signature;
-        string_t clean_key(this->__rsa_key_meta_wipe(const_cast<string_t &&>(std::move(private_key))));
+        if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PRIVATE))
+            return signature;
+        string_t clean_key(this->__rsa_key_meta_wipe(const_cast<string_t &&>(std::move(rsa_key))));
         try
         {
             if (clean_key.empty() || message.empty())
@@ -427,7 +439,7 @@ class ByteCrypt
 
     inline const bool verify_signature(const string_t &message, const string_t &signature_str, const string_t &rsa_key)
     {
-        if (!this->__is_rsa_public_key_pem(rsa_key))
+        if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PUBLIC))
             return false;
         try
         {
@@ -511,7 +523,7 @@ class ByteCrypt
         return rsa_loader;
     };
 
-    ~ByteCrypt() {};
+    ~ByteCrypt() = default;
 
   private:
     void __derive_key_iv(const string_t &u_pwd, byte *key, byte *init_vector) const
@@ -606,23 +618,28 @@ class ByteCrypt
         return false;
     };
 
-    const bool __is_rsa_private_key_pem(const string_view_t &rsa_key) noexcept
+    const bool __is_rsa_key_pem(const string_view_t &rsa_key, const e_rsa_key_pem_version version) noexcept
     {
-        if (!rsa_key.empty() && (rsa_key.find(RSA_PRIVATE_KEY_FOOTER) != std::string::npos &&
-                                 rsa_key.find(RSA_PRIVATE_KEY_HEADER) != std::string::npos))
-            return true;
+        if (version == e_rsa_key_pem_version::PUBLIC)
+        {
+            if (!rsa_key.empty() && (rsa_key.find(RSA_PUBLIC_KEY_FOOTER) != std::string::npos &&
+                                     rsa_key.find(RSA_PUBLIC_KEY_HEADER) != std::string::npos))
+            {
+                return true;
+            }
+        }
+        else if (version == e_rsa_key_pem_version::PRIVATE)
+        {
+            if (!rsa_key.empty() && (rsa_key.find(RSA_PRIVATE_KEY_FOOTER) != std::string::npos &&
+                                     rsa_key.find(RSA_PRIVATE_KEY_HEADER) != std::string::npos))
+            {
+                return true;
+            }
+        }
         return false;
     };
 
-    const bool __is_rsa_public_key_pem(const string_view_t &rsa_key) noexcept
-    {
-        if (!rsa_key.empty() && (rsa_key.find(RSA_PUBLIC_KEY_FOOTER) != std::string::npos &&
-                                 rsa_key.find(RSA_PUBLIC_KEY_HEADER) != std::string::npos))
-            return true;
-        return false;
-    };
-
-    const bool __is_rsa_encrypted_key_pem_format(const string_view_t &rsa_key) noexcept
+    const bool __is_rsa_encrypted_key(const string_view_t &rsa_key) noexcept
     {
         if (rsa_key.find(RSA_ENCRYPTED_PRIVATE_KEY_HEADER) != std::string::npos)
             return true;
@@ -630,7 +647,7 @@ class ByteCrypt
     };
     const string_t __rsa_key_meta_wipe(string_t &&rsa_key)
     {
-        if (this->__is_rsa_private_key_pem(rsa_key))
+        if (this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PRIVATE))
         {
             string_t wipe_rsa_meta(rsa_key.c_str());
             wipe_rsa_meta.erase(0, std::strlen(RSA_PRIVATE_KEY_HEADER));
@@ -642,12 +659,7 @@ class ByteCrypt
                 return wipe_rsa_meta;
             }
         }
-        else if (this->__is_rsa_encrypted_key_pem_format(rsa_key))
-        {
-            // encryption key required...
-            std::cout << "RSA Key Is Encrypted, please provide decryptio key.\n";
-        }
-        else if (this->__is_rsa_public_key_pem(rsa_key))
+        else if (this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PUBLIC))
         {
             string_t wipe_rsa_meta(rsa_key.c_str());
             wipe_rsa_meta.erase(0, std::strlen(RSA_PUBLIC_KEY_HEADER));
@@ -663,5 +675,4 @@ class ByteCrypt
     };
 };
 }; // namespace ByteCryptModule
-
 #endif
