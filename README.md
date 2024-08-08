@@ -171,7 +171,7 @@ return 0;
 ```
 
 ### RSA Key Generation
-> Generate a pair of RSA Key Pair
+> Generate a pair of RSA Key Pair(DER)
 ```cpp
 #include "/path/to/ByteCrypt.hpp"
 
@@ -181,7 +181,7 @@ int main(){
 
 ByteCrypt bCrypt;
 
-// generate RSA 2048 BS kp(key-pair) and store value into structure(rsa_key_pair_struct)
+// generate RSA 2048 BS kp(key-pair) in DER format and store value into structure(rsa_key_pair_struct)
 const rsa_key_pair_struct key_pair = bCrypt.generate_rsa_key_der_pair(2048);
 
 // using keys...
@@ -195,6 +195,18 @@ const string private_key = key_pair.private_key;  // private key string
 
 return 0;
 
+}
+```
+
+### RSA Key Generation
+> Generate a pair of RSA Key Pair(PEM)
+```cpp
+#include "/path/to/ByteCrypt.hpp"
+
+using namespace ByteCryptModule;
+
+int main(){
+const rsa_key_pair_struct key_pair = bCrypt.generate_rsa_key_pem_pair(2048);
 }
 ```
 
