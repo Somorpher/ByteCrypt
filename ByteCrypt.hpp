@@ -153,6 +153,44 @@ namespace ByteCryptModule
 #define RSA_ENCRYPTED_PRIVATE_KEY_HEADER "-----BEGIN ENCRYPTED PRIVATE KEY-----\n"
 #define RSA_ENCRYPTED_PRIVATE_KEY_FOOTER "-----END ENCRYPTED PRIVATE KEY-----\n"
 
+/*                      Attribution                      *\
+\*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+#if defined(__GNUC__) || defined(__clang__)
+
+#define __hint_encryption_algo_accept__ __attribute__((cold, nothrow, warn_unused_result, pure, no_sanitize_address, no_stack_protector, optimize(3)))
+#define __hint_hash__ __attribute__((stack_protect, zero_call_used_regs("all"), warn_unused_result, access(read_only, 1), optimize(3)))
+#define __hint_encrypt__ __attribute__((warn_unused_result, zero_call_used_regs("used"), stack_protect, access(read_only, 1), access(read_only, 2), optimize(3)))
+#define __hint_decrypt__ __attribute__((warn_unused_result, zero_call_used_regs("used"), stack_protect, access(read_only, 1), access(read_only, 2), optimize(3)))
+#define __hint_base64_encode__ __attribute__((warn_unused_result, stack_protect, access(read_only, 1), optimize("3")))
+#define __hint_base64_decode__ __attribute__((warn_unused_result, stack_protect, access(read_only, 1), optimize("3")))
+#define __hint_hex_encode__ __attribute__((warn_unused_result, no_stack_protector, access(read_only, 1), optimize("3")))
+#define __hint_hex_decode__ __attribute__((warn_unused_result, no_stack_protector, access(read_only, 1), optimize("3")))
+#define __hint_generate_rsa_key_der_pair__ __attribute__((cold, warn_unused_result, stack_protect, access(read_only, 1), zero_call_used_regs("used"), optimize("3")))
+#define __hint_generate_rsa_key_pem_pair__ __attribute__((cold, warn_unused_result, stack_protect, access(read_only, 1), zero_call_used_regs("used"), optimize("3")))
+#define __hint_sign_message__ __attribute__((warn_unused_result, stack_protect, access(read_only, 1), access(read_only, 2), zero_call_used_regs("used"), optimize("3")))
+#define __hint_verify_signature__ __attribute__((warn_unused_result, access(read_only, 1), access(read_only, 2), access(read_only, 3), stack_protect, zero_call_used_regs("used"), optimize("3") ))
+#define __hint_save_rsa_key__ __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("used"), tainted_args, access(read_only, 1), access(read_only, 2), optimize("3")))
+#define __hint_load_rsa_key__ __attribute__((warn_unused_result, cold, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
+
+#else
+
+#define __hint_encryption_algo_accept__ [[nothrow, nodiscard]]
+#define __hint_hash__ [[nodiscard]]
+#define __hint_encrypt__ [[nodiscard]]
+#define __hint_decrypt__ [[nodiscard]]
+#define __hint_base64_encode__ [[nodiscard]]
+#define __hint_base64_decode__ [[nodiscard]]
+#define __hint_hex_encode__ [[nodiscard]]
+#define __hint_hex_decode__ [[nodiscard]]
+#define __hint_generate_rsa_key_der_pair__ [[nodiscard]]
+#define __hint_generate_rsa_key_der_pair__ [[nodiscard]]
+#define __hint_sign_message__ [[nodiscard]]
+#define __hint_verify_signature__ [[nodiscard]]
+#define __hint_save_rsa_key__ [[nodiscard]]
+#define __hint_load_rsa_key__ [[nodiscard]]
+
+#endif
+
 /*                      Namespace                        *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 enum class e_hash_algo_option
@@ -234,7 +272,7 @@ using mars_decryption_t = CryptoPP::CBC_Mode<CryptoPP::MARS>::Decryption;
 
 /*                      Type Traits                      *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-template <typename mT> static constexpr bool encryption_algo_accept()
+template <typename mT> __hint_encryption_algo_accept__ static constexpr bool encryption_algo_accept()
 {
     return std::is_same_v<mT, cbc_aes_encryption_t> || std::is_same_v<mT, blowfish_encryption_t> || std::is_same_v<mT, twofish_encryption_t> || std::is_same_v<mT, cast128_encryption_t> ||
            std::is_same_v<mT, cast256_encryption_t> || std::is_same_v<mT, idea_encryption_t> || std::is_same_v<mT, rc2_encryption_t> || std::is_same_v<mT, rc5_encryption_t> || std::is_same_v<mT, rc6_encryption_t> ||
@@ -285,7 +323,7 @@ class ByteCrypt
     ByteCrypt(ByteCrypt &&) = delete;
     ByteCrypt &operator=(ByteCrypt &&) = delete;
 
-    inline const string_t hash_block(const string_t &buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
+    __hint_hash__ const string_t hash(const string_t &buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
     {
         string_t digest_block;
         std::unique_ptr<CryptoPP::HashTransformation> algo;
@@ -311,7 +349,7 @@ class ByteCrypt
         return digest_block;
     };
 
-    inline const string_t encrypt(const string_t &plain_text, const string_t &key, const e_symmetric_algo algo)
+    __hint_encrypt__ const string_t encrypt(const string_t &plain_text, const string_t &key, const e_symmetric_algo algo)
     {
         string_t cipher, encoded_cipher;
         try
@@ -347,7 +385,7 @@ class ByteCrypt
         return encoded_cipher;
     };
 
-    inline const string_t decrypt(const string_t &cipher_block, const string_t &u_key, const e_symmetric_algo algo)
+    __hint_decrypt__ const string_t decrypt(const string_t &cipher_block, const string_t &u_key, const e_symmetric_algo algo)
     {
         string_t decrypted_cipher, decoded_cipher;
         try
@@ -381,21 +419,21 @@ class ByteCrypt
         return decrypted_cipher;
     };
 
-    inline const string_t base64_encode(const string_t &plain_text)
+    __hint_base64_encode__ inline const string_t base64_encode(const string_t &plain_text)
     {
         string_t b64_encoded;
         CryptoPP::StringSource(plain_text, true, new CryptoPP::Base64Encoder(new CryptoPP::StringSink(b64_encoded)));
         return b64_encoded;
     };
 
-    inline const string_t base64_decode(const string_t &encoded_cipher)
+    __hint_base64_decode__ inline const string_t base64_decode(const string_t &encoded_cipher)
     {
         string_t b64_decoded;
         CryptoPP::StringSource(encoded_cipher, true, new CryptoPP::Base64Decoder(new CryptoPP::StringSink(b64_decoded)));
         return b64_decoded;
     };
 
-    inline const string_t hex_encode(const string_t &plain_text) noexcept
+    __hint_hex_encode__ inline const string_t hex_encode(const string_t &plain_text)
     {
         std::ostringstream parser;
         for (unsigned char _byte : plain_text)
@@ -403,7 +441,7 @@ class ByteCrypt
         return parser.str();
     };
 
-    inline const string_t hex_decode(const string_t &hex_encoded)
+    __hint_hex_decode__ inline const string_t hex_decode(const string_t &hex_encoded)
     {
         if (hex_encoded.length() % 2 != 0)
         {
@@ -421,7 +459,7 @@ class ByteCrypt
         return hex_decoded;
     };
 
-    rsa_key_pair_struct generate_rsa_key_der_pair(const std::size_t rsa_key_size = 2048U)
+    __hint_generate_rsa_key_der_pair__ const rsa_key_pair_struct generate_rsa_key_der_pair(const std::size_t rsa_key_size = 2048U)
     {
         rsa_key_pair_struct local_kps{};
         if (!this->__is_rsa_key_size_valid(rsa_key_size))
@@ -472,7 +510,7 @@ class ByteCrypt
         return local_kps;
     };
 
-    const rsa_key_pair_struct generate_rsa_key_pem_pair(const std::size_t rsa_key_size = 2048U)
+    __hint_generate_rsa_key_pem_pair__ const rsa_key_pair_struct generate_rsa_key_pem_pair(const std::size_t rsa_key_size = 2048U)
     {
         rsa_key_pair_struct rsa_keys = this->generate_rsa_key_der_pair(rsa_key_size);
         if (!this->__is_rsa_key_size_valid(rsa_key_size))
@@ -496,7 +534,7 @@ class ByteCrypt
         return rsa_keys;
     };
 
-    inline const string_t sign_message(const string_t &message, const string_t &rsa_key)
+    __hint_sign_message__ const string_t sign_message(const string_t &message, const string_t &rsa_key)
     {
         string_t signature;
         if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PRIVATE))
@@ -526,7 +564,8 @@ class ByteCrypt
         }
     };
 
-    inline const bool verify_signature(const string_t &message, const string_t &signature_str, const string_t &rsa_key)
+    
+    __hint_verify_signature__ const bool verify_signature(const string_t &message, const string_t &signature_str, const string_t &rsa_key)
     {
         if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PUBLIC))
             return false;
@@ -556,7 +595,8 @@ class ByteCrypt
         }
     };
 
-    const bool save_rsa_key(const string_view_t &path, const string_t &rsa_key)
+    
+    __hint_save_rsa_key__ const bool save_rsa_key(const string_view_t &path, const string_t &rsa_key)
     {
         try
         {
@@ -579,7 +619,8 @@ class ByteCrypt
         return false;
     };
 
-    const rsa_key_block_load load_rsa_key(const string_view_t &file_name)
+    
+    __hint_load_rsa_key__ const rsa_key_block_load load_rsa_key(const string_view_t &file_name)
     {
         rsa_key_block_load rsa_loader;
         try
@@ -613,6 +654,8 @@ class ByteCrypt
     ~ByteCrypt() = default;
 
   private:
+
+  
     void __derive_key_iv(const string_t &u_pwd, byte *key, byte *init_vector) const
     {
         byte salt[16];
