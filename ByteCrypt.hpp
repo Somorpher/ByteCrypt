@@ -311,41 +311,7 @@ class ByteCrypt
         return digest_block;
     };
 
-    inline const string_t encrypt_block(const string_t &plain_text, const string_t &key)
-    {
-        string_t cipher, encoded_cipher;
-        try
-        {
-            this->__derive_key_iv(key, this->__key__, this->__iv__);
-            cbc_aes_encryption_t aes_encryption;
-            this->__perform_keyiv_intersection<cbc_aes_encryption_t>(aes_encryption);
-            string_source_t(plain_text, true, new transformer_filter_t(aes_encryption, new string_sink_t(cipher)));
-            string_source_t(cipher, true, new hex_encoder_t(new string_sink_t(encoded_cipher)));
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "Encrypt Error: " << e.what() << "\n";
-        }
-        return encoded_cipher;
-    };
-
-    inline const string_t decrypt_block(const string_t &cipher_block, const string_t &u_key)
-    {
-        string_t decrypted_cipher, decoded_cipher;
-        try
-        {
-            cbc_aes_decryption_t aes_decryption;
-            this->__perform_keyiv_intersection<cbc_aes_decryption_t>(aes_decryption);
-            string_source_t(cipher_block, true, new hex_decoder_t(new string_sink_t(decoded_cipher)));
-            string_source_t(decoded_cipher, true, new transformer_filter_t(aes_decryption, new string_sink_t(decrypted_cipher)));
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "Decryption Error: " << e.what() << "\n";
-        }
-        return decrypted_cipher;
-    };
-
+    
     inline const string_t encrypt(const string_t &plain_text, const string_t &key, const e_symmetric_algo algo)
     {
         string_t cipher, encoded_cipher;
