@@ -34,7 +34,7 @@ uses the SHA algorithm to generate a digital fingerprint (hash) of data. SHA is 
 Here's how the SHA algorithm works:
 
 * Hash Calculation: 
-uses the hash_block function to calculate the hash of a block of data using the SHA algorithm. The hash calculation involves the following steps:
+uses the hash function to calculate the hash of a block of data using the SHA algorithm. The hash calculation involves the following steps:
 
 1) Divide the data into blocks of 64 bytes (the block size of SHA).
 2) Apply a series of bitwise operations (AND, OR, XOR, etc.) to the data blocks.
@@ -65,7 +65,7 @@ generates a pair of RSA keys (public and private) using the generate_rsa_key_der
 ## Module Function without Signature
 
 
-* hash_block
+* hash
 * encrypt_block
 * decrypt_block
 * base64_encode
@@ -82,7 +82,7 @@ generates a pair of RSA keys (public and private) using the generate_rsa_key_der
 
 ## Module Function Signature
 
-> string_t hash_block(const string_t& buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256)
+> string_t hash(const string_t& buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256)
 
 > string_t encrypt_block(const string_t& plain_text, const string_t& key)
 
@@ -131,7 +131,7 @@ ByteCrypt bCrypt; // create new instance of ByteCrypt
 
 string buffer = "your mother"; // some random text to hash
 
-string hashed = bCrypt.hash_block(buffer); // default hash with SHA256
+string hashed = bCrypt.hash(buffer); // default hash with SHA256
 
 std::cout << "Hashed: " << hashed << "\n"; // print result
 
