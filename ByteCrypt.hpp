@@ -311,7 +311,6 @@ class ByteCrypt
         return digest_block;
     };
 
-    
     inline const string_t encrypt(const string_t &plain_text, const string_t &key, const e_symmetric_algo algo)
     {
         string_t cipher, encoded_cipher;
@@ -382,7 +381,7 @@ class ByteCrypt
         return decrypted_cipher;
     };
 
-        inline const string_t base64_encode(const string_t &plain_text)
+    inline const string_t base64_encode(const string_t &plain_text)
     {
         string_t b64_encoded;
         CryptoPP::StringSource(plain_text, true, new CryptoPP::Base64Encoder(new CryptoPP::StringSink(b64_encoded)));
@@ -580,15 +579,15 @@ class ByteCrypt
         return false;
     };
 
-    const rsa_key_block_load load_rsa_key(const string_view_t &load_file)
+    const rsa_key_block_load load_rsa_key(const string_view_t &file_name)
     {
         rsa_key_block_load rsa_loader;
         try
         {
-            if (load_file.empty())
+            if (file_name.empty())
                 throw std::invalid_argument("path to read rsa key not invalid!");
 
-            std::ifstream file_handler(load_file.data(), std::ios::binary | std::ios::in);
+            std::ifstream file_handler(file_name.data(), std::ios::binary | std::ios::in);
             if (!file_handler.is_open())
                 throw std::ifstream::failure::runtime_error("file stream for reading rsa key not open!");
 
