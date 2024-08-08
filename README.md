@@ -62,8 +62,55 @@ generates a pair of RSA keys (public and private) using the generate_rsa_key_der
 2) Verification:
    uses the verify_signature function to verify the authenticity of a block of data by comparing its digital signature with a previously calculated digital signature.
 
+## Module Function without Signature
 
-### Implement Library
+
+* hash_block
+* encrypt_block
+* decrypt_block
+* base64_encode
+* base64_decode
+* hex_encode
+* hex_decode
+* generate_rsa_key_der_pair
+* generate_rsa_key_pem_pair
+* sign_message
+* verify_signature
+* save_rsa_key
+* load_rsa_key
+
+
+## Module Function Signature
+
+> string_t hash_block(const string_t& buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256)
+
+> string_t encrypt_block(const string_t& plain_text, const string_t& key)
+
+> string_t decrypt_block(const string_t& cipher_block, const string_t& u_key)
+
+> string_t base64_encode(const string_t& plain_text)
+
+> string_t base64_decode(const string_t& encoded_cipher)
+
+> string_t hex_encode(const string_t& plain_text)
+
+> string_t hex_decode(const string_t& hex_encoded)
+
+> rsa_key_pair_struct generate_rsa_key_der_pair(const std::size_t rsa_key_size = 2048U)
+
+> rsa_key_pair_struct generate_rsa_key_pem_pair(const std::size_t rsa_key_size = 2048U)
+
+> string_t sign_message(const string_t& message, const string_t& private_key)
+
+> bool verify_signature(const string_t& message, const string_t& signature_str, const string_t& rsa_key)
+
+> bool save_rsa_key(const string_view_t& path, const string_t& rsa_key)
+
+> rsa_key_block_load load_rsa_key(const string_view_t& load_file)
+
+
+
+## Examples
 
 ### Hashing
 > optional paramater(2) values:
@@ -296,3 +343,67 @@ return 0;
 
 }
 ```
+
+
+## Disclaimer Of Warranty
+
+/**
+ * ============================================================================
+ * ByteCrypt Class - A C++ Data Encryption Utility Module
+ * ============================================================================
+ *
+ * DISCLAIMER OF WARRANTY:
+ *
+ * This software is provided 'as-is', without any express or implied warranty.
+ * In no event will the author(s) be held liable for any damages arising from
+ * the use of this software, including but not limited to:
+ *
+ * - Loss of data
+ * - Any other type of loss or damage
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would
+ *    be appreciated but is not required.
+ *
+ * 2. Altered source versions must be plainly marked as such, and must not
+ *    be misrepresented as being the original software.
+ *
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ * LIMITATION OF LIABILITY:
+ *
+ * In no event will the author(s) be liable for any damages, including but
+ * not limited to incidental, consequential, or punitive damages, arising
+ * out of the use of this software.
+ *
+ * COPYING AND DISTRIBUTION:
+ *
+ * This software may be copied and distributed free of charge, provided
+ * that the above copyright notice, disclaimer, and limitations of liability
+ * are included in all copies.
+ *
+ * AUTHORIZATION:
+ *
+ * By using this software, you acknowledge that you have read and understood
+ * the terms and conditions of this license, and agree to be bound by them.
+ *
+ * TRADEMARKS:
+ *
+ * The names of actual companies and products mentioned in this software
+ * may be the trademarks of their respective owners.
+ *
+ * ACKNOWLEDGMENT:
+ *
+ * The authors would like to acknowledge the contributions of the C++
+ * community, and the many individuals who have helped shape the C++
+ * standard library.
+ *
+ * ============================================================================
+ *
+ * Written by [Somorpher], [2024].
+ */
