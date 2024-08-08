@@ -131,11 +131,7 @@ namespace ByteCryptModule
 #define DEFAULT_RSA_KEY_SIZE 2048U
 #define DEFAULT_AES_CIPHER 256
 #define DEFAULT_SHA_CIPHER 256
-#define RSA_KEY_SIZE_OPTIONS                                                                                           \
-    std::array<std::uint16_t, 5>                                                                                       \
-    {                                                                                                                  \
-        512u, 1024u, 2048u, 3072u, 4096u                                                                               \
-    }
+#define RSA_KEY_SIZE_OPTIONS std::array<std::uint16_t, 5>  {  512u, 1024u, 2048u, 3072u, 4096u }
 #define RSA_PUBLIC_KEY_HEADER "-----BEGIN PUBLIC KEY-----\n"
 #define RSA_PRIVATE_KEY_HEADER "-----BEGIN RSA PRIVATE KEY-----\n"
 #define RSA_PUBLIC_KEY_FOOTER "-----END PUBLIC KEY-----\n"
