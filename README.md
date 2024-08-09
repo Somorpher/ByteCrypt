@@ -2,7 +2,12 @@
 
 **Single-Translation-Unit**
 
+
 ### Description
+
+**Compatibility**, **c++ version**
+The code is designed to work on a 64-bit x86-64 architecture, specifically on Linux and macOS operating systems, using C++14 or C++17, with a compiler version of GCC 5.1 or later, or Clang 3.6 or later.
+
 This is a C++ implementation of a cryptographic library called ByteCrypt. It's a collection of tools and functions that allow you to perform various cryptographic operations, such as encryption, decryption, hashing, and digital signatures.
 
 The library is organized into a namespace called ByteCryptModule, which makes it easy to use and integrate into your own projects. It uses the widely respected Crypto++ library as its underlying cryptographic engine.
