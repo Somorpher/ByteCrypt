@@ -2,10 +2,11 @@
 
 comprehensive cryptographic library that provides a range of cryptographic operations, including hashing using SHA1, SHA224, SHA256, SHA384, and SHA512 algorithms, encryption using AES and RSA algorithms, and digital signatures using RSA with SHA256 algorithm, along with key generation and verification functions, utilizing the Crypto++ library and designed to be highly flexible and easy to use for secure data storage, communication, and digital signatures.
 
-### Introduction
+## some basic cryptography...
+
 Encryption Algorithm: AES (Advanced Encryption Standard)
 
-The code uses the AES algorithm to encrypt and decrypt data. AES is a symmetric-key block cipher that is widely used for secure data transmission. 
+Uses the AES algorithm to encrypt and decrypt data. AES is a symmetric-key block cipher that is widely used for secure data transmission. 
 It is a fast and efficient algorithm that can be used for both encryption and decryption.
 
 ### how the AES algorithm works:
@@ -62,7 +63,7 @@ generates a pair of RSA keys (public and private) using the generate_rsa_key_der
 2) Verification:
    uses the verify_signature function to verify the authenticity of a block of data by comparing its digital signature with a previously calculated digital signature.
 
-## Module Function without Signature
+## MFunction without Signature
 
 
 * hash
