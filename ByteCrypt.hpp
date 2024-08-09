@@ -61,40 +61,6 @@
  * Written by [Somorpher], [2024].
  */
 
-/**
- *
- *
- * This code provides a comprehensive cryptographic library that implements a range of
- * cryptographic operations, including hashing, encryption, and digital signatures, using
- * various algorithms such as SHA, AES, and RSA, which are widely used for secure data
- * transmission and storage, and are designed to provide high security, speed, and efficiency,
- * with hashing algorithms producing fixed-size hash values from variable-size input messages,
- * making it computationally infeasible to find two different input messages that produce
- * the same output hash value, and are often used in digital signatures, message authentication
- * codes, and data integrity checks, while encryption algorithms, such as AES, encrypt data in
- * blocks of 128 bits, using a variable block size and a key size of 128, 192, or 256 bits, making
- * it widely used for secure data transmission and storage, and digital signature algorithms,
- * such as RSA with SHA256, use a pair of keys, a public key and a private key, to encrypt and
- * decrypt data, making it widely used for secure data transmission and digital signatures, and
- * the library is designed to be highly flexible and easy to use for secure data storage,
- * communication, and digital signatures, with a range of cryptographic functions and operations
- * that can be used to provide secure data storage, communication, and digital signatures, including
- * functions for generating and verifying digital signatures, encrypting and decrypting data, and
- * hashing messages, and the library is widely used in a range of applications, including secure
- * data transmission, secure communication, and digital signatures, and is often used in conjunction
- * with other cryptographic algorithms and techniques, such as SHA, AES, and RSA, to provide secure
- * key exchange and authentication, and the library provides a high level of security, speed, and
- * efficiency, making it an ideal choice for a wide range of applications, including secure data
- * transmission, secure communication, and digital signatures, and the library is designed to be
- * easy to use and integrate into existing systems, with a simple and intuitive API that makes it
- * easy to use the library's cryptographic functions and operations, and the library is highly
- * flexible, with a range of cryptographic algorithms and functions that can be used to provide
- * secure data storage, communication, and digital signatures, and the library is widely respected
- * and used in the industry, with a strong reputation for providing high-quality and secure cryptographic solutions.
- *
- *
- */
-
 #include <assert.h>
 #include <cstdlib>
 #include <exception>
