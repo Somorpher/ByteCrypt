@@ -68,6 +68,8 @@ generates a pair of RSA keys (public and private) using the generate_rsa_key_der
 * hash
 * cbc_encrypt
 * cbc_decrypt
+* gcm_encrypt
+* gcm_decrypt
 * base64_encode
 * base64_decode
 * hex_encode
@@ -80,34 +82,91 @@ generates a pair of RSA keys (public and private) using the generate_rsa_key_der
 * load_rsa_key
 
 
-## Module Function Signature
+## Public Member FSignature
+```cpp
 
-> string_t hash(const string_t& buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256)
+string_t hash(const string_t& buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256)
 
-> string_t cbc_encrypt(const string_t& plain_text, const string_t& key)
+string_t cbc_encrypt(const string_t& plain_text, const string_t& key, const e_symmetric_algo algo)
 
-> string_t cbc_decrypt(const string_t& cipher_block, const string_t& u_key)
+string_t cbc_decrypt(const string_t& cipher_block, const e_symmetric_algo algo)
 
-> string_t base64_encode(const string_t& plain_text)
+string_t gcm_encrypt(const string_t& plain_text, const string_t& key, const e_symmetric_algo algo)
 
-> string_t base64_decode(const string_t& encoded_cipher)
+string_t gcm_decrypt(const string_t& cipher_block, const e_symmetric_algo algo)
 
-> string_t hex_encode(const string_t& plain_text)
+string_t base64_encode(const string_t& plain_text)
 
-> string_t hex_decode(const string_t& hex_encoded)
+string_t base64_decode(const string_t& encoded_cipher)
 
-> rsa_key_pair_struct generate_rsa_key_der_pair(const std::size_t rsa_key_size = 2048U)
+string_t hex_encode(const string_t& plain_text)
 
-> rsa_key_pair_struct generate_rsa_key_pem_pair(const std::size_t rsa_key_size = 2048U)
+string_t hex_decode(const string_t& hex_encoded)
 
-> string_t sign_message(const string_t& message, const string_t& private_key)
+rsa_key_pair_struct generate_rsa_key_der_pair(const std::size_t rsa_key_size = 2048U)
 
-> bool verify_signature(const string_t& message, const string_t& signature_str, const string_t& rsa_key)
+rsa_key_pair_struct generate_rsa_key_pem_pair(const std::size_t rsa_key_size = 2048U)
 
-> bool save_rsa_key(const string_view_t& path, const string_t& rsa_key)
+string_t sign_message(const string_t& message, const string_t& private_key)
 
-> rsa_key_block_load load_rsa_key(const string_view_t& load_file)
+bool verify_signature(const string_t& message, const string_t& signature_str, const string_t& rsa_key)
 
+bool save_rsa_key(const string_view_t& path, const string_t& rsa_key)
+
+rsa_key_block_load load_rsa_key(const string_view_t& load_file)
+
+```
+
+## Enum
+
+```cpp
+enum class e_hash_algo_option
+{
+    SHA1 = 0,
+    SHA224,
+    SHA256,
+    SHA384,
+    SHA512,
+};
+
+enum class e_rsa_key_pem_version
+{
+    PUBLIC = 0,
+    PRIVATE
+};
+
+enum class e_symmetric_algo
+{
+    AES = 0,
+    BLOWFISH,
+    TWOFISH,
+    CAST128,
+    CAST256,
+    IDEA,
+    RC2,
+    RC5,
+    RC6,
+    MARS,
+};
+```
+
+
+## Struct
+```cpp
+typedef struct alignas(void *)
+{
+    std::optional<string_t> public_key{std::nullopt};
+    std::optional<string_t> private_key{std::nullopt};
+    bool state{false};
+} rsa_key_pair_struct;
+
+typedef struct alignas(void *)
+{
+    string_t key{};
+    string_t error{};
+    bool status{false};
+} rsa_key_block_load;
+```
 
 
 ## Examples
@@ -140,7 +199,7 @@ return 0;
 }
 ```
 
-### Encryption
+### CBC Encryption
 > CBC mode encryption
 ```cpp
 #include "/path/to/ByteCrypt.hpp"
@@ -155,7 +214,7 @@ string buffer = "your mother"; // buffer to encrypt using "secret" key
 
 string secret = "secret_key_for_decryption"; // this is the key used for encryption/decryption
 
-string encrypted = bCrypt.cbc_encrypt(buffer, secret); // encrypt buffer block and return result
+string encrypted = bCrypt.cbc_encrypt(buffer, secret, e_symmetric_algo::AES); // encrypt buffer block and return result
 
 std::cout << "encrypted: " << encrypted << "\n"; // print result
 
@@ -164,7 +223,7 @@ return 0;
 }
 ```
 
-### Decryption
+### CBC Decryption
 > CBC mode decryption
 ```cpp
 #include "/path/to/ByteCrypt.hpp"
@@ -175,15 +234,51 @@ int main(){
 
 ByteCrypt bCrypt;
 
-string buffer = "your mother";
+string buffer = "urmother cbc mode";
 
 string secret = "secret_key_for_decryption";
 
-string encrypted = bCrypt.cbc_encrypt(buffer, secret);
+string encrypted = bCrypt.cbc_encrypt(buffer, secret, e_symmetric_algo::AES);
 
 std::cout << "encrypted: " << encrypted << "\n";
 
-string decrypted = bCrypt.cbc_decrypt(encrypted, secret);
+string decrypted = bCrypt.cbc_decrypt(encrypted, e_symmetric_algo::AES);
+
+std::cout << "decrypted: " << decrypted << "\n";
+
+return 0;
+
+}
+```
+
+## GCM Encryption vs CBC Encryption
+
+CBC (Cipher Block Chaining) and GCM (Galois/Counter Mode) are two modes of operation for symmetric-key block ciphers. In CBC, each block of plaintext is encrypted independently using the previous block's ciphertext as an initialization vector (IV). The IV is typically generated randomly and prepended to the ciphertext. While CBC is simple and efficient, it's vulnerable to certain attacks, such as block replay attacks and chosen-plaintext attacks.
+
+GCM, on the other hand, combines a block cipher with a counter-based mode. Each block is encrypted using a block cipher, and a counter value is incremented for each block. The ciphertext is then authenticated using a Galois field (finite field) operation. This provides both confidentiality and integrity, as it authenticates the ciphertext and detects tampering. GCM is more secure than CBC due to its authentication mechanism, but it's also more computationally intensive.
+
+Overall, the main difference between CBC and GCM is that GCM provides authentication, while CBC does not. This makes GCM a better choice for applications that require both confidentiality and integrity, such as secure communication protocols. In contrast, CBC may be sufficient for applications that only require confidentiality, such as data storage.
+
+### GCM Encryption/Decryption example
+> they are actually very similar.
+```cpp
+#include "/path/to/ByteCrypt.hpp"
+
+using namespace ByteCryptModule;
+
+int main(){
+
+ByteCrypt bCrypt;
+
+string buffer = "urmother gcm mode";
+
+string secret = "secret_key_for_decryption";
+
+string encrypted = bCrypt.gcm_encrypt(buffer, secret, e_symmetric_algo::AES);
+
+std::cout << "encrypted: " << encrypted << "\n";
+
+string decrypted = bCrypt.gcm_decrypt(encrypted, e_symmetric_algo::AES);
 
 std::cout << "decrypted: " << decrypted << "\n";
 
