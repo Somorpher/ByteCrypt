@@ -1,5 +1,5 @@
 #pragma once
- 
+
 /**
  * ============================================================================
  * ByteCrypt Class - A C++ Data Encryption Utility Module
@@ -266,7 +266,7 @@ using rsa_signature_filter_t = CryptoPP::SignerFilter;
 using rsa_signature_verify_t = CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier;
 using crypto_exception_t = CryptoPP::Exception;
 using sha256_hmac_t = CryptoPP::PKCS5_PBKDF2_HMAC<CryptoPP::SHA256>;
-using hmac_s256_t =  CryptoPP::HMAC<CryptoPP::SHA256>;
+using hmac_s256_t = CryptoPP::HMAC<CryptoPP::SHA256>;
 
 /**
  * CBC Mode Encryption/Dec(< GCM)
@@ -323,11 +323,10 @@ using gcm_mars_decryption_t = CryptoPP::GCM<CryptoPP::MARS>::Decryption;
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 template <typename mT> __hint_encryption_algo_accept__ static constexpr bool cbc_encryption_algo_accept()
 {
-    return std::is_same_v<mT, cbc_aes_encryption_t> || std::is_same_v<mT, cbc_blowfish_encryption_t> || std::is_same_v<mT, cbc_twofish_encryption_t> || std::is_same_v<mT, cbc_cast128_encryption_t> ||
-           std::is_same_v<mT, cbc_cast256_encryption_t> || std::is_same_v<mT, cbc_idea_encryption_t> || std::is_same_v<mT, cbc_rc2_encryption_t> || std::is_same_v<mT, cbc_rc5_encryption_t> ||
-           std::is_same_v<mT, cbc_rc6_encryption_t> || std::is_same_v<mT, cbc_mars_encryption_t> || std::is_same_v<mT, cbc_aes_decryption_t> || std::is_same_v<mT, cbc_blowfish_decryption_t> ||
-           std::is_same_v<mT, cbc_twofish_decryption_t> || std::is_same_v<mT, cbc_cast128_decryption_t> || std::is_same_v<mT, cbc_cast256_decryption_t> || std::is_same_v<mT, cbc_idea_decryption_t> ||
-           std::is_same_v<mT, cbc_rc2_decryption_t> || std::is_same_v<mT, cbc_rc5_decryption_t> || std::is_same_v<mT, cbc_rc6_decryption_t> || std::is_same_v<mT, cbc_mars_decryption_t>;
+    return std::is_same_v<mT, cbc_aes_encryption_t> || std::is_same_v<mT, cbc_blowfish_encryption_t> || std::is_same_v<mT, cbc_twofish_encryption_t> || std::is_same_v<mT, cbc_cast128_encryption_t> || std::is_same_v<mT, cbc_cast256_encryption_t> || std::is_same_v<mT, cbc_idea_encryption_t> ||
+           std::is_same_v<mT, cbc_rc2_encryption_t> || std::is_same_v<mT, cbc_rc5_encryption_t> || std::is_same_v<mT, cbc_rc6_encryption_t> || std::is_same_v<mT, cbc_mars_encryption_t> || std::is_same_v<mT, cbc_aes_decryption_t> || std::is_same_v<mT, cbc_blowfish_decryption_t> ||
+           std::is_same_v<mT, cbc_twofish_decryption_t> || std::is_same_v<mT, cbc_cast128_decryption_t> || std::is_same_v<mT, cbc_cast256_decryption_t> || std::is_same_v<mT, cbc_idea_decryption_t> || std::is_same_v<mT, cbc_rc2_decryption_t> || std::is_same_v<mT, cbc_rc5_decryption_t> ||
+           std::is_same_v<mT, cbc_rc6_decryption_t> || std::is_same_v<mT, cbc_mars_decryption_t>;
 };
 
 template <typename mT> struct is_accepted_cbc_encryption_algorithm
@@ -339,11 +338,10 @@ template <typename mT> constexpr bool is_accepted_cbc_encryption_algorithm_v = i
 
 template <typename mT> __hint_encryption_algo_accept__ static constexpr bool gcm_encryption_algo_accept()
 {
-    return std::is_same_v<mT, gcm_aes_encryption_t> || std::is_same_v<mT, gcm_blowfish_encryption_t> || std::is_same_v<mT, gcm_twofish_encryption_t> || std::is_same_v<mT, gcm_cast128_encryption_t> ||
-           std::is_same_v<mT, gcm_cast256_encryption_t> || std::is_same_v<mT, gcm_idea_encryption_t> || std::is_same_v<mT, gcm_rc2_encryption_t> || std::is_same_v<mT, gcm_rc5_encryption_t> ||
-           std::is_same_v<mT, gcm_rc6_encryption_t> || std::is_same_v<mT, gcm_mars_encryption_t> || std::is_same_v<mT, gcm_aes_decryption_t> || std::is_same_v<mT, gcm_blowfish_decryption_t> ||
-           std::is_same_v<mT, gcm_twofish_decryption_t> || std::is_same_v<mT, gcm_cast128_decryption_t> || std::is_same_v<mT, gcm_cast256_decryption_t> || std::is_same_v<mT, gcm_idea_decryption_t> ||
-           std::is_same_v<mT, gcm_rc2_decryption_t> || std::is_same_v<mT, gcm_rc5_decryption_t> || std::is_same_v<mT, gcm_rc6_decryption_t> || std::is_same_v<mT, gcm_mars_decryption_t>;
+    return std::is_same_v<mT, gcm_aes_encryption_t> || std::is_same_v<mT, gcm_blowfish_encryption_t> || std::is_same_v<mT, gcm_twofish_encryption_t> || std::is_same_v<mT, gcm_cast128_encryption_t> || std::is_same_v<mT, gcm_cast256_encryption_t> || std::is_same_v<mT, gcm_idea_encryption_t> ||
+           std::is_same_v<mT, gcm_rc2_encryption_t> || std::is_same_v<mT, gcm_rc5_encryption_t> || std::is_same_v<mT, gcm_rc6_encryption_t> || std::is_same_v<mT, gcm_mars_encryption_t> || std::is_same_v<mT, gcm_aes_decryption_t> || std::is_same_v<mT, gcm_blowfish_decryption_t> ||
+           std::is_same_v<mT, gcm_twofish_decryption_t> || std::is_same_v<mT, gcm_cast128_decryption_t> || std::is_same_v<mT, gcm_cast256_decryption_t> || std::is_same_v<mT, gcm_idea_decryption_t> || std::is_same_v<mT, gcm_rc2_decryption_t> || std::is_same_v<mT, gcm_rc5_decryption_t> ||
+           std::is_same_v<mT, gcm_rc6_decryption_t> || std::is_same_v<mT, gcm_mars_decryption_t>;
 };
 
 template <typename mT> struct is_accepted_gcm_encryption_algorithm
@@ -389,7 +387,6 @@ class ByteCrypt
     byte __cbc_iv__[CryptoPP::AES::BLOCKSIZE];
     byte __gcm_key__[CryptoPP::AES::DEFAULT_KEYLENGTH];
     byte __gcm_iv__[CryptoPP::AES::BLOCKSIZE];
-    byte __gcm_final_key__[CryptoPP::AES::DEFAULT_KEYLENGTH];
 
   public:
     ByteCrypt() = default;
@@ -446,9 +443,9 @@ class ByteCrypt
 
             switch (algo)
             {
-#define _case(algorithm, encryption_type)                                                                                                                                                                                  \
-    case e_symmetric_algo::algorithm:                                                                                                                                                                                      \
-        this->__perform_cbc_encryption<encryption_type>(plain_text, cipher, encoded_cipher);                                                                                                                               \
+#define _case(algorithm, encryption_type)                                                                                                                                                                                                                                                                                      \
+    case e_symmetric_algo::algorithm:                                                                                                                                                                                                                                                                                          \
+        this->__perform_cbc_encryption<encryption_type>(plain_text, cipher, encoded_cipher);                                                                                                                                                                                                                                   \
         break
                 _case(AES, cbc_aes_encryption_t);
                 _case(BLOWFISH, cbc_blowfish_encryption_t);
@@ -486,9 +483,9 @@ class ByteCrypt
         {
             switch (algo)
             {
-#define _case(algorithm, decryption_type)                                                                                                                                                                                  \
-    case e_symmetric_algo::algorithm:                                                                                                                                                                                      \
-        this->__perform_cbc_decryption<decryption_type>(cipher_block, decrypted_cipher, decoded_cipher);                                                                                                                   \
+#define _case(algorithm, decryption_type)                                                                                                                                                                                                                                                                                      \
+    case e_symmetric_algo::algorithm:                                                                                                                                                                                                                                                                                          \
+        this->__perform_cbc_decryption<decryption_type>(cipher_block, decrypted_cipher, decoded_cipher);                                                                                                                                                                                                                       \
         break
                 _case(AES, cbc_aes_decryption_t);
                 _case(BLOWFISH, cbc_blowfish_decryption_t);
@@ -516,7 +513,8 @@ class ByteCrypt
     /*++++++++++++++++++++++++++++++++++ INIT GCM +++++++++++++++++++++++++++++++++ */
 
     /**
-     * encrypt(GCM) plain_text using key for encryption and alog as encryption algorithm.
+     * encrypt(GCM) plain_text using key for encryption and alog as encryption algorithm, use this mode when efficiency
+     * and security are a must.
      * @param string_t& buffer to encrypt
      * @param string_t& key to use for encryption
      * @param e_symmetric_algo the algorithm for encryption
@@ -531,9 +529,9 @@ class ByteCrypt
 
             switch (algo)
             {
-#define _case(algorithm, encryption_type)                                                                                                                                                                                  \
-    case e_symmetric_algo::algorithm:                                                                                                                                                                                      \
-        this->__perform_gcm_encryption<encryption_type>(plain_text, cipher, encoded_cipher);                                                                                                                               \
+#define _case(algorithm, encryption_type)                                                                                                                                                                                                                                                                                      \
+    case e_symmetric_algo::algorithm:                                                                                                                                                                                                                                                                                          \
+        this->__perform_gcm_encryption<encryption_type>(plain_text, cipher, encoded_cipher);                                                                                                                                                                                                                                   \
         break
                 _case(AES, gcm_aes_encryption_t);
                 _case(BLOWFISH, gcm_blowfish_encryption_t);
@@ -571,9 +569,9 @@ class ByteCrypt
         {
             switch (algo)
             {
-#define _case(algorithm, decryption_type)                                                                                                                                                                                  \
-    case e_symmetric_algo::algorithm:                                                                                                                                                                                      \
-        this->__perform_gcm_decryption<decryption_type>(const_cast<string_t &>(cipher_block), decrypted_cipher, decoded_cipher);                                                                                           \
+#define _case(algorithm, decryption_type)                                                                                                                                                                                                                                                                                      \
+    case e_symmetric_algo::algorithm:                                                                                                                                                                                                                                                                                          \
+        this->__perform_gcm_decryption<decryption_type>(const_cast<string_t &>(cipher_block), decrypted_cipher, decoded_cipher);                                                                                                                                                                                               \
         break
                 _case(AES, gcm_aes_decryption_t);
                 _case(BLOWFISH, gcm_blowfish_decryption_t);
@@ -902,9 +900,9 @@ class ByteCrypt
         entropy_seed_t entropy;
         entropy.GenerateBlock(random_salt, sizeof(random_salt));
         entropy.GenerateBlock(init_vector, sizeof(init_vector));
-        hmac_s256_t hmac_converter((const byte*)u_pwd.data(), u_pwd.size());
+        hmac_s256_t hmac_converter((const byte *)u_pwd.data(), u_pwd.size());
         hmac_converter.Update(random_salt, sizeof(random_salt));
-        hmac_converter.Final(key);        
+        hmac_converter.Final(key);
     };
 
     __temp_perform_keyiv_cbc_intersection__ __hint_perform_keyiv_intersection__ inline void __perform_keyiv_cbc_intersection(cipherT &encryption_class) const noexcept
@@ -1041,7 +1039,7 @@ class ByteCrypt
     __temp_perform_encryption__ __hint_perform_encryption__ inline void __perform_cbc_encryption(const string_t &plain_text, string_t &cipher, string_t &encoded_cipher)
     {
         static_assert(is_accepted_cbc_encryption_algorithm_v<encryptionType>, "not a valid CBC Mode encryption function.");
-         encryptionType encryption;
+        encryptionType encryption;
         __perform_keyiv_cbc_intersection<encryptionType>(encryption);
         string_source_t(plain_text, true, new transformer_filter_t(encryption, new string_sink_t(cipher)));
         string_source_t(cipher, true, new hex_encoder_t(new string_sink_t(encoded_cipher)));
@@ -1050,11 +1048,10 @@ class ByteCrypt
     __temp_perform_decryption__ __hint_perform_decryption__ void __perform_cbc_decryption(const string_t &cipher_text, string_t &decrypted_data, string_t &decoded_data)
     {
         static_assert(is_accepted_cbc_encryption_algorithm_v<decryptionType>, "not a valid CBC Mode decryption function.");
-         decryptionType decryption;
+        decryptionType decryption;
         __perform_keyiv_cbc_intersection<decryptionType>(decryption);
         string_source_t(cipher_text, true, new hex_decoder_t(new string_sink_t(decoded_data)));
         string_source_t(decoded_data, true, new transformer_filter_t(decryption, new string_sink_t(decrypted_data)));
-        
     };
 
     __temp_perform_encryption__ __hint_perform_encryption__ inline void __perform_gcm_encryption(const string_t &plain_text, string_t &cipher, string_t &encoded_cipher)
