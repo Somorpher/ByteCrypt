@@ -153,6 +153,9 @@ namespace ByteCryptModule
 #define RSA_ENCRYPTED_PRIVATE_KEY_HEADER "-----BEGIN ENCRYPTED PRIVATE KEY-----\n"
 #define RSA_ENCRYPTED_PRIVATE_KEY_FOOTER "-----END ENCRYPTED PRIVATE KEY-----\n"
 
+
+// makes code more readable instead of using inline attributes directly with function defintion
+
 /*                      Attribution                      *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 #if defined(__GNUC__) || defined(__clang__)
@@ -168,9 +171,21 @@ namespace ByteCryptModule
 #define __hint_generate_rsa_key_der_pair__ __attribute__((cold, warn_unused_result, stack_protect, access(read_only, 1), zero_call_used_regs("used"), optimize("3")))
 #define __hint_generate_rsa_key_pem_pair__ __attribute__((cold, warn_unused_result, stack_protect, access(read_only, 1), zero_call_used_regs("used"), optimize("3")))
 #define __hint_sign_message__ __attribute__((warn_unused_result, stack_protect, access(read_only, 1), access(read_only, 2), zero_call_used_regs("used"), optimize("3")))
-#define __hint_verify_signature__ __attribute__((warn_unused_result, access(read_only, 1), access(read_only, 2), access(read_only, 3), stack_protect, zero_call_used_regs("used"), optimize("3") ))
-#define __hint_save_rsa_key__ __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("used"), tainted_args, access(read_only, 1), access(read_only, 2), optimize("3")))
+#define __hint_verify_signature__ __attribute__((warn_unused_result, access(read_only, 1), access(read_only, 2), access(read_only, 3), stack_protect, zero_call_used_regs("used"), optimize("3")))
+#define __hint_save_rsa_key__ __attribute__((stack_protect, zero_call_used_regs("used"), tainted_args, access(read_only, 1), access(read_only, 2), optimize("3")))
 #define __hint_load_rsa_key__ __attribute__((warn_unused_result, cold, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
+#define __hint_derive_key_iv__ __attribute__((stack_protect, zero_call_used_regs("used"), access(read_only, 1), access(read_only, 2), access(read_only, 3), optimize("1")))
+#define __hint_perform_keyiv_intersection__ __attribute__((stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
+#define __hint_rsa_key_pair_verify__ __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
+#define __hint_rsa_key_pem_set_header__ __attribute__((nothrow, always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
+#define __hint_rsa_key_pem_set_footer__ __attribute__((always_inline, nothrow, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
+#define __hint_is_rsa_key_size_valid__ __attribute__((nothrow, warn_unused_result, always_inline, const, no_stack_protector, access(read_only, 1), optimize("1")))
+#define __hint_is_rsa_key_pem__ __attribute__((warn_unused_result, nothrow, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("1")))
+#define __hint_is_rsa_encrypted_key__ __attribute__((nothrow, warn_unused_result, const, always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("0")))
+#define __hint_rsa_key_meta_wipe__ __attribute__((const, zero_call_used_regs("used"), warn_unused_result, access(read_only, 1), optimize("2")))
+#define __hint_perform_encryption__ __attribute__((always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), access(read_only, 2), access(read_only, 1), optimize("3")))
+#define __hint_perform_decryption__ __attribute__((always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), access(read_only, 2), access(read_only, 1), optimize("3")))
+
 
 #else
 
@@ -188,8 +203,23 @@ namespace ByteCryptModule
 #define __hint_verify_signature__ [[nodiscard]]
 #define __hint_save_rsa_key__ [[nodiscard]]
 #define __hint_load_rsa_key__ [[nodiscard]]
+#define __hint_derive_key_iv__ [[]]
+#define __hint_perform_keyiv_intersection__ [[]]
+#define __hint_rsa_key_pair_verify__ [[nodiscard]]
+#define __hint_rsa_key_pem_set_header__ [[nothrow]]
+#define __hint_rsa_key_pem_set_footer__ [[nothrow]]
+#define __hint_is_rsa_key_size_valid__ [[nothrow, nodiscard]]
+#define __hint_is_rsa_key_pem__ [[nothrow, nodiscard]]
+#define __hint_is_rsa_encrypted_key__ [[nothrow, nodiscard]]
+#define __hint_rsa_key_meta_wipe__ [[nodiscard]]
+#define __hint_perform_encryption__ [[]]
+#define __hint_perform_decryption__ [[]]
 
 #endif
+
+#define __temp_perform_keyiv_intersection__ template <typename cipherT, typename = std::enable_if_t<std::is_class_v<cipherT> && is_accepted_encryption_algorithm_v<cipherT>>>
+#define __temp_perform_encryption__ template <typename encryptionType>
+#define __temp_perform_decryption__ template <typename decryptionType>
 
 /*                      Namespace                        *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -564,7 +594,6 @@ class ByteCrypt
         }
     };
 
-    
     __hint_verify_signature__ const bool verify_signature(const string_t &message, const string_t &signature_str, const string_t &rsa_key)
     {
         if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PUBLIC))
@@ -595,7 +624,6 @@ class ByteCrypt
         }
     };
 
-    
     __hint_save_rsa_key__ const bool save_rsa_key(const string_view_t &path, const string_t &rsa_key)
     {
         try
@@ -619,7 +647,6 @@ class ByteCrypt
         return false;
     };
 
-    
     __hint_load_rsa_key__ const rsa_key_block_load load_rsa_key(const string_view_t &file_name)
     {
         rsa_key_block_load rsa_loader;
@@ -655,8 +682,7 @@ class ByteCrypt
 
   private:
 
-  
-    void __derive_key_iv(const string_t &u_pwd, byte *key, byte *init_vector) const
+    __hint_derive_key_iv__ void __derive_key_iv(const string_t &u_pwd, byte *key, byte *init_vector) const
     {
         byte salt[16];
         entropy_seed_t entropy;
@@ -666,12 +692,13 @@ class ByteCrypt
         transformer.DeriveKey(init_vector, default_sec_iv_size, 0, reinterpret_cast<const byte *>(u_pwd.data()), u_pwd.size(), salt, sizeof(salt), cipher_iteration_count);
     };
 
-    template <typename cipherT, typename = std::enable_if_t<std::is_class_v<cipherT> && is_accepted_encryption_algorithm_v<cipherT>>> inline void __perform_keyiv_intersection(cipherT &decryption_handler) const noexcept
+    __temp_perform_keyiv_intersection__ __hint_perform_keyiv_intersection__ inline void __perform_keyiv_intersection(cipherT &decryption_handler) const noexcept
     {
         decryption_handler.SetKeyWithIV(this->__key__, sizeof(this->__key__), this->__iv__);
     };
 
-    const bool __rsa_key_pair_verify(const rsa_key_pair_struct &key_block)
+    
+    __hint_rsa_key_pair_verify__ const bool __rsa_key_pair_verify(const rsa_key_pair_struct &key_block)
     {
         if (!key_block.public_key.has_value() || !key_block.private_key.has_value())
             return false;
@@ -708,7 +735,8 @@ class ByteCrypt
         return false;
     };
 
-    inline void __rsa_key_pem_set_header(string_t &rsa_key_var, const bool is_public_key) const noexcept
+    
+    __hint_rsa_key_pem_set_header__ inline void __rsa_key_pem_set_header(string_t &rsa_key_var, const bool is_public_key) const noexcept
     {
         rsa_key_var.clear();
         if (is_public_key)
@@ -717,7 +745,7 @@ class ByteCrypt
             rsa_key_var = RSA_PRIVATE_KEY_HEADER;
     };
 
-    inline void __rsa_key_pem_set_footer(string_t &rsa_key_var, const bool is_public_key) const noexcept
+    __hint_rsa_key_pem_set_footer__ inline void __rsa_key_pem_set_footer(string_t &rsa_key_var, const bool is_public_key) const noexcept
     {
         if (rsa_key_var.empty())
             return;
@@ -727,7 +755,8 @@ class ByteCrypt
             rsa_key_var += RSA_PRIVATE_KEY_FOOTER;
     };
 
-    constexpr bool __is_rsa_key_size_valid(const std::size_t &key_size) const noexcept
+    
+    __hint_is_rsa_key_size_valid__ constexpr bool __is_rsa_key_size_valid(const std::size_t &key_size) const noexcept
     {
         for (std::uint8_t ksi = 0; ksi < RSA_KEY_SIZE_OPTIONS.size(); ksi++)
         {
@@ -739,7 +768,8 @@ class ByteCrypt
         return false;
     };
 
-    const bool __is_rsa_key_pem(const string_view_t &rsa_key, const e_rsa_key_pem_version version) noexcept
+    
+    __hint_is_rsa_key_pem__ const bool __is_rsa_key_pem(const string_view_t &rsa_key, const e_rsa_key_pem_version version) noexcept
     {
         if (version == e_rsa_key_pem_version::PUBLIC)
         {
@@ -758,13 +788,16 @@ class ByteCrypt
         return false;
     };
 
-    const bool __is_rsa_encrypted_key(const string_view_t &rsa_key) noexcept
+    
+    __hint_is_rsa_encrypted_key__ inline const bool __is_rsa_encrypted_key(const string_view_t &rsa_key) noexcept
     {
         if (rsa_key.find(RSA_ENCRYPTED_PRIVATE_KEY_HEADER) != std::string::npos)
             return true;
         return false;
     };
-    const string_t __rsa_key_meta_wipe(string_t &&rsa_key)
+
+    
+    __hint_rsa_key_meta_wipe__ const string_t __rsa_key_meta_wipe(string_t &&rsa_key)
     {
         if (this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PRIVATE))
         {
@@ -791,7 +824,8 @@ class ByteCrypt
         return std::move(rsa_key);
     };
 
-    template <typename encryptionType> void __perform_encryption(const string_t &plain_text, string_t &cipher, string_t &encoded_cipher)
+    
+    __temp_perform_encryption__ __hint_perform_encryption__ inline void __perform_encryption(const string_t &plain_text, string_t &cipher, string_t &encoded_cipher)
     {
         encryptionType encryption;
         __perform_keyiv_intersection<encryptionType>(encryption);
@@ -799,7 +833,7 @@ class ByteCrypt
         string_source_t(cipher, true, new hex_encoder_t(new string_sink_t(encoded_cipher)));
     };
 
-    template <typename decryptionType> void __perform_decryption(const string_t &cipher_text, string_t &decrypted_data, string_t &decoded_data)
+    __temp_perform_decryption__ __hint_perform_encryption__ void __perform_decryption(const string_t &cipher_text, string_t &decrypted_data, string_t &decoded_data)
     {
         decryptionType decryption;
         __perform_keyiv_intersection<decryptionType>(decryption);
