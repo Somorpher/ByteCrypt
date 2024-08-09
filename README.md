@@ -1,67 +1,63 @@
 # ByteCrypt
 
-comprehensive cryptographic library that provides a range of cryptographic operations, including hashing using SHA1, SHA224, SHA256, SHA384, and SHA512 algorithms, encryption using AES and RSA algorithms, and digital signatures using RSA with SHA256 algorithm, along with key generation and verification functions, utilizing the Crypto++ library and designed to be highly flexible and easy to use for secure data storage, communication, and digital signatures.
+### Description
+This is a C++ implementation of a cryptographic library called ByteCrypt. It's a collection of tools and functions that allow you to perform various cryptographic operations, such as encryption, decryption, hashing, and digital signatures.
+
+The library is organized into a namespace called ByteCryptModule, which makes it easy to use and integrate into your own projects. It uses the widely respected Crypto++ library as its underlying cryptographic engine.
+
+One of the key features of ByteCrypt is its support for multiple encryption algorithms, including AES, Blowfish, and Twofish, in both CBC (Cipher Block Chaining) and GCM (Galois/Counter Mode) modes. This gives you a lot of flexibility when it comes to choosing the right encryption algorithm for your specific needs.
+
+In addition to encryption, ByteCrypt also provides a range of hashing functions, including SHA-1, SHA-224, SHA-256, SHA-384, and SHA-512. These functions make it easy to generate digital fingerprints of data, which can be used to verify its integrity and authenticity.
+
+The library also includes tools for generating and verifying digital signatures, which are used to authenticate the sender of a message and ensure that the message has not been tampered with. This is done using RSA and DSA algorithms, which are widely used and respected in the industry.
 
 ## some basic cryptography...
 
-Encryption Algorithm: AES (Advanced Encryption Standard)
+Often people make confusion between hashing and encryption, but encryption and hashing are two distinct concepts in cryptography. Encryption is a two-way process that transforms plaintext data into unreadable ciphertext to protect it from unauthorized access, and then transforms it back into plaintext when the authorized party needs to access it. On the other hand, hashing is a one-way process that takes plaintext data and transforms it into a fixed-length string of characters, known as a hash value or digest, that can't be reversed or transformed back into the original plaintext data, and is often used for data integrity, authenticity, and password storage purposes.
 
-Uses the AES algorithm to encrypt and decrypt data. AES is a symmetric-key block cipher that is widely used for secure data transmission. 
-It is a fast and efficient algorithm that can be used for both encryption and decryption.
+## Hashing and Encryption
 
-### how the AES algorithm works:
+Hashing and encryption are two fundamental concepts in the field of cryptography. Hashing is a one-way process that transforms a variable-length input into a fixed-length string of characters, known as a hash value or digest. This transformation is irreversible, meaning that it is computationally infeasible to reverse engineer the hash value to obtain the original input.
 
-* Key Generation: 
-> generates a random key for encryption using the __derive_key_iv function. The key is derived from a password using a password-based key derivation function (PBKDF2).
-   
-* Encryption:
-> uses the cbc_encrypt function to encrypt a block of data using the generated key. The encryption process involves the following steps:
-1) Divide the data into blocks of 16 bytes (the block size of AES).
-2) Apply a random initialization vector (IV) to the first block of data.
-3) Encrypt each block of data using the AES algorithm with the generated key.
-4) Store the encrypted data in a buffer.
+### Hashing
 
-* Decryption:
-> uses the decrypt function to decrypt a block of encrypted data using the same key used for encryption. The decryption process involves the following steps:
-1) Divide the encrypted data into blocks of 16 bytes.
-2) Apply the random IV used during encryption to the first block of encrypted data.
-3) Decrypt each block of encrypted data using the AES algorithm with the same key used for encryption.
-4) Store the decrypted data in a buffer.
+Hashing is a valuable tool for verifying the integrity of data. It is used to detect any changes or tampering with the data. The process of hashing involves passing the input data through a hashing algorithm, such as SHA-256 or MD5. The resulting hash value is a unique string of characters that represents the input data.
 
-Hashing Algorithm: SHA (Secure Hash Algorithm)
+### Encryption
 
-uses the SHA algorithm to generate a digital fingerprint (hash) of data. SHA is a cryptographic hash function that is widely used for data integrity and authenticity.
+Encryption is a two-way process that transforms plaintext data into unreadable ciphertext. This process is used to protect data from unauthorized access, ensuring confidentiality and security. Encryption involves using a cryptographic algorithm, such as AES or RSA, to transform the plaintext data into ciphertext. The ciphertext can only be deciphered with the decryption key.
 
-Here's how the SHA algorithm works:
+## Digital Signatures
 
-* Hash Calculation: 
-uses the hash function to calculate the hash of a block of data using the SHA algorithm. The hash calculation involves the following steps:
+A digital signature is a cryptographic mechanism that verifies the authenticity of a message or document. The process involves hashing the message and then encrypting the hash value with the sender's private key. The resulting encrypted hash value is attached to the message as a digital signature.
 
-1) Divide the data into blocks of 64 bytes (the block size of SHA).
-2) Apply a series of bitwise operations (AND, OR, XOR, etc.) to the data blocks.
-3) Calculate the hash value by applying a series of modular arithmetic operations to the data blocks.
-4) Store the hash value in a buffer.
+### RSA Encryption
 
-* Hash Verification:
+RSA encryption is a widely used public-key encryption algorithm. It involves generating a pair of keys, a public key and a private key. The public key is used to encrypt the data, while the private key is used to decrypt the data.
 
-uses the verify_signature function to verify the authenticity of a block of data by comparing its hash value with a previously calculated hash value.
+### CBC Mode and GCM Mode
 
-Signing Algorithm: RSA (Rivest-Shamir-Adleman)
+CBC (Cipher Block Chaining) mode and GCM (Galois/Counter Mode) mode are two commonly used modes of operation for block ciphers. CBC mode involves encrypting each block of plaintext data independently, while GCM mode involves encrypting the plaintext data in parallel.
 
-uses the RSA algorithm to generate a digital signature for a block of data. RSA is a public-key encryption algorithm that is widely used for secure data transmission and digital signatures.
+### Base64 and Hex Encoding/Decoding
 
-how the RSA algorithm works:
+Base64 and hex encoding/decoding are two common methods of encoding and decoding binary data. Base64 encoding involves converting binary data into a string of characters, while hex encoding involves converting binary data into a hexadecimal string.
 
-* Key Generation:
-generates a pair of RSA keys (public and private) using the generate_rsa_key_der_pair function. The public key is used for encryption and verification, while the private key is used for decryption and signing.
+**Security Considerations**
 
-1) Signing:
-   * uses the sign_message function to generate a digital signature for a block of data using the private key. The signing process involves the following steps:
-     1) Calculate the hash value of the data using the SHA algorithm.
-     2) Encrypt the hash value using the private key and the RSA algorithm.
-     3) Store the encrypted hash value (digital signature) in a buffer.
-2) Verification:
-   uses the verify_signature function to verify the authenticity of a block of data by comparing its digital signature with a previously calculated digital signature.
+It is essential to consider the security implications of using hashing and encryption. A secure hashing algorithm should be collision-resistant and pre-image resistant. A secure encryption algorithm should be resistant to known-plaintext attacks and chosen-ciphertext attacks.
+
+### References
+
+    "Hash Functions" by the National Institute of Standards and Technology (NIST)
+    "Encryption" by the International Organization for Standardization (ISO)
+    "Digital Signatures" by the Internet Engineering Task Force (IETF)
+    "RSA Encryption" by the RSA Security Inc.
+    "CBC Mode" by the National Institute of Standards and Technology (NIST)
+    "GCM Mode" by the National Institute of Standards and Technology (NIST)
+    "Base64 Encoding" by the Internet Engineering Task Force (IETF)
+    "Hex Encoding" by the International Organization for Standardization (ISO)
+
 
 ## MFunction without Signature
 
