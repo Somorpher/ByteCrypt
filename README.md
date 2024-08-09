@@ -10,15 +10,15 @@ The code is designed to work on a 64-bit x86-64 architecture, specifically on Li
 
 NOTE: compilation requires specific compiler flag `-lcryptopp` to compile.
 
-This is a C++ implementation of a cryptographic library called ByteCrypt. It's a collection of tools and functions that allow you to perform various cryptographic operations, such as encryption, decryption, hashing, and digital signatures.
+collection of tools and functions that allow you to perform various cryptographic operations, such as **encryption**, **decryption**, **hashing**, and digital **signatures**.
 
-The library is organized into a namespace called ByteCryptModule, which makes it easy to use and integrate into your own projects. It uses the widely respected Crypto++ library as its underlying cryptographic engine.
+The library is organized into a namespace called `ByteCryptModule`. It uses the widely respected Crypto++ library as its underlying cryptographic engine.
 
-One of the key features of ByteCrypt is its support for multiple encryption algorithms, including AES, Blowfish, and Twofish, in both CBC (Cipher Block Chaining) and GCM (Galois/Counter Mode) modes. This gives you a lot of flexibility when it comes to choosing the right encryption algorithm for your specific needs.
+One of the key features of ByteCrypt is its support for multiple encryption algorithms, including **AES**, **Blowfish**, and **Twofish**, in both **CBC** (Cipher Block Chaining) and **GCM** (Galois/Counter Mode) modes. This gives you a lot of flexibility when it comes to choosing the right encryption algorithm for your specific needs.
 
-In addition to encryption, ByteCrypt also provides a range of hashing functions, including SHA-1, SHA-224, SHA-256, SHA-384, and SHA-512. These functions make it easy to generate digital fingerprints of data, which can be used to verify its integrity and authenticity.
+In addition to encryption, ByteCrypt also provides a range of hashing functions, including SHA-1, SHA-224, SHA-256, SHA-384, and SHA-512. These functions make it easy to generate digital fingerprints of data, which can be used to verify its **integrity** and authenticity.
 
-The library also includes tools for generating and verifying digital signatures, which are used to authenticate the sender of a message and ensure that the message has not been tampered with. This is done using RSA and DSA algorithms, which are widely used and respected in the industry.
+The library also includes tools for generating and verifying digital signatures, which are used to authenticate the sender of a message and ensure that the message has not been tampered with. This is done using **RSA** and **DSA** algorithms, which are widely used and respected in the industry.
 
 ## some basic cryptography...
 
@@ -34,7 +34,7 @@ Hashing is a valuable tool for verifying the integrity of data. It is used to de
 
 ### Encryption
 
-Encryption is a two-way process that transforms plaintext data into unreadable ciphertext. This process is used to protect data from unauthorized access, ensuring confidentiality and security. Encryption involves using a cryptographic algorithm, such as AES or RSA, to transform the plaintext data into ciphertext. The ciphertext can only be deciphered with the decryption key.
+Encryption is a two-way process that transforms plaintext data into unreadable ciphertext. This process is used to protect data from unauthorized access, ensuring confidentiality and security. Encryption involves using a cryptographic algorithm, such as **AES** or **RSA**, to transform the plaintext data into ciphertext. The ciphertext can only be deciphered with the decryption key.
 
 ## Digital Signatures
 
@@ -42,15 +42,15 @@ A digital signature is a cryptographic mechanism that verifies the authenticity 
 
 ### RSA Encryption
 
-RSA encryption is a widely used public-key encryption algorithm. It involves generating a pair of keys, a public key and a private key. The public key is used to encrypt the data, while the private key is used to decrypt the data.
+**RSA** encryption is a widely used public-key encryption algorithm. It involves generating a pair of keys, a public key and a private key. The public key is used to encrypt the data, while the private key is used to decrypt the data.
 
 ### CBC Mode and GCM Mode
 
-CBC (Cipher Block Chaining) mode and GCM (Galois/Counter Mode) mode are two commonly used modes of operation for block ciphers. CBC mode involves encrypting each block of plaintext data independently, while GCM mode involves encrypting the plaintext data in parallel.
+**CBC** (Cipher Block Chaining) mode and **GCM** (Galois/Counter Mode) mode are two commonly used modes of operation for block ciphers. CBC mode involves encrypting each block of plaintext data independently, while GCM mode involves encrypting the plaintext data in parallel.
 
 ### Base64 and Hex Encoding/Decoding
 
-Base64 and hex encoding/decoding are two common methods of encoding and decoding binary data. Base64 encoding involves converting binary data into a string of characters, while hex encoding involves converting binary data into a hexadecimal string.
+**Base64** and hex encoding/decoding are two common methods of encoding and decoding binary data. Base64 encoding involves converting binary data into a string of characters, while hex encoding involves converting binary data into a hexadecimal string.
 
 **Security Considerations**
 
