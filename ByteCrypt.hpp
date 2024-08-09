@@ -1,5 +1,5 @@
 #pragma once
-
+ 
 /**
  * ============================================================================
  * ByteCrypt Class - A C++ Data Encryption Utility Module
