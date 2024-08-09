@@ -266,6 +266,7 @@ using rsa_signature_filter_t = CryptoPP::SignerFilter;
 using rsa_signature_verify_t = CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier;
 using crypto_exception_t = CryptoPP::Exception;
 using sha256_hmac_t = CryptoPP::PKCS5_PBKDF2_HMAC<CryptoPP::SHA256>;
+using hmac_s256_t =  CryptoPP::HMAC<CryptoPP::SHA256>;
 
 /**
  * CBC Mode Encryption/Dec(< GCM)
@@ -388,6 +389,7 @@ class ByteCrypt
     byte __cbc_iv__[CryptoPP::AES::BLOCKSIZE];
     byte __gcm_key__[CryptoPP::AES::DEFAULT_KEYLENGTH];
     byte __gcm_iv__[CryptoPP::AES::BLOCKSIZE];
+    byte __gcm_final_key__[CryptoPP::AES::DEFAULT_KEYLENGTH];
 
   public:
     ByteCrypt() = default;
@@ -886,8 +888,8 @@ class ByteCrypt
   private:
     __hint_derive_key_iv__ void __derive_cbc_key_iv(const string_t &u_pwd, byte *key, byte *init_vector) const
     {
-        byte salt[16];
         entropy_seed_t entropy;
+        byte salt[16];
         entropy.GenerateBlock(salt, sizeof(salt));
         sha256_hmac_t transformer;
         transformer.DeriveKey(key, default_sec_key_size, 0, reinterpret_cast<const byte *>(u_pwd.data()), u_pwd.size(), salt, sizeof(salt), cipher_iteration_count);
@@ -896,15 +898,13 @@ class ByteCrypt
 
     __hint_derive_key_iv__ void __derive_gcm_key_iv(const string_t &u_pwd, byte *key, byte *init_vector) const
     {
-        // entropy_seed_t entropy;
-        // entropy.GenerateBlock(key, sizeof(key));
-        // entropy.GenerateBlock(init_vector, sizeof(init_vector));
-        byte salt[16];
+        byte random_salt[16];
         entropy_seed_t entropy;
-        entropy.GenerateBlock(salt, sizeof(salt));
-        sha256_hmac_t transformer;
-        transformer.DeriveKey(key, default_sec_key_size, 0, reinterpret_cast<const byte *>(u_pwd.data()), u_pwd.size(), salt, sizeof(salt), cipher_iteration_count);
-        transformer.DeriveKey(init_vector, default_sec_iv_size, 0, reinterpret_cast<const byte *>(u_pwd.data()), u_pwd.size(), salt, sizeof(salt), cipher_iteration_count);
+        entropy.GenerateBlock(random_salt, sizeof(random_salt));
+        entropy.GenerateBlock(init_vector, sizeof(init_vector));
+        hmac_s256_t hmac_converter((const byte*)u_pwd.data(), u_pwd.size());
+        hmac_converter.Update(random_salt, sizeof(random_salt));
+        hmac_converter.Final(key);        
     };
 
     __temp_perform_keyiv_cbc_intersection__ __hint_perform_keyiv_intersection__ inline void __perform_keyiv_cbc_intersection(cipherT &encryption_class) const noexcept
