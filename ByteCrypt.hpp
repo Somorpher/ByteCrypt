@@ -1,6 +1,6 @@
 #pragma once
 
-/** 
+/**
  * ============================================================================
  * ByteCrypt Class - A C++ Data Encryption Utility Module
  * ============================================================================
@@ -642,7 +642,7 @@ class ByteCrypt
      */
     __hint_hex_decode__ inline const string_t hex_decode(const string_t &hex_encoded)
     {
-        if (hex_encoded.length() % 2 != 0)
+        if (hex_encoded.length() % 2 != 0) [[unlikely]]
         {
             std::cerr << "hex encoded buffer length error!\n";
             return "";
@@ -666,7 +666,7 @@ class ByteCrypt
     __hint_generate_rsa_key_der_pair__ const rsa_key_pair_struct generate_rsa_key_der_pair(const std::size_t rsa_key_size = 2048U)
     {
         rsa_key_pair_struct local_kps{};
-        if (!this->__is_rsa_key_size_valid(rsa_key_size))
+        if (!this->__is_rsa_key_size_valid(rsa_key_size)) [[unlikely]]
             return local_kps;
         try
         {
@@ -680,7 +680,7 @@ class ByteCrypt
             private_key_sink.MessageEnd();
             string_source_t(private_key_result, true, new base64_encoder_t(new string_sink_t(private_key_result_encoded)));
 
-            if (!private_key_result.empty())
+            if (!private_key_result.empty()) [[likely]]
             {
                 try
                 {
@@ -693,15 +693,15 @@ class ByteCrypt
                 catch (const std::exception &e)
                 {
                     std::cerr << "RSA PublicKey: " << e.what() << "\n";
-                    if (!private_key_result.empty())
+                    if (!private_key_result.empty()) [[likely]]
                         private_key_result.clear();
                 }
             }
-            if (!private_key_result_encoded.empty() && !public_key_result_encoded.empty())
+            if (!private_key_result_encoded.empty() && !public_key_result_encoded.empty()) [[likely]]
             {
                 local_kps.private_key = std::move(private_key_result_encoded);
                 local_kps.public_key = std::move(public_key_result_encoded);
-                if (this->__rsa_key_pair_verify(local_kps))
+                if (this->__rsa_key_pair_verify(local_kps)) [[likely]]
                 {
                     local_kps.state = true;
                 }
@@ -722,7 +722,7 @@ class ByteCrypt
     __hint_generate_rsa_key_pem_pair__ const rsa_key_pair_struct generate_rsa_key_pem_pair(const std::size_t rsa_key_size = 2048U)
     {
         rsa_key_pair_struct rsa_keys = this->generate_rsa_key_der_pair(rsa_key_size);
-        if (!this->__is_rsa_key_size_valid(rsa_key_size))
+        if (!this->__is_rsa_key_size_valid(rsa_key_size)) [[unlikely]]
             return rsa_keys;
         try
         {
@@ -752,12 +752,12 @@ class ByteCrypt
     __hint_sign_message__ const string_t sign_message(const string_t &message, const string_t &rsa_key)
     {
         string_t signature;
-        if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PRIVATE))
+        if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PRIVATE)) [[unlikely]]
             return signature;
         string_t clean_key(this->__rsa_key_meta_wipe(const_cast<string_t &&>(std::move(rsa_key))));
         try
         {
-            if (clean_key.empty() || message.empty())
+            if (clean_key.empty() || message.empty()) [[unlikely]]
                 return signature;
 
             string_t private_key_decoded;
@@ -788,7 +788,7 @@ class ByteCrypt
      */
     __hint_verify_signature__ const bool verify_signature(const string_t &message, const string_t &signature_str, const string_t &rsa_key)
     {
-        if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PUBLIC))
+        if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PUBLIC)) [[unlikely]]
             return false;
         try
         {
@@ -826,13 +826,13 @@ class ByteCrypt
     {
         try
         {
-            if (path.empty())
+            if (path.empty()) [[unlikely]]
                 throw std::invalid_argument("path to store rsa key not invalid!");
-            if (rsa_key.empty())
+            if (rsa_key.empty()) [[unlikely]]
                 throw std::invalid_argument("rsa key value invalid!");
 
             std::ofstream file_handler(path.data(), std::ios::binary | std::ios::out);
-            if (!file_handler.is_open())
+            if (!file_handler.is_open()) [[unlikely]]
                 throw std::ofstream::failure::runtime_error("file stream for writing rsa key not open!");
             file_handler << rsa_key;
             file_handler.close();
@@ -855,11 +855,11 @@ class ByteCrypt
         rsa_key_block_load rsa_loader;
         try
         {
-            if (file_name.empty())
+            if (file_name.empty()) [[unlikely]]
                 throw std::invalid_argument("path to read rsa key not invalid!");
 
             std::ifstream file_handler(file_name.data(), std::ios::binary | std::ios::in);
-            if (!file_handler.is_open())
+            if (!file_handler.is_open()) [[unlikely]]
                 throw std::ifstream::failure::runtime_error("file stream for reading rsa key not open!");
 
             string_t read_key;
@@ -869,7 +869,7 @@ class ByteCrypt
                 rsa_loader.key += read_key += "\n";
             } while (std::getline(file_handler, read_key));
             file_handler.close();
-            if (!rsa_loader.key.empty())
+            if (!rsa_loader.key.empty()) [[likely]]
                 rsa_loader.status = true;
 
             return rsa_loader;
@@ -881,7 +881,12 @@ class ByteCrypt
         return rsa_loader;
     };
 
-    ~ByteCrypt() = default;
+    ~ByteCrypt(){
+        std::memset(this->__cbc_key__, 0, 0);
+        std::memset(this->__cbc_iv__, 0, 0);
+        std::memset(this->__gcm_iv__, 0, 0);
+        std::memset(this->__gcm_key__, 0, 0);
+    };
 
   private:
     __hint_derive_key_iv__ void __derive_cbc_key_iv(const string_t &u_pwd, byte *key, byte *init_vector) const
@@ -917,7 +922,7 @@ class ByteCrypt
 
     __hint_rsa_key_pair_verify__ const bool __rsa_key_pair_verify(const rsa_key_pair_struct &key_block)
     {
-        if (!key_block.public_key.has_value() || !key_block.private_key.has_value())
+        if (!key_block.public_key.has_value() || !key_block.private_key.has_value()) [[unlikely]]
             return false;
         try
         {
@@ -937,11 +942,11 @@ class ByteCrypt
                 string_source_t rsa_key_source(public_key_decoded_result, true, nullptr);
                 rsa_public_key.BERDecode(rsa_key_source);
             }
-            if (rsa_private_key.GetModulus() != rsa_public_key.GetModulus())
+            if (rsa_private_key.GetModulus() != rsa_public_key.GetModulus()) [[unlikely]]
                 throw std::runtime_error("RSA Modulus Error!");
             public_key_byte_size = rsa_public_key.GetModulus().ByteCount();
             private_key_byte_size = rsa_private_key.GetModulus().ByteCount();
-            if (private_key_byte_size != public_key_byte_size)
+            if (private_key_byte_size != public_key_byte_size) [[unlikely]]
                 throw std::runtime_error("RSA Byte Count error!");
             return true;
         }
@@ -975,7 +980,7 @@ class ByteCrypt
     {
         for (std::uint8_t ksi = 0; ksi < rsa_key_size_options.size(); ksi++)
         {
-            if ((std::size_t)rsa_key_size_options[ksi] == key_size)
+            if ((std::size_t)rsa_key_size_options[ksi] == key_size) [[likely]]
             {
                 return true;
             }
@@ -987,14 +992,14 @@ class ByteCrypt
     {
         if (version == e_rsa_key_pem_version::PUBLIC)
         {
-            if (!rsa_key.empty() && (rsa_key.find(RSA_PUBLIC_KEY_FOOTER) != std::string::npos && rsa_key.find(RSA_PUBLIC_KEY_HEADER) != std::string::npos))
+            if (!rsa_key.empty() && (rsa_key.find(RSA_PUBLIC_KEY_FOOTER) != std::string::npos && rsa_key.find(RSA_PUBLIC_KEY_HEADER) != std::string::npos)) [[likely]]
             {
                 return true;
             }
         }
         else if (version == e_rsa_key_pem_version::PRIVATE)
         {
-            if (!rsa_key.empty() && (rsa_key.find(RSA_PRIVATE_KEY_FOOTER) != std::string::npos && rsa_key.find(RSA_PRIVATE_KEY_HEADER) != std::string::npos))
+            if (!rsa_key.empty() && (rsa_key.find(RSA_PRIVATE_KEY_FOOTER) != std::string::npos && rsa_key.find(RSA_PRIVATE_KEY_HEADER) != std::string::npos)) [[likely]]
             {
                 return true;
             }
@@ -1004,7 +1009,7 @@ class ByteCrypt
 
     __hint_is_rsa_encrypted_key__ inline const bool __is_rsa_encrypted_key(const string_view_t &rsa_key) noexcept
     {
-        if (rsa_key.find(RSA_ENCRYPTED_PRIVATE_KEY_HEADER) != std::string::npos)
+        if (rsa_key.find(RSA_ENCRYPTED_PRIVATE_KEY_HEADER) != std::string::npos) [[likely]]
             return true;
         return false;
     };
@@ -1017,7 +1022,7 @@ class ByteCrypt
             wipe_rsa_meta.erase(0, std::strlen(RSA_PRIVATE_KEY_HEADER));
             wipe_rsa_meta.erase(wipe_rsa_meta.find(RSA_PRIVATE_KEY_FOOTER), std::strlen(RSA_PRIVATE_KEY_FOOTER));
             std::size_t expected_rsa_key_size(rsa_key.length() - (std::strlen(RSA_PRIVATE_KEY_HEADER) + std::strlen(RSA_PRIVATE_KEY_FOOTER)));
-            if (wipe_rsa_meta.length() == expected_rsa_key_size)
+            if (wipe_rsa_meta.length() == expected_rsa_key_size) [[likely]]
             {
                 return wipe_rsa_meta;
             }
@@ -1028,7 +1033,7 @@ class ByteCrypt
             wipe_rsa_meta.erase(0, std::strlen(RSA_PUBLIC_KEY_HEADER));
             wipe_rsa_meta.erase(wipe_rsa_meta.find(RSA_PUBLIC_KEY_FOOTER), std::strlen(RSA_PUBLIC_KEY_FOOTER));
             std::size_t expected_rsa_key_size(rsa_key.length() - (std::strlen(RSA_PUBLIC_KEY_HEADER) + std::strlen(RSA_PUBLIC_KEY_FOOTER)));
-            if (wipe_rsa_meta.length() == expected_rsa_key_size)
+            if (wipe_rsa_meta.length() == expected_rsa_key_size) [[likely]]
             {
                 return wipe_rsa_meta;
             }
@@ -1074,7 +1079,7 @@ class ByteCrypt
         df.ChannelPut(CryptoPP::DEFAULT_CHANNEL, (const byte *)decoded_data.data(), decoded_data.size());
         df.ChannelMessageEnd(CryptoPP::DEFAULT_CHANNEL);
 
-        if (!df.GetLastResult())
+        if (!df.GetLastResult()) [[unlikely]]
             throw std::runtime_error("Decryption failed");
     };
 };
