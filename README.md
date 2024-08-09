@@ -1,5 +1,7 @@
 # ByteCrypt
 
+**Single-Translation-Unit**
+
 ### Description
 This is a C++ implementation of a cryptographic library called ByteCrypt. It's a collection of tools and functions that allow you to perform various cryptographic operations, such as encryption, decryption, hashing, and digital signatures.
 
