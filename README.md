@@ -59,7 +59,7 @@ It is essential to consider the security implications of using hashing and encry
     "Hex Encoding" by the International Organization for Standardization (ISO)
 
 
-## MFunction without Signature
+## Public Member Functions
 
 
 * hash
@@ -79,40 +79,6 @@ It is essential to consider the security implications of using hashing and encry
 * load_rsa_key
 
 
-## Public Member FSignature
-```cpp
-
-string_t hash(const string_t& buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256)
-
-string_t cbc_encrypt(const string_t& plain_text, const string_t& key, const e_symmetric_algo algo)
-
-string_t cbc_decrypt(const string_t& cipher_block, const e_symmetric_algo algo)
-
-string_t gcm_encrypt(const string_t& plain_text, const string_t& key, const e_symmetric_algo algo)
-
-string_t gcm_decrypt(const string_t& cipher_block, const e_symmetric_algo algo)
-
-string_t base64_encode(const string_t& plain_text)
-
-string_t base64_decode(const string_t& encoded_cipher)
-
-string_t hex_encode(const string_t& plain_text)
-
-string_t hex_decode(const string_t& hex_encoded)
-
-rsa_key_pair_struct generate_rsa_key_der_pair(const std::size_t rsa_key_size = 2048U)
-
-rsa_key_pair_struct generate_rsa_key_pem_pair(const std::size_t rsa_key_size = 2048U)
-
-string_t sign_message(const string_t& message, const string_t& private_key)
-
-bool verify_signature(const string_t& message, const string_t& signature_str, const string_t& rsa_key)
-
-bool save_rsa_key(const string_view_t& path, const string_t& rsa_key)
-
-rsa_key_block_load load_rsa_key(const string_view_t& load_file)
-
-```
 
 ## Enum
 
