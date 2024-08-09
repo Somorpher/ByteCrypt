@@ -61,6 +61,13 @@
  * Written by [Somorpher], [2024].
  */
 
+// Platform detection
+#if defined(__linux__) || defined(__APPLE__)
+
+
+// architecture detection
+#if defined(__x86_64__) || defined(__amd64__) || defined(__i386__) || defined(__M_X64)
+
 #include <assert.h>
 #include <cstdlib>
 #include <exception>
@@ -340,7 +347,6 @@ typedef struct alignas(void *)
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 class ByteCrypt
 {
-
     const std::uint16_t cipher_iteration_count = 10000;
     const std::uint8_t default_sec_key_size = CryptoPP::AES::DEFAULT_KEYLENGTH;
     const std::uint8_t default_sec_iv_size = CryptoPP::AES::BLOCKSIZE;
@@ -1050,4 +1056,8 @@ class ByteCrypt
     };
 };
 }; // namespace ByteCryptModule
+#endif
+
+#endif
+
 #endif
