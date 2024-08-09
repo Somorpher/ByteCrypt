@@ -14,14 +14,14 @@ It is a fast and efficient algorithm that can be used for both encryption and de
 > generates a random key for encryption using the __derive_key_iv function. The key is derived from a password using a password-based key derivation function (PBKDF2).
    
 * Encryption:
-> uses the encrypt_block function to encrypt a block of data using the generated key. The encryption process involves the following steps:
+> uses the cbc_encrypt function to encrypt a block of data using the generated key. The encryption process involves the following steps:
 1) Divide the data into blocks of 16 bytes (the block size of AES).
 2) Apply a random initialization vector (IV) to the first block of data.
 3) Encrypt each block of data using the AES algorithm with the generated key.
 4) Store the encrypted data in a buffer.
 
 * Decryption:
-> uses the decrypt_block function to decrypt a block of encrypted data using the same key used for encryption. The decryption process involves the following steps:
+> uses the decrypt function to decrypt a block of encrypted data using the same key used for encryption. The decryption process involves the following steps:
 1) Divide the encrypted data into blocks of 16 bytes.
 2) Apply the random IV used during encryption to the first block of encrypted data.
 3) Decrypt each block of encrypted data using the AES algorithm with the same key used for encryption.
@@ -66,8 +66,8 @@ generates a pair of RSA keys (public and private) using the generate_rsa_key_der
 
 
 * hash
-* encrypt_block
-* decrypt_block
+* cbc_encrypt
+* cbc_decrypt
 * base64_encode
 * base64_decode
 * hex_encode
@@ -84,9 +84,9 @@ generates a pair of RSA keys (public and private) using the generate_rsa_key_der
 
 > string_t hash(const string_t& buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256)
 
-> string_t encrypt_block(const string_t& plain_text, const string_t& key)
+> string_t cbc_encrypt(const string_t& plain_text, const string_t& key)
 
-> string_t decrypt_block(const string_t& cipher_block, const string_t& u_key)
+> string_t cbc_decrypt(const string_t& cipher_block, const string_t& u_key)
 
 > string_t base64_encode(const string_t& plain_text)
 
@@ -155,7 +155,7 @@ string buffer = "your mother"; // buffer to encrypt using "secret" key
 
 string secret = "secret_key_for_decryption"; // this is the key used for encryption/decryption
 
-string encrypted = bCrypt.encrypt_block(buffer, secret); // encrypt buffer block and return result
+string encrypted = bCrypt.cbc_encrypt(buffer, secret); // encrypt buffer block and return result
 
 std::cout << "encrypted: " << encrypted << "\n"; // print result
 
@@ -179,11 +179,11 @@ string buffer = "your mother";
 
 string secret = "secret_key_for_decryption";
 
-string encrypted = bCrypt.encrypt_block(buffer, secret);
+string encrypted = bCrypt.cbc_encrypt(buffer, secret);
 
 std::cout << "encrypted: " << encrypted << "\n";
 
-string decrypted = bCrypt.decrypt_block(encrypted, secret);
+string decrypted = bCrypt.cbc_decrypt(encrypted, secret);
 
 std::cout << "decrypted: " << decrypted << "\n";
 
