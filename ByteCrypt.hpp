@@ -137,14 +137,7 @@ namespace ByteCryptModule
 
 /*                      Macros                           *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-#define DEFAULT_RSA_KEY_SIZE 2048U
-#define DEFAULT_AES_CIPHER 256
-#define DEFAULT_SHA_CIPHER 256
-#define RSA_KEY_SIZE_OPTIONS                                                                                                                                                                                               \
-    std::array<std::uint16_t, 5>                                                                                                                                                                                           \
-    {                                                                                                                                                                                                                      \
-        512u, 1024u, 2048u, 3072u, 4096u                                                                                                                                                                                   \
-    }
+
 #define RSA_PUBLIC_KEY_HEADER "-----BEGIN PUBLIC KEY-----\n"
 #define RSA_PRIVATE_KEY_HEADER "-----BEGIN RSA PRIVATE KEY-----\n"
 #define RSA_PUBLIC_KEY_FOOTER "-----END PUBLIC KEY-----\n"
@@ -152,7 +145,6 @@ namespace ByteCryptModule
 
 #define RSA_ENCRYPTED_PRIVATE_KEY_HEADER "-----BEGIN ENCRYPTED PRIVATE KEY-----\n"
 #define RSA_ENCRYPTED_PRIVATE_KEY_FOOTER "-----END ENCRYPTED PRIVATE KEY-----\n"
-
 
 // makes code more readable instead of using inline attributes directly with function defintion
 
@@ -185,7 +177,6 @@ namespace ByteCryptModule
 #define __hint_rsa_key_meta_wipe__ __attribute__((const, zero_call_used_regs("used"), warn_unused_result, access(read_only, 1), optimize("2")))
 #define __hint_perform_encryption__ __attribute__((always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), access(read_only, 2), access(read_only, 1), optimize("3")))
 #define __hint_perform_decryption__ __attribute__((always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), access(read_only, 2), access(read_only, 1), optimize("3")))
-
 
 #else
 
@@ -342,6 +333,10 @@ class ByteCrypt
     const std::uint16_t cipher_iteration_count = 10000;
     const std::uint8_t default_sec_key_size = CryptoPP::AES::DEFAULT_KEYLENGTH;
     const std::uint8_t default_sec_iv_size = CryptoPP::AES::BLOCKSIZE;
+    const std::uint16_t default_rsa_key_size = 2048U;
+    const std::uint16_t default_aes_block_size = 256;
+    const std::uint16_t default_sha_cipher = 256;
+    const std::array<std::uint16_t, 5> rsa_key_size_options{512u, 1024u, 2048u, 3072u, 4096u};
 
     byte __key__[CryptoPP::AES::DEFAULT_KEYLENGTH];
     byte __iv__[CryptoPP::AES::BLOCKSIZE];
@@ -353,6 +348,12 @@ class ByteCrypt
     ByteCrypt(ByteCrypt &&) = delete;
     ByteCrypt &operator=(ByteCrypt &&) = delete;
 
+    /**
+     * Hash buffer with sha algorithm and return hashed result.
+     * @param string_t& buffer to hash
+     * @param e_hash_algo_option hash algorithm
+     * @returns string_t const string hash buffer
+     */
     __hint_hash__ const string_t hash(const string_t &buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
     {
         string_t digest_block;
@@ -379,6 +380,13 @@ class ByteCrypt
         return digest_block;
     };
 
+    /**
+     * encrypt plain_text using key for encryption and alog as encryption algorithm.
+     * @param string_t& buffer to encrypt
+     * @param string_t& key to use for encryption
+     * @param e_symmetric_algo the algorithm for encryption
+     * @returns string_t encrypted cipher
+     */
     __hint_encrypt__ const string_t encrypt(const string_t &plain_text, const string_t &key, const e_symmetric_algo algo)
     {
         string_t cipher, encoded_cipher;
@@ -415,6 +423,13 @@ class ByteCrypt
         return encoded_cipher;
     };
 
+/**
+ * decrypt cipher_block with u_key secret key and algo as algorithm.
+ * @param string_t& cipher to decrypt
+ * @param string_t& key to use for decryption
+ * @param e_symmetric_algo algorithm used when encrypted.
+ * @returns string_t decrypted cipher
+ */
     __hint_decrypt__ const string_t decrypt(const string_t &cipher_block, const string_t &u_key, const e_symmetric_algo algo)
     {
         string_t decrypted_cipher, decoded_cipher;
@@ -449,6 +464,11 @@ class ByteCrypt
         return decrypted_cipher;
     };
 
+    /**
+     * base64 encoding of plain_text buffer
+     * @param string_t& data to encode using base64 encoding
+     * @returns string_t encoded data
+     */
     __hint_base64_encode__ inline const string_t base64_encode(const string_t &plain_text)
     {
         string_t b64_encoded;
@@ -456,13 +476,23 @@ class ByteCrypt
         return b64_encoded;
     };
 
+    /**
+     * decode encoded_cipher using base64.
+     * @param string_t& encoded cipher to decode
+     * @returns string_t base64 decoded data
+     */
     __hint_base64_decode__ inline const string_t base64_decode(const string_t &encoded_cipher)
     {
         string_t b64_decoded;
         CryptoPP::StringSource(encoded_cipher, true, new CryptoPP::Base64Decoder(new CryptoPP::StringSink(b64_decoded)));
         return b64_decoded;
     };
-
+    
+    /**
+     * encode plain_text with hex
+     * @param string_t& data to encode
+     * @returns string_t hex encoded data
+     */
     __hint_hex_encode__ inline const string_t hex_encode(const string_t &plain_text)
     {
         std::ostringstream parser;
@@ -471,6 +501,11 @@ class ByteCrypt
         return parser.str();
     };
 
+    /**
+     * decode hex_encoded data
+     * @param string_t& hex encoded data
+     * @returns string_t hex decoded data
+     */
     __hint_hex_decode__ inline const string_t hex_decode(const string_t &hex_encoded)
     {
         if (hex_encoded.length() % 2 != 0)
@@ -489,6 +524,11 @@ class ByteCrypt
         return hex_decoded;
     };
 
+    /**
+     * generate a pair of DER RSA keys with rsa_key_size size, size defaults to 2048 bits.
+     * @param std::size_t rsa key size
+     * @returns rsa_key_pair_struct structure with public and private key association
+     */
     __hint_generate_rsa_key_der_pair__ const rsa_key_pair_struct generate_rsa_key_der_pair(const std::size_t rsa_key_size = 2048U)
     {
         rsa_key_pair_struct local_kps{};
@@ -540,6 +580,11 @@ class ByteCrypt
         return local_kps;
     };
 
+    /**
+     * generate a pair of RSA PEM key pair with rsa_key_size size.
+     * @param std::size_t rsa key size
+     * @returns rsa_key_pair_struct structure with the rsa generated PEM keys.
+     */
     __hint_generate_rsa_key_pem_pair__ const rsa_key_pair_struct generate_rsa_key_pem_pair(const std::size_t rsa_key_size = 2048U)
     {
         rsa_key_pair_struct rsa_keys = this->generate_rsa_key_der_pair(rsa_key_size);
@@ -564,6 +609,12 @@ class ByteCrypt
         return rsa_keys;
     };
 
+    /**
+     * sign message with rsa_key private key, function generates signature and returns it.
+     * @param string_t& message to sign
+     * @param string_t& rsa private key for signature generation
+     * @returns string_t signature
+     */
     __hint_sign_message__ const string_t sign_message(const string_t &message, const string_t &rsa_key)
     {
         string_t signature;
@@ -594,6 +645,13 @@ class ByteCrypt
         }
     };
 
+    /**
+     * verify message rsa private key signature with signature_str signature, and rsa_key public key 
+     * @param string_t& message to verify signature from
+     * @param string_t& signature to use
+     * @param string_t& RSA public key
+     * @returns bool true if verification succeded
+     */
     __hint_verify_signature__ const bool verify_signature(const string_t &message, const string_t &signature_str, const string_t &rsa_key)
     {
         if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PUBLIC))
@@ -624,6 +682,12 @@ class ByteCrypt
         }
     };
 
+    /**
+     * save rsa_key into path(file name).
+     * @param string_t& path to key
+     * @param string_t& rsa key(public/private)
+     * @returns bool true if key saved
+     */
     __hint_save_rsa_key__ const bool save_rsa_key(const string_view_t &path, const string_t &rsa_key)
     {
         try
@@ -647,6 +711,11 @@ class ByteCrypt
         return false;
     };
 
+    /**
+     * load rsa key from file_name.
+     * @param string_view_t& address of file where key stored.
+     * @returns rsa_key_block_load structure containing loaded rsa key
+     */
     __hint_load_rsa_key__ const rsa_key_block_load load_rsa_key(const string_view_t &file_name)
     {
         rsa_key_block_load rsa_loader;
@@ -681,7 +750,6 @@ class ByteCrypt
     ~ByteCrypt() = default;
 
   private:
-
     __hint_derive_key_iv__ void __derive_key_iv(const string_t &u_pwd, byte *key, byte *init_vector) const
     {
         byte salt[16];
@@ -697,7 +765,6 @@ class ByteCrypt
         decryption_handler.SetKeyWithIV(this->__key__, sizeof(this->__key__), this->__iv__);
     };
 
-    
     __hint_rsa_key_pair_verify__ const bool __rsa_key_pair_verify(const rsa_key_pair_struct &key_block)
     {
         if (!key_block.public_key.has_value() || !key_block.private_key.has_value())
@@ -735,7 +802,6 @@ class ByteCrypt
         return false;
     };
 
-    
     __hint_rsa_key_pem_set_header__ inline void __rsa_key_pem_set_header(string_t &rsa_key_var, const bool is_public_key) const noexcept
     {
         rsa_key_var.clear();
@@ -755,12 +821,11 @@ class ByteCrypt
             rsa_key_var += RSA_PRIVATE_KEY_FOOTER;
     };
 
-    
     __hint_is_rsa_key_size_valid__ constexpr bool __is_rsa_key_size_valid(const std::size_t &key_size) const noexcept
     {
-        for (std::uint8_t ksi = 0; ksi < RSA_KEY_SIZE_OPTIONS.size(); ksi++)
+        for (std::uint8_t ksi = 0; ksi < rsa_key_size_options.size(); ksi++)
         {
-            if ((std::size_t)RSA_KEY_SIZE_OPTIONS[ksi] == key_size)
+            if ((std::size_t)rsa_key_size_options[ksi] == key_size)
             {
                 return true;
             }
@@ -768,7 +833,6 @@ class ByteCrypt
         return false;
     };
 
-    
     __hint_is_rsa_key_pem__ const bool __is_rsa_key_pem(const string_view_t &rsa_key, const e_rsa_key_pem_version version) noexcept
     {
         if (version == e_rsa_key_pem_version::PUBLIC)
@@ -788,7 +852,6 @@ class ByteCrypt
         return false;
     };
 
-    
     __hint_is_rsa_encrypted_key__ inline const bool __is_rsa_encrypted_key(const string_view_t &rsa_key) noexcept
     {
         if (rsa_key.find(RSA_ENCRYPTED_PRIVATE_KEY_HEADER) != std::string::npos)
@@ -796,7 +859,6 @@ class ByteCrypt
         return false;
     };
 
-    
     __hint_rsa_key_meta_wipe__ const string_t __rsa_key_meta_wipe(string_t &&rsa_key)
     {
         if (this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PRIVATE))
@@ -824,7 +886,6 @@ class ByteCrypt
         return std::move(rsa_key);
     };
 
-    
     __temp_perform_encryption__ __hint_perform_encryption__ inline void __perform_encryption(const string_t &plain_text, string_t &cipher, string_t &encoded_cipher)
     {
         encryptionType encryption;
