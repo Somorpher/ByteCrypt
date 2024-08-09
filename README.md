@@ -10,6 +10,24 @@ The code is designed to work on a 64-bit x86-64 architecture, specifically on Li
 
 NOTE: compilation requires specific compiler flag `-lcryptopp` to compile.
 
+### Install Crypto++ library
+Requires `crypto++` library, to install `crypto++`:
+
+*Debian*
+> $ sudo apt install libcryptopp-dev
+
+*Fedora*
+> $ sudo dnf install cryptopp-devel
+
+*Arch*
+> $ sudo pacman -S cryptopp
+
+*MacOS*
+> $ brew install cryptopp
+
+
+### About
+
 collection of tools and functions that allow you to perform various cryptographic operations, such as **encryption**, **decryption**, **hashing**, and digital **signatures**.
 
 The library is organized into a namespace called `ByteCryptModule`. It uses the widely respected Crypto++ library as its underlying cryptographic engine.
