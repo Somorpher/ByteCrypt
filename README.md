@@ -287,16 +287,11 @@ int main(){
 ByteCrypt bCrypt;
 
 // generate RSA 2048 BS kp(key-pair) in DER format and store value into structure(rsa_key_pair_struct)
-const rsa_key_pair_struct key_pair = bCrypt.generate_rsa_key_der_pair(2048);
+const rsa_key_pair_struct key_pair = bCrypt.generate_rsa_key_der_pair(2048); // 512, 1024, 2048, 3072, 4096
 
 // using keys...
 const string public_key  = key_pair.public_key;   // public key string
 const string private_key = key_pair.private_key;  // private key string
-
-// rsa_key_pair_struct returns a struct with the following members:
-// optional<string>: public_key
-// optional<string>: private_key
-// bool state      : state
 
 return 0;
 
@@ -338,10 +333,6 @@ bCrypt.save_rsa_key("/home/user/Documents/RSA/pub.pem", key_pair.public_key.valu
 
 // --- Load ---
 const rsa_key_block_load gpublic_key = bCrypt.load_rsa_key("/home/user/Documents/RSA/pub.pem"); // rsa_key_block_load is a struct returning:
-// string: key
-// string: error
-// bool  : status
-
 
 return 0;
 }
