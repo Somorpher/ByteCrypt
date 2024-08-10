@@ -8,7 +8,15 @@ Versatile cryptographic utility that provides a collection of tools and function
 
 [![MIT License](https://img.shields.io/badge/License-MIT-red.svg)](https://github.com/Somorpher/ByteCrypt/blob/main/LICENSE) 
 
+### Symmetric Ciphers
 
+`AES` `BlowFish` `Cast128` `Cast256` `Idea` `RC2` `RC5` `RC6` `Mars` `Serpent` `GOST`
+
+### Asymmetric Ciphers
+`RSA`
+
+### Operation Modes
+`CBC`  `GCM`
 
 ## Acknowledgements
 
