@@ -17,7 +17,7 @@ Versatile cryptographic utility that provides a collection of tools and function
 ### Hash Algorithms
 `SHA1` `SHA224` `SHA256` `SHA384` `SHA512`
 
-### Operation Modes
+### Mode of Operation
 `CBC`  `GCM`
 
 ## Acknowledgements
