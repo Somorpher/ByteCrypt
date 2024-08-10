@@ -493,88 +493,32 @@ return 0;
 
 ## Useful links:
 
+### Licenses
+- [MIT License](https://github.com/Somorpher/ByteCrypt/blob/main/LICENSE)
 
+### Acknowledgements
+- [Symmetric Encryption](https://en.wikipedia.org/wiki/Symmetric-key_algorithm)
+- [Asymmetric Encryption](https://en.wikipedia.org/wiki/Public-key_cryptography)
+- [Block Cipher mode of Operation](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation)
 
-    GNU License
-    MIT License
-    GPLv3 License
-    BSD License
+### Crypto++ Library
+- [Crypto++ website](https://cryptopp.com)
 
-Acknowledgements
+### Basic Cryptography Concepts
+- [Hashing](https://en.wikipedia.org/wiki/Cryptographic_hash_function)
+- [Encryption](https://en.wikipedia.org/wiki/Encryption)
+- [Digital Signatures](https://en.wikipedia.org/wiki/Digital_signature)
 
-    Symmetric Encryption
-    Asymmetric Encryption
-    Block Cipher mode of Operation
+### AES Encryption
+- [AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)
+- [ECB (Electronic Codebook Mode)](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation)
+- [CBC (Cipher Block Chaining Mode)](https://en.wikipedia.org/wiki/CBC-MAC)
+- [CFB (Cipher Feedback Mode)](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)
+- [CTR (Counter Mode)](https://www.includehelp.com/cryptography/counter-ctr-mode-in-cryptography.aspx)
+- [GCM (Galois/Counter Mode)](https://en.wikipedia.org/wiki/Galois/Counter_Mode)
+- [CCM (Counter with CBC-MAC)](https://en.wikipedia.org/wiki/CCM_mode)
+- [EAX (Encrypt-Then-Authenticate-Then-Transmit)](https://en.wikipedia.org/wiki/EAX_mode)
 
-Installation of Crypto++ Library
-
-    Crypto++ website
-    Debian installation instructions
-    Fedora installation instructions
-    Arch installation instructions
-    macOS installation instructions
-
-Basic Cryptography Concepts
-
-    Hashing
-    Encryption
-    Digital Signatures
-
-AES Encryption
-
-    AES
-    ECB (Electronic Codebook Mode)
-    CBC (Cipher Block Chaining Mode)
-    CFB (Cipher Feedback Mode)
-    OFB (Output Feedback Mode)
-    CTR (Counter Mode)
-    GCM (Galois/Counter Mode)
-    CCM (Counter with CBC-MAC)
-    EAX (Encrypt-Then-Authenticate-Then-Transmit)
-
-GOST and Serpent Algorithms
-
-    GOST
-    Serpent
-
-Security Considerations
-
-    Hash functions
-    Encryption
-
-Class Structures
-
-    RSA key pair structure
-    RSA key block load structure
-
-Class Public Functions
-
-    hash
-    cbc_encrypt
-    cbc_decrypt
-    gcm_encrypt
-    gcm_decrypt
-    base64_encode
-    base64_decode
-    hex_encode
-    hex_decode
-    generate_rsa_key_der_pair
-    generate_rsa_key_pem_pair
-    sign_message
-    verify_signature
-    save_rsa_key
-    load_rsa_key
-
-Usage/Examples
-
-    CBC encryption example
-    CBC decryption example
-    GCM encryption example
-    GCM decryption example
-    Hashing example
-    Encoding/Decoding example
-    DER RSA key generation example
-    PEM RSA key generation example
-    RSA key store/load example
-    Sign message example
-    Verify signature example
+### GOST and Serpent Ciphers
+- [GOST](https://en.wikipedia.org/wiki/GOST_(block_cipher))
+- [Serpent](https://en.wikipedia.org/wiki/Serpent_(cipher))
