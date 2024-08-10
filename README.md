@@ -6,7 +6,7 @@
 
 Versatile cryptographic utility that provides a collection of tools and functions for various cryptographic operations, including encryption, decryption, hashing, and digital signatures. Built on top of the Crypto++ library, ByteCrypt is organized within the ByteCryptModule namespace and supports multiple encryption algorithms and hashing functions, making it a comprehensive choice for developers needing robust cryptographic solutions.
 
-[![MIT License](https://img.shields.io/badge/License-MIT-red.svg)](#) 
+[![MIT License](https://img.shields.io/badge/License-MIT-red.svg)](https://github.com/Somorpher/ByteCrypt/blob/main/LICENSE) 
 
 
 
