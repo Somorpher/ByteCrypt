@@ -18,7 +18,7 @@ Versatile cryptographic utility that provides a collection of tools and function
 `SHA1` `SHA224` `SHA256` `SHA384` `SHA512`
 
 ### Mode of Operation
-`CBC`  `GCM`
+`CBC`  `GCM` `EAX`
 
 ## Acknowledgements
 
@@ -27,6 +27,21 @@ Knowledge of the following concepts is required:
  - [Asymmetric Encryption](https://en.wikipedia.org/wiki/Public-key_cryptography)
  - [Block Cipher mode of Operation](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation)
 
+## Proof of Concept(PoC)
+
+### CBC(Cipher-Block-Counter) Operation Mode Test:
+
+![CBC screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/f3e7ddfff8b5d18a253d571b67045a43_66b79299dc5d4.png)
+
+
+### EAX Operation Mode Test:
+
+![CBC screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/f3e7ddfff8b5d18a253d571b67045a43_66b79299dc5d4.png)
+
+
+### GCM(Gallois-Counter-Mode) Operation Mode Test:
+
+![CBC screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/f3e7ddfff8b5d18a253d571b67045a43_66b79299dc5d4.png)
 
 ## Description
 
