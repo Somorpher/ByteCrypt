@@ -3,7 +3,7 @@
 using string_t = std::string;
 using namespace ByteCryptModule;
 
-int main(int argc, char *argv[])
+int main(int argc, char *argv[]) 
 {
 
 	std::size_t test_score(0), threshold(static_cast<int>(e_cbc_symmetric_algo::__COUNT)+static_cast<int>(e_gcm_symmetric_algo::__COUNT)+static_cast<int>(e_eax_symmetric_algo::__COUNT));
