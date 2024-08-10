@@ -5,56 +5,24 @@
  * ByteCrypt Class - A C++ Data Encryption Utility Module
  * ============================================================================
  *
- * DISCLAIMER OF WARRANTY:
- *
- * This software is provided 'as-is', without any express or implied warranty.
- * In no event will the author(s) be held liable for any damages arising from
- * the use of this software, including but not limited to:
- *
- * - Loss of data
- * - Any other type of loss or damage
- *
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- *
- * 1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation would
- *    be appreciated but is not required.
- *
- * 2. Altered source versions must be plainly marked as such, and must not
- *    be misrepresented as being the original software.
- *
- * 3. This notice may not be removed or altered from any source distribution.
- *
- * LIMITATION OF LIABILITY:
- *
- * In no event will the author(s) be liable for any damages, including but
- * not limited to incidental, consequential, or punitive damages, arising
- * out of the use of this software.
- *
- * COPYING AND DISTRIBUTION:
- *
- * This software may be copied and distributed free of charge, provided
- * that the above copyright notice, disclaimer, and limitations of liability
- * are included in all copies.
- *
- * AUTHORIZATION:
- *
- * By using this software, you acknowledge that you have read and understood
- * the terms and conditions of this license, and agree to be bound by them.
- *
- * TRADEMARKS:
- *
- * The names of actual companies and products mentioned in this software
- * may be the trademarks of their respective owners.
- *
- * ACKNOWLEDGMENT:
- *
- * The authors would like to acknowledge the contributions of the C++
- * community, and the many individuals who have helped shape the C++
- * standard library.
+ * MIT License
+ * 
+ * Copyright (c) 2024 Somorpher
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
  *
  * ============================================================================
  *
