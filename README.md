@@ -1,5 +1,5 @@
 
-![Logo](https://github.com/Somorpher/ByteCrypt/blob/main/bf322699728bf7f37e7e3c007fa0bacb_66b6bbf3aa1bc.png?raw=true)
+![Logo](https://github.com/Somorpher/ByteCrypt/blob/main/images/bf322699728bf7f37e7e3c007fa0bacb_66b6bbf3aa1bc.png?raw=true)
 
 
 # ByteCrypt
