@@ -1,3 +1,14 @@
+/**
+ * 
+ * *************************************** READ THIS ****************************
+ * 
+ * this will look bloated but it was intentional to use this level of verbosity, 
+ * it is better for showing all possible modes, algorithms, etc... available within the class.
+ * this actually could be done in 1/4 of the current size i know :)
+ * 
+ */
+
+
 #include "modules/ByteCrypt-module/ByteCrypt.hpp" // NOTE: assuming the ByteCrypt.hpp is in the same directory
 
 using string_t = std::string;
