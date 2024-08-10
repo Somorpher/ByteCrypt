@@ -35,12 +35,26 @@
 #if defined(__x86_64__) || defined(__amd64__) || defined(__i386__) || defined(__M_X64)
 
 #include <assert.h>
-#include <cstdlib>
-#include <exception>
-#include <iostream>
-#include <sstream>
 #include <stdexcept>
 #include <string>
+#include <iostream>
+#include <stdio.h>
+#include <cstdlib>
+#include <cstring>
+#include <sstream>
+#include <fstream>
+#include <cstdint>
+#include <optional>
+#include <exception>
+#include <errno.h>
+#include <chrono>
+#include <ctime>
+#include <functional>
+#include <typeinfo>
+#include <iomanip>
+#include <type_traits>
+#include <utility>
+
 
 // Encryption Libraries
 #include <crypto++/aes.h>
@@ -97,12 +111,19 @@ namespace ByteCryptModule
 #define RSA_ENCRYPTED_PRIVATE_KEY_HEADER "-----BEGIN ENCRYPTED PRIVATE KEY-----\n"
 #define RSA_ENCRYPTED_PRIVATE_KEY_FOOTER "-----END ENCRYPTED PRIVATE KEY-----\n"
 
+#define DEFAULT_CIPHER_ITERATION_COUNTER 10000
+#define DEFAULT_SEC_BLOCK_KEY_SIZE CryptoPP::AES::DEFAULT_KEYLENGTH
+#define DEFAULT_SEC_BLOCK_IV_SIZE CryptoPP::AES::BLOCKSIZE
+
 // makes code more readable instead of using inline attributes directly with function defintion
 
 /*                      Attribution                      *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 #if defined(__GNUC__) || defined(__clang__)
 
+#define __hint_set_iter_counter__ __attribute__((cold, nothrow, noipa, no_stack_protector))
+#define __hint_set_def_key_size__ __attribute__((cold, nothrow, noipa, no_stack_protector))
+#define __hint_set_def_iv_size__ __attribute__((cold, nothrow, noipa, no_stack_protector))
 #define __hint_encryption_algo_accept__ __attribute__((cold, nothrow, warn_unused_result, pure, no_sanitize_address, no_stack_protector, optimize(3)))
 #define __hint_hash__ __attribute__((stack_protect, zero_call_used_regs("all"), warn_unused_result, access(read_only, 1), optimize(3)))
 #define __hint_encrypt__ __attribute__((warn_unused_result, zero_call_used_regs("used"), stack_protect, access(read_only, 1), access(read_only, 2), optimize(3)))
@@ -131,6 +152,9 @@ namespace ByteCryptModule
 
 #else
 
+#define __hint_set_iter_counter__ [[nothrow]]
+#define __hint_set_def_key_size__ [[nothrow]]
+#define __hint_set_def_iv_size__ [[nothrow]]
 #define __hint_encryption_algo_accept__ [[nothrow, nodiscard]]
 #define __hint_hash__ [[nodiscard]]
 #define __hint_encrypt__ [[nodiscard]]
@@ -235,25 +259,9 @@ enum class e_eax_symmetric_algo
 // struct but not regular purpose... goes here...
 struct e_key_block_size
 {
-    static const std::size_t 
-    AES = CryptoPP::AES::DEFAULT_KEYLENGTH, 
-    BLOWFISH = CryptoPP::Blowfish::DEFAULT_KEYLENGTH, 
-    TWOFISH = CryptoPP::Twofish::DEFAULT_KEYLENGTH, 
-    CAST128 = CryptoPP::CAST128::DEFAULT_KEYLENGTH, 
-    CAST256 = CryptoPP::CAST256::DEFAULT_KEYLENGTH, 
-    IDEA = CryptoPP::IDEA::DEFAULT_KEYLENGTH,
-    RC2 = CryptoPP::RC2::DEFAULT_KEYLENGTH, 
-    RC5 = CryptoPP::RC5::DEFAULT_KEYLENGTH, 
-    RC6 = CryptoPP::RC6::DEFAULT_KEYLENGTH, 
-    MARS = CryptoPP::MARS::DEFAULT_KEYLENGTH, 
-    SERPENT = CryptoPP::Serpent::DEFAULT_KEYLENGTH, 
-    GOST = CryptoPP::GOST::DEFAULT_KEYLENGTH, 
-    ARIA = CryptoPP::ARIA::BLOCKSIZE,
-    HIGHT = CryptoPP::HIGHT::BLOCKSIZE, 
-    LEA = CryptoPP::LEA::DEFAULT_KEYLENGTH, 
-    SEED = CryptoPP::GOST::DEFAULT_KEYLENGTH, 
-    SPECK128 = CryptoPP::SPECK128::DEFAULT_KEYLENGTH, 
-    SIMON128 = CryptoPP::SIMON128::DEFAULT_KEYLENGTH;
+    static const std::size_t AES = CryptoPP::AES::DEFAULT_KEYLENGTH, BLOWFISH = CryptoPP::Blowfish::DEFAULT_KEYLENGTH, TWOFISH = CryptoPP::Twofish::DEFAULT_KEYLENGTH, CAST128 = CryptoPP::CAST128::DEFAULT_KEYLENGTH, CAST256 = CryptoPP::CAST256::DEFAULT_KEYLENGTH, IDEA = CryptoPP::IDEA::DEFAULT_KEYLENGTH,
+                             RC2 = CryptoPP::RC2::DEFAULT_KEYLENGTH, RC5 = CryptoPP::RC5::DEFAULT_KEYLENGTH, RC6 = CryptoPP::RC6::DEFAULT_KEYLENGTH, MARS = CryptoPP::MARS::DEFAULT_KEYLENGTH, SERPENT = CryptoPP::Serpent::DEFAULT_KEYLENGTH, GOST = CryptoPP::GOST::DEFAULT_KEYLENGTH, ARIA = CryptoPP::ARIA::BLOCKSIZE,
+                             HIGHT = CryptoPP::HIGHT::BLOCKSIZE, LEA = CryptoPP::LEA::DEFAULT_KEYLENGTH, SEED = CryptoPP::GOST::DEFAULT_KEYLENGTH, SPECK128 = CryptoPP::SPECK128::DEFAULT_KEYLENGTH, SIMON128 = CryptoPP::SIMON128::DEFAULT_KEYLENGTH;
 };
 
 struct e_iv_block_size
@@ -414,8 +422,8 @@ template <typename mT> __hint_encryption_algo_accept__ static constexpr bool eax
            std::is_same_v<mT, eax_idea_encryption_t> || std::is_same_v<mT, eax_rc5_encryption_t> || std::is_same_v<mT, eax_rc6_encryption_t> || std::is_same_v<mT, eax_gost_encryption_t> || std::is_same_v<mT, eax_mars_encryption_t> || std::is_same_v<mT, eax_seed_encryption_t> ||
            std::is_same_v<mT, eax_speck128_encryption_t> || std::is_same_v<mT, eax_lea_encryption_t> || std::is_same_v<mT, eax_aes_decryption_t> || std::is_same_v<mT, eax_blowfish_decryption_t> || std::is_same_v<mT, eax_twofish_decryption_t> || std::is_same_v<mT, eax_serpent_decryption_t> ||
            std::is_same_v<mT, eax_cast128_decryption_t> || std::is_same_v<mT, eax_cast256_decryption_t> || std::is_same_v<mT, eax_idea_decryption_t> || std::is_same_v<mT, eax_rc5_decryption_t> || std::is_same_v<mT, eax_rc6_decryption_t> || std::is_same_v<mT, eax_gost_decryption_t> ||
-           std::is_same_v<mT, eax_mars_decryption_t> || std::is_same_v<mT, eax_seed_decryption_t> || std::is_same_v<mT, eax_speck128_decryption_t> || std::is_same_v<mT, eax_lea_decryption_t> || std::is_same_v<mT, eax_simon128_encryption_t> ||
-           std::is_same_v<mT, eax_simon128_decryption_t> || std::is_same_v<mT, eax_hight_encryption_t> || std::is_same_v<mT, eax_hight_decryption_t>;
+           std::is_same_v<mT, eax_mars_decryption_t> || std::is_same_v<mT, eax_seed_decryption_t> || std::is_same_v<mT, eax_speck128_decryption_t> || std::is_same_v<mT, eax_lea_decryption_t> || std::is_same_v<mT, eax_simon128_encryption_t> || std::is_same_v<mT, eax_simon128_decryption_t> ||
+           std::is_same_v<mT, eax_hight_encryption_t> || std::is_same_v<mT, eax_hight_decryption_t>;
 }
 template <typename mT> struct is_accepted_eax_encryption_algorithm
 {
@@ -447,20 +455,43 @@ typedef struct alignas(void *)
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 __temp_byte_crypt__ class ByteCrypt
 {
-    const std::uint16_t cipher_iteration_count = 10000;
-    const std::uint8_t default_sec_key_size = CryptoPP::AES::DEFAULT_KEYLENGTH;
-    const std::uint8_t default_sec_iv_size = CryptoPP::AES::BLOCKSIZE;
+    std::uint16_t cipher_iteration_count = 10000;
+    std::uint8_t default_sec_key_size = CryptoPP::AES::DEFAULT_KEYLENGTH;
+    std::uint8_t default_sec_iv_size = CryptoPP::AES::BLOCKSIZE;
     const std::array<std::uint16_t, 5> rsa_key_size_options{512u, 1024u, 2048u, 3072u, 4096u};
 
     byte __key__[key_size_t];
     byte __iv__[iv_size_t];
 
   public:
-    ByteCrypt() = default;
+    ByteCrypt() noexcept
+    {
+        this->cipher_iteration_count = DEFAULT_CIPHER_ITERATION_COUNTER;
+        this->default_sec_key_size = DEFAULT_SEC_BLOCK_KEY_SIZE;
+        this->default_sec_iv_size = DEFAULT_SEC_BLOCK_IV_SIZE;
+    };
     ByteCrypt(const ByteCrypt &) = delete;
     ByteCrypt &operator=(const ByteCrypt &) = delete;
     ByteCrypt(ByteCrypt &&) = delete;
     ByteCrypt &operator=(ByteCrypt &&) = delete;
+
+    __hint_set_iter_counter__ inline void set_cipher_iteration_counter(const std::size_t iterations) noexcept {
+        if(iterations < 10000000UL){
+            this->cipher_iteration_count = iterations;
+        }
+    };
+
+    __hint_set_def_key_size__ inline void set_sec_block_key_size(const std::size_t key_size) noexcept {
+        if(key_size >= 8 && key_size <= 256){
+            this->default_sec_key_size = key_size;
+        }
+    };
+
+    __hint_set_def_iv_size__ inline void set_sec_block_iv_size(const std::size_t key_size) noexcept {
+        if(key_size >= 8 && key_size <= 256){
+            this->default_sec_iv_size = key_size;
+        }
+    };
 
     /**
      * Hash buffer with sha algorithm and return hashed result.
