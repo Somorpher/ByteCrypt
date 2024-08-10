@@ -30,18 +30,15 @@ Knowledge of the following concepts is required:
 ## Proof of Concept(PoC)
 
 ### CBC(Cipher-Block-Counter) Operation Mode Test:
-
 ![CBC screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/f3e7ddfff8b5d18a253d571b67045a43_66b79299dc5d4.png)
+
+### GCM(Gallois-Counter-Mode) Operation Mode Test:
+![CBC screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/da566eb6adffeede444893f7c3dff25_66b79299df690.png)
 
 
 ### EAX Operation Mode Test:
+![EAX screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/0384a7aa5e40568fdbee7ce42cc8e8_66b79299e2174.png)
 
-![CBC screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/f3e7ddfff8b5d18a253d571b67045a43_66b79299dc5d4.png)
-
-
-### GCM(Gallois-Counter-Mode) Operation Mode Test:
-
-![CBC screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/f3e7ddfff8b5d18a253d571b67045a43_66b79299dc5d4.png)
 
 ## Description
 
