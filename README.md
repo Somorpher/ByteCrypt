@@ -107,6 +107,8 @@ brew install cryptopp
 ```
 ## Basic Cryptography Concepts:
 
+here is another repo containing majority of basic concepts like Operation Modes and Cipher Block Generators: [Notes](https://github.com/Somorpher/BSOM_NOTES).
+
 Encryption Algorithms: Supports [AES](https://it.wikipedia.org/wiki/Advanced_Encryption_Standard), Blowfish, and Twofish in both  [CBC](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation)(Cipher Block Chaining) and [GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) (Galois/Counter Mode) modes.
 Hashing Functions: Implements SHA-1, SHA-224, SHA-256, SHA-384, and SHA-512 for generating data fingerprints.
 Digital Signatures: Provides tools for generating and verifying signatures using RSA and DSA algorithms.
