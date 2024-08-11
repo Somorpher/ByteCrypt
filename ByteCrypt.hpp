@@ -54,6 +54,7 @@
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
+#include <bitset>
 
 // Encryption Libraries
 #include <crypto++/aes.h>
@@ -148,6 +149,9 @@ namespace ByteCryptModule
 #define __hint_rsa_key_meta_wipe__ __attribute__((const, zero_call_used_regs("used"), warn_unused_result, access(read_only, 1), optimize("2")))
 #define __hint_perform_encryption__ __attribute__((always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), access(read_only, 2), access(read_only, 1), optimize("3")))
 #define __hint_perform_decryption__ __attribute__((always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), access(read_only, 2), access(read_only, 1), optimize("3")))
+#define __hint_generate_random_bytes__ __attribute__((warn_unused_result, no_inline, stack_protect, zero_call_used_regs("used"), optimize("3")))
+#define __hint_store_secret__ __attribute__((cold, no_inline, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
+#define __hint_load_secret_from_file__ __attribute__((cold, no_inline, warn_unused_result, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
 
 #else
 
@@ -179,6 +183,9 @@ namespace ByteCryptModule
 #define __hint_rsa_key_meta_wipe__ [[nodiscard]]
 #define __hint_perform_encryption__ [[]]
 #define __hint_perform_decryption__ [[]]
+#define __hint_generate_random_bytes__ [[warn_unused_result]]
+#define __hint_store_secret__ [[nodiscard]]
+#define __hint_load_secret_from_file__ [[nodiscard]]
 
 #endif
 
@@ -255,13 +262,6 @@ enum class e_eax_symmetric_algo
     __COUNT
 };
 
-enum class e_encryption_secret_security_level
-{
-    WEAK = 4,
-    MODERATE = 8,
-    SECURE = 16,
-    INSANE = 32
-};
 
 // struct but not regular purpose... goes here...
 struct e_key_block_size
@@ -466,7 +466,7 @@ __temp_byte_crypt__ class ByteCrypt
     std::uint16_t cipher_iteration_count = 10000;
     std::uint8_t default_sec_key_size = CryptoPP::AES::DEFAULT_KEYLENGTH;
     std::uint8_t default_sec_iv_size = CryptoPP::AES::BLOCKSIZE;
-    const std::array<std::uint16_t, 5> rsa_key_size_options{512u, 1024u, 2048u, 3072u, 4096u};
+    static constexpr std::array<std::uint16_t, 5> rsa_key_size_options{512u, 1024u, 2048u, 3072u, 4096u};
 
     byte __key__[key_size_t];
     byte __iv__[iv_size_t];
@@ -483,7 +483,7 @@ __temp_byte_crypt__ class ByteCrypt
     ByteCrypt(ByteCrypt &&) = delete;
     ByteCrypt &operator=(ByteCrypt &&) = delete;
 
-    __hint_set_iter_counter__ inline void set_cipher_iteration_counter(const std::size_t iterations) noexcept
+    __hint_set_iter_counter__ inline consteval void set_cipher_iteration_counter(const std::size_t iterations) noexcept
     {
         if (iterations < 10000000UL)
         {
@@ -491,7 +491,7 @@ __temp_byte_crypt__ class ByteCrypt
         }
     };
 
-    __hint_set_def_key_size__ inline void set_sec_block_key_size(const std::size_t key_size) noexcept
+    __hint_set_def_key_size__ inline consteval void set_sec_block_key_size(const std::size_t key_size) noexcept
     {
         if (key_size >= 8 && key_size <= 256)
         {
@@ -499,7 +499,7 @@ __temp_byte_crypt__ class ByteCrypt
         }
     };
 
-    __hint_set_def_iv_size__ inline void set_sec_block_iv_size(const std::size_t key_size) noexcept
+    __hint_set_def_iv_size__ inline consteval void set_sec_block_iv_size(const std::size_t key_size) noexcept
     {
         if (key_size >= 8 && key_size <= 256)
         {
@@ -687,7 +687,7 @@ __temp_byte_crypt__ class ByteCrypt
      * @param e_gcm_symmetric_algo algorithm used when encrypted.
      * @returns string_t decrypted cipher
      */
-    const string_t gcm_decrypt(const string_t &cipher_block, const e_gcm_symmetric_algo algo = e_cbc_symmetric_algo::AES)
+    const string_t gcm_decrypt(const string_t &cipher_block, const e_gcm_symmetric_algo algo = e_gcm_symmetric_algo::AES)
     {
          string_t decrypted_cipher, decoded_cipher;
         try
@@ -1099,13 +1099,13 @@ __temp_byte_crypt__ class ByteCrypt
         return rsa_loader;
     };
 
-    const string_t generate_random_bytes(const e_encryption_secret_security_level security_level = e_encryption_secret_security_level::MODERATE)
+    __hint_generate_random_bytes__ const string_t generate_random_bytes(void)
     {
          string_t final_secret;
         try
         {
             entropy_seed_t entropy;
-            byte random_bytes[static_cast<std::size_t>(security_level) <= static_cast<std::size_t>(e_encryption_secret_security_level::INSANE) && static_cast<std::size_t>(security_level) >= static_cast<std::size_t>(e_encryption_secret_security_level::WEAK) ? static_cast<std::size_t>(security_level) : 16];
+            byte random_bytes[16];
             entropy.GenerateBlock(random_bytes, sizeof(random_bytes));
             string_source_t(random_bytes, sizeof(random_bytes), true, new hex_encoder_t(new string_sink_t(final_secret)));
         }
@@ -1117,7 +1117,8 @@ __temp_byte_crypt__ class ByteCrypt
         return final_secret;
     };
 
-    bool store_secret(const string_view_t &secret, string_t &secret_path, const bool hide = false) noexcept
+    
+    __hint_store_secret__ bool store_secret(const string_view_t &secret, string_t &secret_path, const bool hide = false) noexcept
     {
         if (secret.empty() || secret_path.empty())
             return false;
@@ -1154,7 +1155,8 @@ __temp_byte_crypt__ class ByteCrypt
         return false;
     };
 
-    const string_t load_secret_from_file(const string_view_t &secret_filename)
+    
+    __hint_load_secret_from_file__ const string_t load_secret_from_file(const string_view_t &secret_filename)
     {
          string_t loaded_secret;
         try
@@ -1423,5 +1425,4 @@ __temp_byte_crypt__ class ByteCrypt
 
 #endif
 
-#endif
 #endif
