@@ -28,7 +28,7 @@ Knowledge of the following concepts is required:
  - [Asymmetric Encryption](https://en.wikipedia.org/wiki/Public-key_cryptography)
  - [Block Cipher mode of Operation](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation)
 
-## Proof of Concept(PoC)
+## Screenshots
 
 > For Encryption Operation mode and algorithm testing use PE file `./test` which is `test.cpp` compiled source with g++.
 
