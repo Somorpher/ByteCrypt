@@ -307,8 +307,7 @@ int main(){
 ByteCrypt bCrypt;
 
 /**
-* Template type specification, this will work with GOST and Serpent but not with
-* cryptographic operation modes like GCM(gallois-counter-mode), CTR, etc...
+* For GOST and Serpent algorithms...
 **/
 ByteCrypt<32, 16> byteCryptGost;
 
