@@ -35,26 +35,25 @@
 #if defined(__x86_64__) || defined(__amd64__) || defined(__i386__) || defined(__M_X64)
 
 #include <assert.h>
-#include <stdexcept>
-#include <string>
-#include <iostream>
-#include <stdio.h>
+#include <chrono>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include <sstream>
-#include <fstream>
-#include <cstdint>
-#include <optional>
-#include <exception>
-#include <errno.h>
-#include <chrono>
 #include <ctime>
+#include <errno.h>
+#include <exception>
+#include <fstream>
 #include <functional>
-#include <typeinfo>
 #include <iomanip>
+#include <iostream>
+#include <optional>
+#include <sstream>
+#include <stdexcept>
+#include <stdio.h>
+#include <string>
 #include <type_traits>
+#include <typeinfo>
 #include <utility>
-
 
 // Encryption Libraries
 #include <crypto++/aes.h>
@@ -256,6 +255,14 @@ enum class e_eax_symmetric_algo
     __COUNT
 };
 
+enum class e_encryption_secret_security_level
+{
+    WEAK = 4,
+    MODERATE = 8,
+    SECURE = 16,
+    INSANE = 32
+};
+
 // struct but not regular purpose... goes here...
 struct e_key_block_size
 {
@@ -455,6 +462,7 @@ typedef struct alignas(void *)
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 __temp_byte_crypt__ class ByteCrypt
 {
+    std::unique_ptr<string_t> secret_key = nullptr;
     std::uint16_t cipher_iteration_count = 10000;
     std::uint8_t default_sec_key_size = CryptoPP::AES::DEFAULT_KEYLENGTH;
     std::uint8_t default_sec_iv_size = CryptoPP::AES::BLOCKSIZE;
@@ -475,20 +483,26 @@ __temp_byte_crypt__ class ByteCrypt
     ByteCrypt(ByteCrypt &&) = delete;
     ByteCrypt &operator=(ByteCrypt &&) = delete;
 
-    __hint_set_iter_counter__ inline void set_cipher_iteration_counter(const std::size_t iterations) noexcept {
-        if(iterations < 10000000UL){
+    __hint_set_iter_counter__ inline void set_cipher_iteration_counter(const std::size_t iterations) noexcept
+    {
+        if (iterations < 10000000UL)
+        {
             this->cipher_iteration_count = iterations;
         }
     };
 
-    __hint_set_def_key_size__ inline void set_sec_block_key_size(const std::size_t key_size) noexcept {
-        if(key_size >= 8 && key_size <= 256){
+    __hint_set_def_key_size__ inline void set_sec_block_key_size(const std::size_t key_size) noexcept
+    {
+        if (key_size >= 8 && key_size <= 256)
+        {
             this->default_sec_key_size = key_size;
         }
     };
 
-    __hint_set_def_iv_size__ inline void set_sec_block_iv_size(const std::size_t key_size) noexcept {
-        if(key_size >= 8 && key_size <= 256){
+    __hint_set_def_iv_size__ inline void set_sec_block_iv_size(const std::size_t key_size) noexcept
+    {
+        if (key_size >= 8 && key_size <= 256)
+        {
             this->default_sec_iv_size = key_size;
         }
     };
@@ -501,7 +515,7 @@ __temp_byte_crypt__ class ByteCrypt
      */
     __hint_hash__ const string_t hash(const string_t &buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
     {
-        string_t digest_block;
+         string_t digest_block;
         std::unique_ptr<CryptoPP::HashTransformation> algo;
         switch (sha)
         {
@@ -534,9 +548,9 @@ __temp_byte_crypt__ class ByteCrypt
      * @param e_cbc_symmetric_algo the algorithm for encryption
      * @returns string_t encrypted cipher
      */
-    __hint_encrypt__ const string_t cbc_encrypt(const string_t &plain_text, const string_t &key, const e_cbc_symmetric_algo algo)
+    __hint_encrypt__ const string_t cbc_encrypt(const string_t &plain_text, const string_t &key, const e_cbc_symmetric_algo algo = e_cbc_symmetric_algo::AES)
     {
-        string_t cipher, encoded_cipher;
+         string_t cipher, encoded_cipher;
         try
         {
             this->__derive_cbc_key_iv(key, this->__key__, this->__iv__);
@@ -583,9 +597,9 @@ __temp_byte_crypt__ class ByteCrypt
      * @param e_cbc_ymmetric_algo algorithm used when encrypted.
      * @returns string_t decrypted cipher
      */
-    __hint_decrypt__ const string_t cbc_decrypt(const string_t &cipher_block, const e_cbc_symmetric_algo algo)
+    __hint_decrypt__ const string_t cbc_decrypt(const string_t &cipher_block, const e_cbc_symmetric_algo algo = e_cbc_symmetric_algo::AES)
     {
-        string_t decrypted_cipher, decoded_cipher;
+         string_t decrypted_cipher, decoded_cipher;
         try
         {
             switch (algo)
@@ -636,7 +650,7 @@ __temp_byte_crypt__ class ByteCrypt
      * @param e_gcm_symmetric_algo the algorithm for encryption
      * @returns string_t encrypted cipher
      */
-    const string_t gcm_encrypt(const string_t &plain_text, const string_t &key, const e_gcm_symmetric_algo algo)
+    const string_t gcm_encrypt(const string_t &plain_text, const string_t &key, const e_gcm_symmetric_algo algo = e_gcm_symmetric_algo::AES)
     {
         string_t cipher, encoded_cipher;
         try
@@ -673,9 +687,9 @@ __temp_byte_crypt__ class ByteCrypt
      * @param e_gcm_symmetric_algo algorithm used when encrypted.
      * @returns string_t decrypted cipher
      */
-    const string_t gcm_decrypt(const string_t &cipher_block, const e_gcm_symmetric_algo algo)
+    const string_t gcm_decrypt(const string_t &cipher_block, const e_gcm_symmetric_algo algo = e_cbc_symmetric_algo::AES)
     {
-        string_t decrypted_cipher, decoded_cipher;
+         string_t decrypted_cipher, decoded_cipher;
         try
         {
             switch (algo)
@@ -712,12 +726,12 @@ __temp_byte_crypt__ class ByteCrypt
      * @param e_eax_symmetric_algo the algorithm for encryption
      * @returns string_t encrypted cipher
      */
-    __hint_encrypt__ const string_t eax_encrypt(const string_t &plain_text, const string_t &key, const e_eax_symmetric_algo algo)
+    __hint_encrypt__ const string_t eax_encrypt(const string_t &plain_text, const string_t &key, const e_eax_symmetric_algo algo = e_eax_symmetric_algo::AES)
     {
-        string_t cipher, encoded_cipher;
+         string_t cipher, encoded_cipher;
         try
         {
-            this->__derive_cbc_key_iv(key, this->__key__, this->__iv__);
+            this->__derive_eax_key_iv(key, this->__key__, this->__iv__);
 
             switch (algo)
             {
@@ -760,9 +774,9 @@ __temp_byte_crypt__ class ByteCrypt
      * @param e_eax_symmetric_algo algorithm used when encrypted.
      * @returns string_t decrypted cipher
      */
-    __hint_decrypt__ const string_t eax_decrypt(const string_t &cipher_block, const e_eax_symmetric_algo algo)
+    __hint_decrypt__ const string_t eax_decrypt(const string_t &cipher_block, const e_eax_symmetric_algo algo = e_eax_symmetric_algo::AES)
     {
-        string_t decrypted_cipher, decoded_cipher;
+         string_t decrypted_cipher, decoded_cipher;
         try
         {
             switch (algo)
@@ -869,7 +883,7 @@ __temp_byte_crypt__ class ByteCrypt
      */
     __hint_generate_rsa_key_der_pair__ const rsa_key_pair_struct generate_rsa_key_der_pair(const std::size_t rsa_key_size = 2048U)
     {
-        rsa_key_pair_struct local_kps{};
+         rsa_key_pair_struct local_kps{};
         if (!this->__is_rsa_key_size_valid(rsa_key_size)) [[unlikely]]
             return local_kps;
         try
@@ -925,7 +939,7 @@ __temp_byte_crypt__ class ByteCrypt
      */
     __hint_generate_rsa_key_pem_pair__ const rsa_key_pair_struct generate_rsa_key_pem_pair(const std::size_t rsa_key_size = 2048U)
     {
-        rsa_key_pair_struct rsa_keys = this->generate_rsa_key_der_pair(rsa_key_size);
+         rsa_key_pair_struct rsa_keys = this->generate_rsa_key_der_pair(rsa_key_size);
         if (!this->__is_rsa_key_size_valid(rsa_key_size)) [[unlikely]]
             return rsa_keys;
         try
@@ -955,7 +969,7 @@ __temp_byte_crypt__ class ByteCrypt
      */
     __hint_sign_message__ const string_t sign_message(const string_t &message, const string_t &rsa_key)
     {
-        string_t signature;
+         string_t signature;
         if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PRIVATE)) [[unlikely]]
             return signature;
         string_t clean_key(this->__rsa_key_meta_wipe(const_cast<string_t &&>(std::move(rsa_key))));
@@ -1085,10 +1099,95 @@ __temp_byte_crypt__ class ByteCrypt
         return rsa_loader;
     };
 
+    const string_t generate_random_bytes(const e_encryption_secret_security_level security_level = e_encryption_secret_security_level::MODERATE)
+    {
+         string_t final_secret;
+        try
+        {
+            entropy_seed_t entropy;
+            byte random_bytes[static_cast<std::size_t>(security_level) <= static_cast<std::size_t>(e_encryption_secret_security_level::INSANE) && static_cast<std::size_t>(security_level) >= static_cast<std::size_t>(e_encryption_secret_security_level::WEAK) ? static_cast<std::size_t>(security_level) : 16];
+            entropy.GenerateBlock(random_bytes, sizeof(random_bytes));
+            string_source_t(random_bytes, sizeof(random_bytes), true, new hex_encoder_t(new string_sink_t(final_secret)));
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "SecretGenerate Error: " << e.what() << "\n";
+            final_secret.clear();
+        }
+        return final_secret;
+    };
+
+    bool store_secret(const string_view_t &secret, string_t &secret_path, const bool hide = false) noexcept
+    {
+        if (secret.empty() || secret_path.empty())
+            return false;
+        try
+        {
+            if (hide)
+            {
+                string_t last_path_segment(secret_path.c_str());
+                if (secret_path.find("/") != string_t::npos)
+                {
+                    last_path_segment = secret_path.substr(secret_path.find("/") + 1);
+                }
+                if (last_path_segment.find(".") != 0)
+                {
+                    last_path_segment = "." + last_path_segment;
+                }
+                secret_path = std::move(last_path_segment);
+            }
+            std::ofstream file_descriptor(secret_path, std::ios::binary);
+            if (!file_descriptor.is_open())
+                throw std::ofstream::failure::runtime_error("cannot open file!");
+            file_descriptor << secret;
+            file_descriptor.close();
+            std::ifstream file_check(secret_path.c_str(), std::ios::binary);
+            if (!file_check.is_open())
+                return false;
+            file_check.close();
+            return true;
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Exception: " << e.what() << "\n";
+        }
+        return false;
+    };
+
+    const string_t load_secret_from_file(const string_view_t &secret_filename)
+    {
+         string_t loaded_secret;
+        try
+        {
+            std::basic_ifstream<char> file_descriptor(&secret_filename[0], std::ios::binary);
+            if (!file_descriptor.is_open())
+                throw std::ifstream::failure::runtime_error("cannot open file for secret loading!");
+            string_t buffer_bytes;
+            file_descriptor.seekg(0, std::ios::end);
+            const std::size_t fsecret_size(file_descriptor.tellg());
+            file_descriptor.seekg(0, std::ios::beg);
+            buffer_bytes.resize(fsecret_size);
+            do
+            {
+                loaded_secret += buffer_bytes;
+            } while (std::getline(file_descriptor, buffer_bytes));
+            file_descriptor.close();
+            buffer_bytes.clear();
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "LoadSecret Error: " << e.what() << '\n';
+        }
+        return loaded_secret;
+    };
+
     ~ByteCrypt()
     {
         std::memset(this->__key__, 0, 0);
         std::memset(this->__iv__, 0, 0);
+        if (this->secret_key == nullptr)
+            return;
+        delete this->secret_key.get();
     };
 
   private:
@@ -1324,4 +1423,5 @@ __temp_byte_crypt__ class ByteCrypt
 
 #endif
 
+#endif
 #endif
