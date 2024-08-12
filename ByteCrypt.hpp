@@ -34,6 +34,13 @@
 // architecture detection
 #if defined(__x86_64__) || defined(__amd64__) || defined(__i386__) || defined(__M_X64)
 
+#if defined(_WIN32) || defined(_WIN64)
+#define PATH_SEPARATOR "\"
+#include <windows.h>
+#else
+#define PATH_SEPARATOR "/"
+#endif
+
 #include <assert.h>
 #include <chrono>
 #include <cstdint>
