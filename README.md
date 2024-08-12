@@ -28,83 +28,7 @@ Knowledge of the following concepts is required:
  - [Asymmetric Encryption](https://en.wikipedia.org/wiki/Public-key_cryptography)
  - [Block Cipher mode of Operation](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation)
 
-## Screenshots
 
-> For Encryption Operation mode and algorithm testing use PE file `./test` which is `test.cpp` compiled source with g++.
-
-> For extended test(encoding, hashing, RSA loading, Signature Based operations, etc...) use `./extended_test`.
-
-### CBC(Cipher-Block-Counter) Operation Mode Test:
-![CBC screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/f3e7ddfff8b5d18a253d571b67045a43_66b79299dc5d4.png)
-
-### GCM(Gallois-Counter-Mode) Operation Mode Test:
-![CBC screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/da566eb6adffeede444893f7c3dff25_66b79299df690.png)
-
-
-### EAX Operation Mode Test:
-![EAX screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/0384a7aa5e40568fdbee7ce42cc8e8_66b79299e2174.png)
-
-### Encoding/Decoding, Hashing Test:
-![RSA screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/__fdssdbe9d62418018590338bd031e6fe267d_66b7c03983097.png)
-
-### RSA DER Key Test:
-![RSA DER screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/__dfbec233575348b4d56bfbb3d4bb06e6a_66b7c03991839.png)
-
-![RSA DER screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/__dsf98d2b400597e916d067c29de47fcf2e_66b7c0398b203.png)
-
-### RSA PEM Key Test:
-![RSA screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/__c13319a24507d90063899b6b3f477e_66b7c0398e551.png)
-
-### RSA Key Load/Store, Signature, Verification
-![RSA screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/__ds35904dc00a3f7108fa23_66b7c0398735c.png)
-
-All tests got successful when i tested, tested on linux mint 22, x86_64, used g++ compiler, crypto++ library installed.
-
-
-## Description
-
-ByteCrypt is a versatile cryptographic utility that provides a collection of tools and functions for various cryptographic operations, including encryption, decryption, hashing, and digital signatures. Built on top of the Crypto++ library, ByteCrypt is organized within the ByteCryptModule namespace and supports multiple encryption algorithms and hashing functions, making it a comprehensive choice for developers needing robust cryptographic solutions.
-Compatibility
-
-## Requirements
-
-### Architecture: 64-bit, x86-64
-- Operating Systems: Linux, macOS
-- C++ Version: C++11 or later
-
-### Compiler Requirements:
-- GCC: 5.1 or later
-- Clang: 3.6 or later
-- GCC flags: -lcryptopp
-
-
-### Installation of Crypto++ Library
-
-**crypto++** is one of the most used cryptographic labriers for c++ programming, ByteCrypt relies on crypto++ mostly, crypto++ website: [cryptopp.com](https://cryptopp.com).
-
-To use the ByteCrypt class, the Crypto++ library must be installed. Here are the installation instructions for different 
-platforms:
-
-- Debian:
-```bash
-sudo apt install libcryptopp-dev`
-```
-
-- Fedora:
-```bash
-sudo dnf install cryptopp-devel
-```
-
-- Arch:
-```bash
-sudo pacman -S cryptopp
-```
-
-
-- macOS:
-```bash
-brew install cryptopp
-```
 ## Basic Cryptography Concepts:
 
 Additional Resources: [Block Ciphers and Mode of Operations](https://github.com/Somorpher/BSOM_NOTES).
@@ -211,7 +135,77 @@ These modes can be used for streaming data but do not provide authentication.
 
 It is essential to consider the security implications of using hashing and encryption. A secure hashing algorithm should be collision-resistant and pre-image resistant. A secure encryption algorithm should be resistant to known-plaintext attacks and chosen-ciphertext attacks.
 
+## Test Screenshots
 
+> For Encryption Operation mode and algorithm testing use PE file `./test` which is `test.cpp` compiled source with g++.
+
+> For extended test(encoding, hashing, RSA loading, Signature Based operations, etc...) use `./extended_test`.
+
+### CBC(Cipher-Block-Counter) Operation Mode Test:
+![CBC screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/f3e7ddfff8b5d18a253d571b67045a43_66b79299dc5d4.png)
+
+### GCM(Gallois-Counter-Mode) Operation Mode Test:
+![CBC screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/da566eb6adffeede444893f7c3dff25_66b79299df690.png)
+
+
+### EAX Operation Mode Test:
+![EAX screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/0384a7aa5e40568fdbee7ce42cc8e8_66b79299e2174.png)
+
+### Encoding/Decoding, Hashing Test:
+![RSA screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/__fdssdbe9d62418018590338bd031e6fe267d_66b7c03983097.png)
+
+### RSA DER Key Test:
+![RSA DER screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/__dfbec233575348b4d56bfbb3d4bb06e6a_66b7c03991839.png)
+
+![RSA DER screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/__dsf98d2b400597e916d067c29de47fcf2e_66b7c0398b203.png)
+
+### RSA PEM Key Test:
+![RSA screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/__c13319a24507d90063899b6b3f477e_66b7c0398e551.png)
+
+### RSA Key Load/Store, Signature, Verification
+![RSA screenshot](https://github.com/Somorpher/ByteCrypt/blob/main/images/__ds35904dc00a3f7108fa23_66b7c0398735c.png)
+
+All tests got successful when i tested, tested on linux mint 22, x86_64, used g++ compiler, crypto++ library installed
+
+## Requirements
+
+### Architecture: 64-bit, x86-64
+- Operating Systems: Linux, macOS
+- C++ Version: C++11 or later
+
+### Compiler Requirements:
+- GCC: 5.1 or later
+- Clang: 3.6 or later
+- GCC flags: -lcryptopp
+
+
+### Installation of Crypto++ Library
+
+**crypto++** is one of the most used cryptographic labriers for c++ programming, ByteCrypt relies on crypto++ mostly, crypto++ website: [cryptopp.com](https://cryptopp.com).
+
+To use the ByteCrypt class, the Crypto++ library must be installed. Here are the installation instructions for different 
+platforms:
+
+- Debian:
+```bash
+sudo apt install libcryptopp-dev`
+```
+
+- Fedora:
+```bash
+sudo dnf install cryptopp-devel
+```
+
+- Arch:
+```bash
+sudo pacman -S cryptopp
+```
+
+
+- macOS:
+```bash
+brew install cryptopp
+```
 
 
 ### Class Structures
