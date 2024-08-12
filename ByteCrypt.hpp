@@ -28,10 +28,16 @@
  *
  * Written by [Somorpher], [2024].
  */
-#if defined(__linux__) || defined(__APPLE__) || defined(_WIN32) || defined(_WIN64) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__) || defined(__sun) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__MINGW64__) || defined(__ANDROID__) || defined(__unix__) || defined(__HAIKU__)
+// Platform detection
+
+#if defined(__linux__) || defined(__APPLE__) || defined(_WIN32) || defined(_WIN64) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__) || defined(__sun) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__MINGW64__) || defined(__ANDROID__) || defined(__unix__) ||   \
+    defined(__HAIKU__)
 
 // Architecture detection
-#if defined(__x86_64__) || defined(__amd64__) || defined(__i386__) || defined(__M_X64) || defined(__aarch64__) || defined(__arm__) || defined(__powerpc64__) || defined(__ppc64__) || defined(__powerpc__) || defined(__ppc__) || defined(__sparc__) || defined(__mips__) || defined(__mips64__) || defined(__s390__) || defined(__s390x__) || defined(__riscv) || defined(__riscv64__)
+#if defined(__x86_64__) || defined(__amd64__) || defined(__i386__) || defined(__M_X64) || defined(__aarch64__) || defined(__arm__) || defined(__powerpc64__) || defined(__ppc64__) || defined(__powerpc__) || defined(__ppc__) || defined(__sparc__) || defined(__mips__) || defined(__mips64__) || defined(__s390__) ||       \
+    defined(__s390x__) || defined(__riscv) || defined(__riscv64__)
+
+#if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__) || defined(_MSC_VER)
 
 #if defined(_WIN32) || defined(_WIN64)
 #define PATH_SEPARATOR "\\"
@@ -123,7 +129,7 @@ namespace ByteCryptModule
 
 /*                      Attribution                      *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-#if defined(__GNUC__) || defined(__clang__)
+#if defined(__GNUC__) || defined(__GNUG__) || defined(__clang__)
 
 #define __hint_set_iter_counter__ __attribute__((cold, nothrow, noipa, no_stack_protector))
 #define __hint_set_def_key_size__ __attribute__((cold, nothrow, noipa, no_stack_protector))
@@ -461,32 +467,77 @@ typedef struct alignas(void *)
     bool status{false};
 } rsa_key_block_load;
 
+typedef struct alignas(void *)
+{
+    string_t error_msg{};
+    bool has_error{false};
+} error_frame;
+
 /*                      Class                            *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 __temp_byte_crypt__ class ByteCrypt
 {
-    std::unique_ptr<string_t> secret_key = nullptr;
-    std::uint16_t cipher_iteration_count = 10000;
-    std::uint8_t default_sec_key_size = CryptoPP::AES::DEFAULT_KEYLENGTH;
-    std::uint8_t default_sec_iv_size = CryptoPP::AES::BLOCKSIZE;
+    std::unique_ptr<string_t> secret_key = std::make_unique<string_t>();
+    std::uint16_t cipher_iteration_count = DEFAULT_CIPHER_ITERATION_COUNTER;
+    std::uint8_t default_sec_key_size = DEFAULT_SEC_BLOCK_KEY_SIZE;
+    std::uint8_t default_sec_iv_size = DEFAULT_SEC_BLOCK_IV_SIZE;
     static constexpr std::array<std::uint16_t, 5> rsa_key_size_options{512u, 1024u, 2048u, 3072u, 4096u};
 
     byte __key__[key_size_t];
     byte __iv__[iv_size_t];
 
   public:
-    ByteCrypt() noexcept
-    {
-        this->cipher_iteration_count = DEFAULT_CIPHER_ITERATION_COUNTER;
-        this->default_sec_key_size = DEFAULT_SEC_BLOCK_KEY_SIZE;
-        this->default_sec_iv_size = DEFAULT_SEC_BLOCK_IV_SIZE;
-    };
-    ByteCrypt(const ByteCrypt &) = delete;
-    ByteCrypt &operator=(const ByteCrypt &) = delete;
-    ByteCrypt(ByteCrypt &&) = delete;
-    ByteCrypt &operator=(ByteCrypt &&) = delete;
+    inline ByteCrypt() noexcept {};
 
-    __hint_set_iter_counter__ inline consteval void set_cipher_iteration_counter(const std::size_t iterations) noexcept
+    inline ByteCrypt(const ByteCrypt &o_instance) noexcept
+    {
+        this->__constructor_copy_handler(o_instance);
+    };
+
+    inline ByteCrypt &operator=(const ByteCrypt &o_instance) noexcept
+    {
+        this->__constructor_copy_handler(o_instance);
+        return *this;
+    };
+
+    inline ByteCrypt(ByteCrypt &&o_instance) noexcept
+    {
+        this->__constructor_copy_handler(o_instance);
+    };
+    inline ByteCrypt &operator=(ByteCrypt &&o_instance) noexcept
+    {
+        this->__constructor_copy_handler(o_instance);
+        return *this;
+    };
+    inline ByteCrypt(const string_view_t initial_secret_key) noexcept
+    {
+        *this->secret_key = initial_secret_key;
+    };
+
+    inline ByteCrypt(const string_view_t &initial_secret_key, const byte key[], const byte iv[], const std::uint16_t key_size, const std::uint16_t iv_size) noexcept
+    {
+        *this->secret_key = (string_t)initial_secret_key;
+        if (key_size == std::size(this->__key__))
+            for (std::uint16_t j{0}; j < key_size; ++j)
+                this->__key__[j] = key[j];
+        if (iv_size == std::size(this->__iv__))
+            for (std::uint16_t j{0}; j < iv_size; ++j)
+                this->__iv__[j] = iv[j];
+    };
+
+    inline const bool operator==(const ByteCrypt &o_instance) const noexcept
+    {
+        return this->secret_key.get()->compare(o_instance.secret_key.get()->c_str()) == 0;
+    };
+
+    /**
+     * 
+     * Set cipher iteration count value.
+     * @param std::size_t new number of iterations.
+     * @returns void
+     * 
+     */
+    __hint_set_iter_counter__ inline void set_cipher_iteration_counter(const std::size_t iterations) noexcept
     {
         if (iterations < 10000000UL)
         {
@@ -494,7 +545,14 @@ __temp_byte_crypt__ class ByteCrypt
         }
     };
 
-    __hint_set_def_key_size__ inline consteval void set_sec_block_key_size(const std::size_t key_size) noexcept
+    /**
+     * 
+     * Set default secure block key size.
+     * @param std::size_t key size
+     * @returns void
+     * 
+     */
+    __hint_set_def_key_size__ inline void set_sec_block_key_size(const std::size_t key_size) noexcept
     {
         if (key_size >= 8 && key_size <= 256)
         {
@@ -502,11 +560,18 @@ __temp_byte_crypt__ class ByteCrypt
         }
     };
 
-    __hint_set_def_iv_size__ inline consteval void set_sec_block_iv_size(const std::size_t key_size) noexcept
+    /**
+     * 
+     * Set default secure initialization vector size.
+     * @param std::size_t initialization vector size
+     * @returns void
+     * 
+     */
+    __hint_set_def_iv_size__ inline void set_sec_block_iv_size(const std::size_t iv_size) noexcept
     {
-        if (key_size >= 8 && key_size <= 256)
+        if (iv_size >= 8 && iv_size <= 256)
         {
-            this->default_sec_iv_size = key_size;
+            this->default_sec_iv_size = iv_size;
         }
     };
 
@@ -1103,10 +1168,10 @@ __temp_byte_crypt__ class ByteCrypt
     };
 
     /**
-     * 
+     *
      * Generate Random Bytes using secure system entropy generator with 16 bytes output block size.
      * @returns string_t the random generated string
-     * 
+     *
      */
     __hint_generate_random_bytes__ const string_t generate_random_bytes(void)
     {
@@ -1127,13 +1192,13 @@ __temp_byte_crypt__ class ByteCrypt
     };
 
     /**
-     * 
+     *
      * Store secret(K) within secret_path, if flag "hide" is true, this will preceed the destination file
      * with a "." so it hides it(kind of), default is false.
      * @param string_view_t& secret to store
      * @param string_t& path to store
      * @param bool if true it will hide the secret file name
-     * 
+     *
      */
     __hint_store_secret__ bool store_secret(const string_view_t &secret, string_t &secret_path, const bool hide = false) noexcept
     {
@@ -1171,13 +1236,13 @@ __temp_byte_crypt__ class ByteCrypt
         }
         return false;
     };
-    
+
     /**
-     * 
+     *
      * Load secret from secret_filename if file name exists, or empty string is returned.
      * @param string_view_t& path to file
      * @returns string_t loaded secret, if any...
-     * 
+     *
      */
     __hint_load_secret_from_file__ const string_t load_secret_from_file(const string_view_t &secret_filename)
     {
@@ -1207,12 +1272,12 @@ __temp_byte_crypt__ class ByteCrypt
     };
 
     /**
-     * 
+     *
      * Shift block to right by "shift_pos" positions, "shift_pos", shift_pos does not usually exceed values such as(100-200).
      * @param string_view_t& block to shift
      * @param int the number of positions to r-move
      * @returns string_t the right shifted block
-     * 
+     *
      */
     const string_t block_rshift(const string_view_t block, const short int shift_pos = 3)
     {
@@ -1228,12 +1293,12 @@ __temp_byte_crypt__ class ByteCrypt
     }
 
     /**
-     * 
+     *
      * Shift block to left by "shift_pos" positions, "shift_pos", shift_pos does not usually exceed values such as(100-200).
      * @param string_view_t& block to shift
      * @param int the number of positions to l-move
      * @returns string_t the left shifted block
-     * 
+     *
      */
     const string_t block_lshift(const string_view_t block, const short int shift_pos = 3)
     {
@@ -1252,9 +1317,6 @@ __temp_byte_crypt__ class ByteCrypt
     {
         std::memset(this->__key__, 0, 0);
         std::memset(this->__iv__, 0, 0);
-        if (this->secret_key == nullptr)
-            return;
-        delete this->secret_key.get();
     };
 
   private:
@@ -1484,8 +1546,27 @@ __temp_byte_crypt__ class ByteCrypt
         string_source_t(cipher_text, true, new hex_decoder_t(new string_sink_t(decoded_data)));
         string_source_t(decoded_data, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_data)));
     };
+
+    inline void __constructor_copy_handler(const ByteCrypt &o_instance) noexcept
+    {
+        if (*this != o_instance)
+        {
+            *this->secret_key = *o_instance.secret_key;
+            this->cipher_iteration_count = o_instance.cipher_iteration_count;
+            this->default_sec_iv_size = o_instance.default_sec_iv_size;
+            this->default_sec_key_size = o_instance.default_sec_key_size;
+            if (std::size(o_instance.__key__) > 0)
+                for (std::uint16_t j{0}; j < std::size(o_instance.__key__); ++j)
+                    this->__key__[j] = o_instance.__key__[j];
+            if (std::size(o_instance.__iv__) == std::size(this->__iv__))
+                for (std::uint16_t j{0}; j < std::size(o_instance.__iv__); ++j)
+                    this->__iv__[j] = o_instance.__iv__[j];
+        }
+    };
 };
 }; // namespace ByteCryptModule
+#endif
+
 #endif
 
 #endif
