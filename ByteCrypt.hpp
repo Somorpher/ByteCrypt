@@ -28,11 +28,10 @@
  *
  * Written by [Somorpher], [2024].
  */
-// Platform detection
-#if defined(__linux__) || defined(__APPLE__) || defined(_WIN32) || defined(_WIN64)
+#if defined(__linux__) || defined(__APPLE__) || defined(_WIN32) || defined(_WIN64) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__) || defined(__sun) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__MINGW64__) || defined(__ANDROID__) || defined(__unix__) || defined(__HAIKU__)
 
-// architecture detection
-#if defined(__x86_64__) || defined(__amd64__) || defined(__i386__) || defined(__M_X64)
+// Architecture detection
+#if defined(__x86_64__) || defined(__amd64__) || defined(__i386__) || defined(__M_X64) || defined(__aarch64__) || defined(__arm__) || defined(__powerpc64__) || defined(__ppc64__) || defined(__powerpc__) || defined(__ppc__) || defined(__sparc__) || defined(__mips__) || defined(__mips64__) || defined(__s390__) || defined(__s390x__) || defined(__riscv) || defined(__riscv64__)
 
 #if defined(_WIN32) || defined(_WIN64)
 #define PATH_SEPARATOR "\\"
