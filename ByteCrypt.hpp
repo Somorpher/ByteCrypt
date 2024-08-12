@@ -29,7 +29,7 @@
  * Written by [Somorpher], [2024].
  */
 // Platform detection
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__APPLE__) || defined(_WIN32) || defined(_WIN64)
 
 // architecture detection
 #if defined(__x86_64__) || defined(__amd64__) || defined(__i386__) || defined(__M_X64)
