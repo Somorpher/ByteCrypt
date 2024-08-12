@@ -35,13 +35,14 @@
 #if defined(__x86_64__) || defined(__amd64__) || defined(__i386__) || defined(__M_X64)
 
 #if defined(_WIN32) || defined(_WIN64)
-#define PATH_SEPARATOR "\"
+#define PATH_SEPARATOR "\\"
 #include <windows.h>
 #else
 #define PATH_SEPARATOR "/"
 #endif
 
 #include <assert.h>
+#include <bitset>
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
@@ -61,7 +62,6 @@
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
-#include <bitset>
 
 // Encryption Libraries
 #include <crypto++/aes.h>
@@ -100,9 +100,7 @@
 
 #ifndef __MODULE_BYTE_CRYPT__
 
-#define __MODULE_BYTE_CRYPT__ 1
-
-// ft. Somorpher
+#define __MODULE_BYTE_CRYPT__
 
 namespace ByteCryptModule
 {
@@ -156,9 +154,9 @@ namespace ByteCryptModule
 #define __hint_rsa_key_meta_wipe__ __attribute__((const, zero_call_used_regs("used"), warn_unused_result, access(read_only, 1), optimize("2")))
 #define __hint_perform_encryption__ __attribute__((always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), access(read_only, 2), access(read_only, 1), optimize("3")))
 #define __hint_perform_decryption__ __attribute__((always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), access(read_only, 2), access(read_only, 1), optimize("3")))
-#define __hint_generate_random_bytes__ __attribute__((warn_unused_result, no_inline, stack_protect, zero_call_used_regs("used"), optimize("3")))
-#define __hint_store_secret__ __attribute__((cold, no_inline, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
-#define __hint_load_secret_from_file__ __attribute__((cold, no_inline, warn_unused_result, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
+#define __hint_generate_random_bytes__ __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("used"), optimize("3")))
+#define __hint_store_secret__ __attribute__((cold, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
+#define __hint_load_secret_from_file__ __attribute__((cold, warn_unused_result, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
 
 #else
 
@@ -268,7 +266,6 @@ enum class e_eax_symmetric_algo
     HIGHT,
     __COUNT
 };
-
 
 // struct but not regular purpose... goes here...
 struct e_key_block_size
@@ -522,7 +519,7 @@ __temp_byte_crypt__ class ByteCrypt
      */
     __hint_hash__ const string_t hash(const string_t &buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
     {
-         string_t digest_block;
+        string_t digest_block;
         std::unique_ptr<CryptoPP::HashTransformation> algo;
         switch (sha)
         {
@@ -557,7 +554,7 @@ __temp_byte_crypt__ class ByteCrypt
      */
     __hint_encrypt__ const string_t cbc_encrypt(const string_t &plain_text, const string_t &key, const e_cbc_symmetric_algo algo = e_cbc_symmetric_algo::AES)
     {
-         string_t cipher, encoded_cipher;
+        string_t cipher, encoded_cipher;
         try
         {
             this->__derive_cbc_key_iv(key, this->__key__, this->__iv__);
@@ -606,7 +603,7 @@ __temp_byte_crypt__ class ByteCrypt
      */
     __hint_decrypt__ const string_t cbc_decrypt(const string_t &cipher_block, const e_cbc_symmetric_algo algo = e_cbc_symmetric_algo::AES)
     {
-         string_t decrypted_cipher, decoded_cipher;
+        string_t decrypted_cipher, decoded_cipher;
         try
         {
             switch (algo)
@@ -696,7 +693,7 @@ __temp_byte_crypt__ class ByteCrypt
      */
     const string_t gcm_decrypt(const string_t &cipher_block, const e_gcm_symmetric_algo algo = e_gcm_symmetric_algo::AES)
     {
-         string_t decrypted_cipher, decoded_cipher;
+        string_t decrypted_cipher, decoded_cipher;
         try
         {
             switch (algo)
@@ -735,7 +732,7 @@ __temp_byte_crypt__ class ByteCrypt
      */
     __hint_encrypt__ const string_t eax_encrypt(const string_t &plain_text, const string_t &key, const e_eax_symmetric_algo algo = e_eax_symmetric_algo::AES)
     {
-         string_t cipher, encoded_cipher;
+        string_t cipher, encoded_cipher;
         try
         {
             this->__derive_eax_key_iv(key, this->__key__, this->__iv__);
@@ -783,7 +780,7 @@ __temp_byte_crypt__ class ByteCrypt
      */
     __hint_decrypt__ const string_t eax_decrypt(const string_t &cipher_block, const e_eax_symmetric_algo algo = e_eax_symmetric_algo::AES)
     {
-         string_t decrypted_cipher, decoded_cipher;
+        string_t decrypted_cipher, decoded_cipher;
         try
         {
             switch (algo)
@@ -890,7 +887,7 @@ __temp_byte_crypt__ class ByteCrypt
      */
     __hint_generate_rsa_key_der_pair__ const rsa_key_pair_struct generate_rsa_key_der_pair(const std::size_t rsa_key_size = 2048U)
     {
-         rsa_key_pair_struct local_kps{};
+        rsa_key_pair_struct local_kps{};
         if (!this->__is_rsa_key_size_valid(rsa_key_size)) [[unlikely]]
             return local_kps;
         try
@@ -946,7 +943,7 @@ __temp_byte_crypt__ class ByteCrypt
      */
     __hint_generate_rsa_key_pem_pair__ const rsa_key_pair_struct generate_rsa_key_pem_pair(const std::size_t rsa_key_size = 2048U)
     {
-         rsa_key_pair_struct rsa_keys = this->generate_rsa_key_der_pair(rsa_key_size);
+        rsa_key_pair_struct rsa_keys = this->generate_rsa_key_der_pair(rsa_key_size);
         if (!this->__is_rsa_key_size_valid(rsa_key_size)) [[unlikely]]
             return rsa_keys;
         try
@@ -976,7 +973,7 @@ __temp_byte_crypt__ class ByteCrypt
      */
     __hint_sign_message__ const string_t sign_message(const string_t &message, const string_t &rsa_key)
     {
-         string_t signature;
+        string_t signature;
         if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PRIVATE)) [[unlikely]]
             return signature;
         string_t clean_key(this->__rsa_key_meta_wipe(const_cast<string_t &&>(std::move(rsa_key))));
@@ -1106,9 +1103,15 @@ __temp_byte_crypt__ class ByteCrypt
         return rsa_loader;
     };
 
+    /**
+     * 
+     * Generate Random Bytes using secure system entropy generator with 16 bytes output block size.
+     * @returns string_t the random generated string
+     * 
+     */
     __hint_generate_random_bytes__ const string_t generate_random_bytes(void)
     {
-         string_t final_secret;
+        string_t final_secret;
         try
         {
             entropy_seed_t entropy;
@@ -1124,7 +1127,15 @@ __temp_byte_crypt__ class ByteCrypt
         return final_secret;
     };
 
-    
+    /**
+     * 
+     * Store secret(K) within secret_path, if flag "hide" is true, this will preceed the destination file
+     * with a "." so it hides it(kind of), default is false.
+     * @param string_view_t& secret to store
+     * @param string_t& path to store
+     * @param bool if true it will hide the secret file name
+     * 
+     */
     __hint_store_secret__ bool store_secret(const string_view_t &secret, string_t &secret_path, const bool hide = false) noexcept
     {
         if (secret.empty() || secret_path.empty())
@@ -1134,9 +1145,9 @@ __temp_byte_crypt__ class ByteCrypt
             if (hide)
             {
                 string_t last_path_segment(secret_path.c_str());
-                if (secret_path.find("/") != string_t::npos)
+                if (secret_path.find(PATH_SEPARATOR) != string_t::npos)
                 {
-                    last_path_segment = secret_path.substr(secret_path.find("/") + 1);
+                    last_path_segment = secret_path.substr(secret_path.find(PATH_SEPARATOR) + 1);
                 }
                 if (last_path_segment.find(".") != 0)
                 {
@@ -1161,11 +1172,17 @@ __temp_byte_crypt__ class ByteCrypt
         }
         return false;
     };
-
     
+    /**
+     * 
+     * Load secret from secret_filename if file name exists, or empty string is returned.
+     * @param string_view_t& path to file
+     * @returns string_t loaded secret, if any...
+     * 
+     */
     __hint_load_secret_from_file__ const string_t load_secret_from_file(const string_view_t &secret_filename)
     {
-         string_t loaded_secret;
+        string_t loaded_secret;
         try
         {
             std::basic_ifstream<char> file_descriptor(&secret_filename[0], std::ios::binary);
@@ -1189,6 +1206,48 @@ __temp_byte_crypt__ class ByteCrypt
         }
         return loaded_secret;
     };
+
+    /**
+     * 
+     * Shift block to right by "shift_pos" positions, "shift_pos", shift_pos does not usually exceed values such as(100-200).
+     * @param string_view_t& block to shift
+     * @param int the number of positions to r-move
+     * @returns string_t the right shifted block
+     * 
+     */
+    const string_t block_rshift(const string_view_t block, const short int shift_pos = 3)
+    {
+        if (block.empty())
+            return "";
+        string_t local_bytes;
+        local_bytes.reserve(block.length());
+        for (const char index_byte : block)
+        {
+            local_bytes += static_cast<char>((static_cast<int>(index_byte) + (shift_pos % 256)) % 256);
+        }
+        return local_bytes;
+    }
+
+    /**
+     * 
+     * Shift block to left by "shift_pos" positions, "shift_pos", shift_pos does not usually exceed values such as(100-200).
+     * @param string_view_t& block to shift
+     * @param int the number of positions to l-move
+     * @returns string_t the left shifted block
+     * 
+     */
+    const string_t block_lshift(const string_view_t block, const short int shift_pos = 3)
+    {
+        if (block.empty())
+            return "";
+        string_t local_bytes;
+        local_bytes.reserve(block.length());
+        for (const char index_byte : block)
+        {
+            local_bytes += static_cast<char>((static_cast<int>(index_byte) - (shift_pos % 256) + 256) % 256);
+        }
+        return local_bytes;
+    }
 
     ~ByteCrypt()
     {
