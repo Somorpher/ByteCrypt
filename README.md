@@ -170,7 +170,7 @@ All tests got successful when i tested, tested on linux mint 22, x86_64, used g+
 ## Requirements
 
 ### Architecture: 64-bit, x86-64
-- Operating Systems: Linux, macOS
+- Operating Systems: Windows, Linux, macOS
 - C++ Version: C++11 or later
 
 ### Compiler Requirements:
