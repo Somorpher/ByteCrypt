@@ -135,7 +135,7 @@ namespace ByteCryptModule
 #define __hint_set_def_key_size__ __attribute__((cold, nothrow, noipa, no_stack_protector))
 #define __hint_set_def_iv_size__ __attribute__((cold, nothrow, noipa, no_stack_protector))
 #define __hint_encryption_algo_accept__ __attribute__((cold, nothrow, warn_unused_result, pure, no_sanitize_address, no_stack_protector, optimize(3)))
-#define __hint_hash__ __attribute__((stack_protect, zero_call_used_regs("all"), warn_unused_result, access(read_only, 1), optimize(3)))
+#define __hint_hash__ __attribute__((stack_protect, zero_call_used_regs("all"), warn_unused_result, access(read_only, 1), access(read_only, 2), optimize(3)))
 #define __hint_encrypt__ __attribute__((warn_unused_result, zero_call_used_regs("used"), stack_protect, access(read_only, 1), access(read_only, 2), optimize(3)))
 #define __hint_decrypt__ __attribute__((warn_unused_result, zero_call_used_regs("used"), stack_protect, access(read_only, 1), access(read_only, 2), optimize(3)))
 #define __hint_base64_encode__ __attribute__((warn_unused_result, stack_protect, access(read_only, 1), optimize("3")))
@@ -157,11 +157,10 @@ namespace ByteCryptModule
 #define __hint_is_rsa_key_pem__ __attribute__((warn_unused_result, nothrow, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("1")))
 #define __hint_is_rsa_encrypted_key__ __attribute__((nothrow, warn_unused_result, const, always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("0")))
 #define __hint_rsa_key_meta_wipe__ __attribute__((const, zero_call_used_regs("used"), warn_unused_result, access(read_only, 1), optimize("2")))
-#define __hint_perform_encryption__ __attribute__((always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), access(read_only, 2), access(read_only, 1), optimize("3")))
-#define __hint_perform_decryption__ __attribute__((always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), access(read_only, 2), access(read_only, 1), optimize("3")))
 #define __hint_generate_random_bytes__ __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("used"), optimize("3")))
 #define __hint_store_secret__ __attribute__((cold, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
 #define __hint_load_secret_from_file__ __attribute__((cold, warn_unused_result, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
+#define __hint_prepare_secure_keys__ __attribute__((stack_protect, zero_call_used_regs("all"), access(read_only, 1), optimize("3")))
 
 #else
 
@@ -191,11 +190,10 @@ namespace ByteCryptModule
 #define __hint_is_rsa_key_pem__ [[nothrow, nodiscard]]
 #define __hint_is_rsa_encrypted_key__ [[nothrow, nodiscard]]
 #define __hint_rsa_key_meta_wipe__ [[nodiscard]]
-#define __hint_perform_encryption__ [[]]
-#define __hint_perform_decryption__ [[]]
 #define __hint_generate_random_bytes__ [[warn_unused_result]]
 #define __hint_store_secret__ [[nodiscard]]
 #define __hint_load_secret_from_file__ [[nodiscard]]
+#define __hint_prepare_secure_keys__ [[]]
 
 #endif
 
@@ -220,7 +218,14 @@ enum class e_rsa_key_pem_version
     PRIVATE
 };
 
-enum class e_cbc_symmetric_algo
+enum class e_operation_mode
+{
+    CBC = 0,
+    GCM,
+    EAX
+};
+
+enum class e_cbc_algorithm
 {
     AES = 0,
     BLOWFISH,
@@ -242,7 +247,7 @@ enum class e_cbc_symmetric_algo
     __COUNT
 };
 
-enum class e_gcm_symmetric_algo
+enum class e_gcm_algorithm
 {
     AES = 0,
     TWOFISH,
@@ -251,7 +256,7 @@ enum class e_gcm_symmetric_algo
     __COUNT,
 };
 
-enum class e_eax_symmetric_algo
+enum class e_eax_algorithm
 {
     AES = 0,
     BLOWFISH,
@@ -287,6 +292,9 @@ struct e_iv_block_size
                              SEED = CryptoPP::GOST::BLOCKSIZE, SIMON128 = CryptoPP::SIMON128::BLOCKSIZE, SPECK128 = CryptoPP::SPECK128::BLOCKSIZE;
 };
 
+typedef struct e_key_block_size e_key_block_size_t;
+typedef struct e_iv_block_size e_iv_block_size_t;
+
 /*                      Type Alias                       *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 using byte = CryptoPP::byte;
@@ -312,6 +320,7 @@ using sha256_hmac_t = CryptoPP::PKCS5_PBKDF2_HMAC<CryptoPP::SHA256>;
 using hmac_s256_t = CryptoPP::HMAC<CryptoPP::SHA256>;
 using auth_decryption_filter_t = CryptoPP::AuthenticatedDecryptionFilter;
 using auth_encryption_filter_t = CryptoPP::AuthenticatedEncryptionFilter;
+using sec_byte_block_t = CryptoPP::SecByteBlock;
 
 /**
  * CBC Mode Encryption/Dec(< GCM)
@@ -447,9 +456,9 @@ template <typename mT> struct is_accepted_eax_encryption_algorithm
 };
 template <typename mT> constexpr bool is_accepted_eax_encryption_algorithm_v = is_accepted_eax_encryption_algorithm<mT>::value;
 
-#define __temp_perform_keyiv_cbc_intersection__ template <typename cipherT, typename = std::enable_if_t<std::is_class_v<cipherT> && is_accepted_cbc_encryption_algorithm_v<cipherT>>>
-#define __temp_perform_keyiv_gcm_intersection__ template <typename cipherT, typename = std::enable_if_t<std::is_class_v<cipherT> && is_accepted_gcm_encryption_algorithm_v<cipherT>>>
-#define __temp_perform_keyiv_eax_intersection__ template <typename cipherT, typename = std::enable_if_t<std::is_class_v<cipherT> && is_accepted_eax_encryption_algorithm_v<cipherT>>>
+#define __temp_encrypt__ template <e_operation_mode op_mode_t = e_operation_mode::CBC, e_cbc_algorithm algorithm_t = e_cbc_algorithm::AES>
+#define __temp_decrypt__ template <e_operation_mode op_mode_t = e_operation_mode::CBC, e_cbc_algorithm algorithm_t = e_cbc_algorithm::AES>
+#define __temp_prepare_secure_keys__ template <e_operation_mode op_mode_t, e_cbc_algorithm algorithm_t>
 
 /*                      Structure                        *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -473,18 +482,87 @@ typedef struct alignas(void *)
     bool has_error{false};
 } error_frame;
 
+typedef struct alignas(void *)
+{
+    sec_byte_block_t key;
+    sec_byte_block_t iv;
+} secure_byte_pair;
+
+typedef struct alignas(void *)
+{
+    string_t encrypted_block;
+    error_frame error;
+    secure_byte_pair secure_keys;
+} encryption_result;
+
+typedef struct alignas(void *)
+{
+    string_t decrypted_block;
+    error_frame error;
+    secure_byte_pair secure_keys;
+} decryption_result;
+
+typedef struct alignas(void *)
+{
+    int secure_key{};
+    int secure_ivector{};
+} mode_of_operation_map;
+
+struct operation_mode
+{
+    std::unordered_map<e_cbc_algorithm, mode_of_operation_map> cbc{
+        {e_cbc_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
+        {e_cbc_algorithm::ARIA, mode_of_operation_map{.secure_key{e_key_block_size::ARIA}, .secure_ivector{e_iv_block_size::ARIA}}},
+        {e_cbc_algorithm::BLOWFISH, mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH}, .secure_ivector{e_iv_block_size::BLOWFISH}}},
+        {e_cbc_algorithm::CAST128, mode_of_operation_map{.secure_key{e_key_block_size::CAST128}, .secure_ivector{e_iv_block_size::CAST128}}},
+        {e_cbc_algorithm::CAST256, mode_of_operation_map{.secure_key{e_key_block_size::CAST256}, .secure_ivector{e_iv_block_size::CAST256}}},
+        {e_cbc_algorithm::GOST, mode_of_operation_map{.secure_key{e_key_block_size::GOST}, .secure_ivector{e_iv_block_size::GOST}}},
+        {e_cbc_algorithm::HIGHT, mode_of_operation_map{.secure_key{e_key_block_size::HIGHT}, .secure_ivector{e_iv_block_size::HIGHT}}},
+        {e_cbc_algorithm::IDEA, mode_of_operation_map{.secure_key{e_key_block_size::IDEA}, .secure_ivector{e_iv_block_size::IDEA}}},
+        {e_cbc_algorithm::MARS, mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
+        {e_cbc_algorithm::RC2, mode_of_operation_map{.secure_key{e_key_block_size::RC2}, .secure_ivector{e_iv_block_size::RC2}}},
+        {e_cbc_algorithm::RC5, mode_of_operation_map{.secure_key{e_key_block_size::RC5}, .secure_ivector{e_iv_block_size::RC5}}},
+        {e_cbc_algorithm::RC6, mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
+        {e_cbc_algorithm::SEED, mode_of_operation_map{.secure_key{e_key_block_size::SEED}, .secure_ivector{e_iv_block_size::SEED}}},
+        {e_cbc_algorithm::SERPENT, mode_of_operation_map{.secure_key{e_key_block_size::SERPENT}, .secure_ivector{e_iv_block_size::SERPENT}}},
+        {e_cbc_algorithm::SIMON128, mode_of_operation_map{.secure_key{e_key_block_size::SIMON128}, .secure_ivector{e_iv_block_size::SIMON128}}},
+        {e_cbc_algorithm::SPECK128, mode_of_operation_map{.secure_key{e_key_block_size::SPECK128}, .secure_ivector{e_iv_block_size::SPECK128}}},
+        {e_cbc_algorithm::TWOFISH, mode_of_operation_map{.secure_key{e_key_block_size::TWOFISH}, .secure_ivector{e_iv_block_size::TWOFISH}}},
+    };
+    std::unordered_map<e_gcm_algorithm, mode_of_operation_map> gcm{{e_gcm_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
+                                                                   {e_gcm_algorithm::MARS, mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
+                                                                   {e_gcm_algorithm::RC6, mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
+                                                                   {e_gcm_algorithm::TWOFISH, mode_of_operation_map{.secure_key{e_key_block_size::TWOFISH}, .secure_ivector{e_iv_block_size::TWOFISH}}}};
+    std::unordered_map<e_eax_algorithm, mode_of_operation_map> eax{
+        {e_eax_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
+        {e_eax_algorithm::BLOWFISH, mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH}, .secure_ivector{e_iv_block_size::BLOWFISH}}},
+        {e_eax_algorithm::CAST128, mode_of_operation_map{.secure_key{e_key_block_size::CAST128}, .secure_ivector{e_iv_block_size::CAST128}}},
+        {e_eax_algorithm::CAST256, mode_of_operation_map{.secure_key{e_key_block_size::CAST256}, .secure_ivector{e_iv_block_size::CAST256}}},
+        {e_eax_algorithm::GOST, mode_of_operation_map{.secure_key{e_key_block_size::GOST}, .secure_ivector{e_iv_block_size::GOST}}},
+        {e_eax_algorithm::HIGHT, mode_of_operation_map{.secure_key{e_key_block_size::HIGHT}, .secure_ivector{e_iv_block_size::HIGHT}}},
+        {e_eax_algorithm::IDEA, mode_of_operation_map{.secure_key{e_key_block_size::IDEA}, .secure_ivector{e_iv_block_size::IDEA}}},
+        {e_eax_algorithm::LEA, mode_of_operation_map{.secure_key{e_key_block_size::LEA}, .secure_ivector{e_iv_block_size::LEA}}},
+        {e_eax_algorithm::MARS, mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
+        {e_eax_algorithm::RC5, mode_of_operation_map{.secure_key{e_key_block_size::RC5}, .secure_ivector{e_iv_block_size::RC5}}},
+        {e_eax_algorithm::RC6, mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
+        {e_eax_algorithm::SEED, mode_of_operation_map{.secure_key{e_key_block_size::SEED}, .secure_ivector{e_iv_block_size::SEED}}},
+        {e_eax_algorithm::SERPENT, mode_of_operation_map{.secure_key{e_key_block_size::SERPENT}, .secure_ivector{e_iv_block_size::SERPENT}}},
+        {e_eax_algorithm::SIMON128, mode_of_operation_map{.secure_key{e_key_block_size::SIMON128}, .secure_ivector{e_iv_block_size::SIMON128}}},
+        {e_eax_algorithm::SPECK128, mode_of_operation_map{.secure_key{e_key_block_size::SPECK128}, .secure_ivector{e_iv_block_size::SPECK128}}},
+        {e_eax_algorithm::TWOFISH, mode_of_operation_map{.secure_key{e_key_block_size::TWOFISH}, .secure_ivector{e_iv_block_size::TWOFISH}}},
+    };
+};
+
 /*                      Class                            *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 __temp_byte_crypt__ class ByteCrypt
 {
     std::unique_ptr<string_t> secret_key = std::make_unique<string_t>();
     std::uint16_t cipher_iteration_count = DEFAULT_CIPHER_ITERATION_COUNTER;
-    std::uint8_t default_sec_key_size = DEFAULT_SEC_BLOCK_KEY_SIZE;
-    std::uint8_t default_sec_iv_size = DEFAULT_SEC_BLOCK_IV_SIZE;
+    std::uint16_t default_sec_key_size = DEFAULT_SEC_BLOCK_KEY_SIZE;
+    std::uint16_t default_sec_iv_size = DEFAULT_SEC_BLOCK_IV_SIZE;
     static constexpr std::array<std::uint16_t, 5> rsa_key_size_options{512u, 1024u, 2048u, 3072u, 4096u};
-
-    byte __key__[key_size_t];
-    byte __iv__[iv_size_t];
+    operation_mode op_mode;
 
   public:
     inline ByteCrypt() noexcept {};
@@ -531,11 +609,11 @@ __temp_byte_crypt__ class ByteCrypt
     };
 
     /**
-     * 
+     *
      * Set cipher iteration count value.
      * @param std::size_t new number of iterations.
      * @returns void
-     * 
+     *
      */
     __hint_set_iter_counter__ inline void set_cipher_iteration_counter(const std::size_t iterations) noexcept
     {
@@ -546,11 +624,11 @@ __temp_byte_crypt__ class ByteCrypt
     };
 
     /**
-     * 
+     *
      * Set default secure block key size.
      * @param std::size_t key size
      * @returns void
-     * 
+     *
      */
     __hint_set_def_key_size__ inline void set_sec_block_key_size(const std::size_t key_size) noexcept
     {
@@ -561,11 +639,11 @@ __temp_byte_crypt__ class ByteCrypt
     };
 
     /**
-     * 
+     *
      * Set default secure initialization vector size.
      * @param std::size_t initialization vector size
      * @returns void
-     * 
+     *
      */
     __hint_set_def_iv_size__ inline void set_sec_block_iv_size(const std::size_t iv_size) noexcept
     {
@@ -606,283 +684,6 @@ __temp_byte_crypt__ class ByteCrypt
         CryptoPP::StringSource(buffer, true, new CryptoPP::HashFilter(*algo, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest_block))));
         return digest_block;
     };
-
-    /*++++++++++++++++++++++++++++++++++ INIT CBC OpMode +++++++++++++++++++++++++++++++++ */
-
-    /**
-     * encrypt plain_text using key for encryption and alog as encryption algorithm.
-     * @param string_t& buffer to encrypt
-     * @param string_t& key to use for encryption
-     * @param e_cbc_symmetric_algo the algorithm for encryption
-     * @returns string_t encrypted cipher
-     */
-    __hint_encrypt__ const string_t cbc_encrypt(const string_t &plain_text, const string_t &key, const e_cbc_symmetric_algo algo = e_cbc_symmetric_algo::AES)
-    {
-        string_t cipher, encoded_cipher;
-        try
-        {
-            this->__derive_cbc_key_iv(key, this->__key__, this->__iv__);
-
-            switch (algo)
-            {
-#define _case(algorithm, encryption_type)                                                                                                                                                                                                                                                                                      \
-    case e_cbc_symmetric_algo::algorithm:                                                                                                                                                                                                                                                                                      \
-        this->__perform_cbc_encryption<encryption_type>(plain_text, cipher, encoded_cipher);                                                                                                                                                                                                                                   \
-        break
-                _case(AES, cbc_aes_encryption_t);
-                _case(BLOWFISH, cbc_blowfish_encryption_t);
-                _case(TWOFISH, cbc_twofish_encryption_t);
-                _case(CAST128, cbc_cast128_encryption_t);
-                _case(CAST256, cbc_cast256_encryption_t);
-                _case(IDEA, cbc_idea_encryption_t);
-                _case(RC2, cbc_rc2_encryption_t);
-                _case(RC5, cbc_rc5_encryption_t);
-                _case(RC6, cbc_rc6_encryption_t);
-                _case(MARS, cbc_mars_encryption_t);
-                _case(SERPENT, cbc_serpent_encryption_t);
-                _case(GOST, cbc_gost_encryption_t);
-                _case(SIMON128, cbc_simon128_encryption_t);
-                _case(SPECK128, cbc_speck128_encryption_t);
-                _case(ARIA, cbc_aria_encryption_t);
-                _case(HIGHT, cbc_hight_encryption_t);
-                _case(SEED, cbc_seed_encryption_t);
-#undef _case
-            default:
-                std::cerr << "Unsupported encryption algorithm" << std::endl;
-                return "";
-            }
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "Encrypt Error: " << e.what() << "\n";
-        }
-        return encoded_cipher;
-    };
-
-    /**
-     * decrypt cipher_block with u_key secret key and algo as algorithm.
-     * @param string_t& cipher to decrypt
-     * @param e_cbc_ymmetric_algo algorithm used when encrypted.
-     * @returns string_t decrypted cipher
-     */
-    __hint_decrypt__ const string_t cbc_decrypt(const string_t &cipher_block, const e_cbc_symmetric_algo algo = e_cbc_symmetric_algo::AES)
-    {
-        string_t decrypted_cipher, decoded_cipher;
-        try
-        {
-            switch (algo)
-            {
-#define _case(algorithm, decryption_type)                                                                                                                                                                                                                                                                                      \
-    case e_cbc_symmetric_algo::algorithm:                                                                                                                                                                                                                                                                                      \
-        this->__perform_cbc_decryption<decryption_type>(cipher_block, decrypted_cipher, decoded_cipher);                                                                                                                                                                                                                       \
-        break
-                _case(AES, cbc_aes_decryption_t);
-                _case(BLOWFISH, cbc_blowfish_decryption_t);
-                _case(TWOFISH, cbc_twofish_decryption_t);
-                _case(CAST128, cbc_cast128_decryption_t);
-                _case(CAST256, cbc_cast256_decryption_t);
-                _case(IDEA, cbc_idea_decryption_t);
-                _case(RC2, cbc_rc2_decryption_t);
-                _case(RC5, cbc_rc5_decryption_t);
-                _case(RC6, cbc_rc6_decryption_t);
-                _case(MARS, cbc_mars_decryption_t);
-                _case(SERPENT, cbc_serpent_decryption_t);
-                _case(GOST, cbc_gost_decryption_t);
-                _case(SIMON128, cbc_simon128_decryption_t);
-                _case(SPECK128, cbc_speck128_decryption_t);
-                _case(ARIA, cbc_aria_decryption_t);
-                _case(HIGHT, cbc_hight_decryption_t);
-                _case(SEED, cbc_seed_decryption_t);
-#undef _case
-            default:
-                std::cerr << "Invalid decryption algorithm!\n";
-                return "";
-            }
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "Decryption Error: " << e.what() << "\n";
-        }
-        return decrypted_cipher;
-    };
-
-    /*++++++++++++++++++++++++++++++++++ END CBC OpMode +++++++++++++++++++++++++++++++++ */
-
-    /*++++++++++++++++++++++++++++++++++ INIT GCM OpMode +++++++++++++++++++++++++++++++++ */
-
-    /**
-     * encrypt(GCM) plain_text using key for encryption and alog as encryption algorithm, use this mode when efficiency
-     * and security are a must.
-     * @param string_t& buffer to encrypt
-     * @param string_t& key to use for encryption
-     * @param e_gcm_symmetric_algo the algorithm for encryption
-     * @returns string_t encrypted cipher
-     */
-    const string_t gcm_encrypt(const string_t &plain_text, const string_t &key, const e_gcm_symmetric_algo algo = e_gcm_symmetric_algo::AES)
-    {
-        string_t cipher, encoded_cipher;
-        try
-        {
-            this->__derive_gcm_key_iv(key, this->__key__, this->__iv__);
-
-            switch (algo)
-            {
-#define _case(algorithm, encryption_type)                                                                                                                                                                                                                                                                                      \
-    case e_gcm_symmetric_algo::algorithm:                                                                                                                                                                                                                                                                                      \
-        this->__perform_gcm_encryption<encryption_type>(plain_text, cipher, encoded_cipher);                                                                                                                                                                                                                                   \
-        break
-                _case(AES, gcm_aes_encryption_t);
-                _case(TWOFISH, gcm_twofish_encryption_t);
-                _case(RC6, gcm_rc6_encryption_t);
-                _case(MARS, gcm_mars_encryption_t);
-
-#undef _case
-            default:
-                std::cerr << "Unsupported encryption(GCM) algorithm" << std::endl;
-                return "";
-            }
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "GCMEncrypt Error: " << e.what() << "\n";
-        }
-        return encoded_cipher;
-    };
-
-    /**
-     * decrypt(GCM) cipher_block with u_key secret key and algo as algorithm.
-     * @param string_t& cipher to decrypt
-     * @param e_gcm_symmetric_algo algorithm used when encrypted.
-     * @returns string_t decrypted cipher
-     */
-    const string_t gcm_decrypt(const string_t &cipher_block, const e_gcm_symmetric_algo algo = e_gcm_symmetric_algo::AES)
-    {
-        string_t decrypted_cipher, decoded_cipher;
-        try
-        {
-            switch (algo)
-            {
-#define _case(algorithm, decryption_type)                                                                                                                                                                                                                                                                                      \
-    case e_gcm_symmetric_algo::algorithm:                                                                                                                                                                                                                                                                                      \
-        this->__perform_gcm_decryption<decryption_type>(const_cast<string_t &>(cipher_block), decrypted_cipher, decoded_cipher);                                                                                                                                                                                               \
-        break
-                _case(AES, gcm_aes_decryption_t);
-                _case(TWOFISH, gcm_twofish_decryption_t);
-                _case(RC6, gcm_rc6_decryption_t);
-                _case(MARS, gcm_mars_decryption_t);
-#undef _case
-            default:
-                std::cerr << "Invalid(GCM) decryption algorithm!\n";
-                return "";
-            }
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "GCMDecryption Error: " << e.what() << "\n";
-        }
-        return decrypted_cipher;
-    };
-
-    /* ++++++++++++++++++++++++++++++++++ END GCM OpMode +++++++++++++++++++++++++++++++++++++ */
-
-    /*++++++++++++++++++++++++++++++++++ INIT EAX OpMode +++++++++++++++++++++++++++++++++ */
-
-    /**
-     * encrypt plain_text using key for encryption and alog as encryption algorithm.
-     * @param string_t& buffer to encrypt
-     * @param string_t& key to use for encryption
-     * @param e_eax_symmetric_algo the algorithm for encryption
-     * @returns string_t encrypted cipher
-     */
-    __hint_encrypt__ const string_t eax_encrypt(const string_t &plain_text, const string_t &key, const e_eax_symmetric_algo algo = e_eax_symmetric_algo::AES)
-    {
-        string_t cipher, encoded_cipher;
-        try
-        {
-            this->__derive_eax_key_iv(key, this->__key__, this->__iv__);
-
-            switch (algo)
-            {
-#define _case(algorithm, encryption_type)                                                                                                                                                                                                                                                                                      \
-    case e_eax_symmetric_algo::algorithm:                                                                                                                                                                                                                                                                                      \
-        this->__perform_eax_encryption<encryption_type>(plain_text, cipher, encoded_cipher);                                                                                                                                                                                                                                   \
-        break
-                _case(AES, eax_aes_encryption_t);
-                _case(BLOWFISH, eax_blowfish_encryption_t);
-                _case(TWOFISH, eax_twofish_encryption_t);
-                _case(CAST128, eax_cast128_encryption_t);
-                _case(CAST256, eax_cast256_encryption_t);
-                _case(IDEA, eax_idea_encryption_t);
-                _case(RC5, eax_rc5_encryption_t);
-                _case(RC6, eax_rc6_encryption_t);
-                _case(MARS, eax_mars_encryption_t);
-                _case(SERPENT, eax_serpent_encryption_t);
-                _case(GOST, eax_gost_encryption_t);
-                _case(LEA, eax_lea_encryption_t);
-                _case(SEED, eax_seed_encryption_t);
-                _case(SPECK128, eax_speck128_encryption_t);
-                _case(SIMON128, eax_simon128_encryption_t);
-                _case(HIGHT, eax_hight_encryption_t);
-#undef _case
-            default:
-                std::cerr << "Unsupported encryption algorithm" << std::endl;
-                return "";
-            }
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "Encrypt Error: " << e.what() << "\n";
-        }
-        return encoded_cipher;
-    };
-
-    /**
-     * decrypt cipher_block with u_key secret key and algo as algorithm.
-     * @param string_t& cipher to decrypt
-     * @param e_eax_symmetric_algo algorithm used when encrypted.
-     * @returns string_t decrypted cipher
-     */
-    __hint_decrypt__ const string_t eax_decrypt(const string_t &cipher_block, const e_eax_symmetric_algo algo = e_eax_symmetric_algo::AES)
-    {
-        string_t decrypted_cipher, decoded_cipher;
-        try
-        {
-            switch (algo)
-            {
-#define _case(algorithm, decryption_type)                                                                                                                                                                                                                                                                                      \
-    case e_eax_symmetric_algo::algorithm:                                                                                                                                                                                                                                                                                      \
-        this->__perform_eax_decryption<decryption_type>(cipher_block, decrypted_cipher, decoded_cipher);                                                                                                                                                                                                                       \
-        break
-                _case(AES, eax_aes_decryption_t);
-                _case(BLOWFISH, eax_blowfish_decryption_t);
-                _case(TWOFISH, eax_twofish_decryption_t);
-                _case(CAST128, eax_cast128_decryption_t);
-                _case(CAST256, eax_cast256_decryption_t);
-                _case(IDEA, eax_idea_decryption_t);
-                _case(RC5, eax_rc5_decryption_t);
-                _case(RC6, eax_rc6_decryption_t);
-                _case(MARS, eax_mars_decryption_t);
-                _case(SERPENT, eax_serpent_decryption_t);
-                _case(GOST, eax_gost_decryption_t);
-                _case(LEA, eax_lea_decryption_t);
-                _case(SEED, eax_seed_decryption_t);
-                _case(SPECK128, eax_speck128_decryption_t);
-                _case(SIMON128, eax_simon128_decryption_t);
-                _case(HIGHT, eax_hight_decryption_t);
-#undef _case
-            default:
-                std::cerr << "Invalid decryption algorithm!\n";
-                return "";
-            }
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "Decryption Error: " << e.what() << "\n";
-        }
-        return decrypted_cipher;
-    };
-
-    /*++++++++++++++++++++++++++++++++++ END EAX OpMode +++++++++++++++++++++++++++++++++ */
 
     /**
      * base64 encoding of plain_text buffer
@@ -1311,59 +1112,91 @@ __temp_byte_crypt__ class ByteCrypt
             local_bytes += static_cast<char>((static_cast<int>(index_byte) - (shift_pos % 256) + 256) % 256);
         }
         return local_bytes;
-    }
-
-    ~ByteCrypt()
-    {
-        std::memset(this->__key__, 0, 0);
-        std::memset(this->__iv__, 0, 0);
     };
+
+    __temp_encrypt__ __hint_encrypt__ const encryption_result encrypt(const string_t &buffer, const string_t &secret)
+    {
+        encryption_result result;
+
+        try
+        {
+            if (op_mode_t == e_operation_mode::CBC)
+            {
+                string_t target;
+                entropy_seed_t ring;
+                byte salt[16];
+                ring.GenerateBlock(salt, sizeof(salt));
+                sec_byte_block_t key, iv;
+                this->__prepare_secure_keys<op_mode_t, algorithm_t>(secret, key, iv, salt, sizeof(salt));
+                cbc_aes_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_t r0;
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+                const string_t r2(string_t(reinterpret_cast<char *>(salt), sizeof(salt)) + r0);
+                string_source_t(r2, true, new hex_encoder_t(new string_sink_t(target)));
+                result.encrypted_block = std::move(target);
+            }
+        }
+        catch (const std::exception &e)
+        {
+            result.error.has_error = true;
+            result.error.error_msg = e.what();
+        }
+
+        return result;
+    };
+
+    __temp_decrypt__ __hint_decrypt__ const decryption_result decrypt(const string_t &buffer, const string_t &secret)
+    {
+        decryption_result result;
+        try
+        {
+            if (op_mode_t == e_operation_mode::CBC)
+            {
+                string_t target;
+                byte salt[16];
+                string_t rd;
+                string_source_t(buffer, true, new hex_decoder_t(new string_sink_t(rd)));
+                memcpy(salt, rd.data(), sizeof(salt));
+                string_t ciphertext(rd.substr(sizeof(salt)));
+                sec_byte_block_t key, iv;
+                this->__prepare_secure_keys<op_mode_t, algorithm_t>(secret, key, iv, salt, sizeof(salt));
+                string_t r0;
+                cbc_aes_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(target)));
+                result.decrypted_block = std::move(target);
+            }
+        }
+        catch (const std::exception &e)
+        {
+            result.error.has_error = true;
+            result.error.error_msg = e.what();
+        }
+        return result;
+    };
+
+    ~ByteCrypt() {};
 
   private:
-    __hint_derive_key_iv__ void __derive_cbc_key_iv(const string_t &u_pwd, byte *key, byte *init_vector) const
+    __temp_prepare_secure_keys__ __hint_prepare_secure_keys__ inline void __prepare_secure_keys(const string_t &cipher, sec_byte_block_t &key, sec_byte_block_t &iv, const byte *salt, const std::size_t salt_size)
     {
-        entropy_seed_t entropy;
-        byte salt[16];
-        entropy.GenerateBlock(salt, sizeof(salt));
-        sha256_hmac_t transformer;
-        transformer.DeriveKey(key, default_sec_key_size, 0, reinterpret_cast<const byte *>(u_pwd.data()), u_pwd.size(), salt, sizeof(salt), cipher_iteration_count);
-        transformer.DeriveKey(init_vector, default_sec_iv_size, 0, reinterpret_cast<const byte *>(u_pwd.data()), u_pwd.size(), salt, sizeof(salt), cipher_iteration_count);
-    };
+        std::size_t key_size = this->default_sec_key_size, iv_size = this->default_sec_iv_size;
+        if (op_mode_t == e_operation_mode::CBC)
+        {
+            sha256_hmac_t hmac;
+            if (algorithm_t == e_cbc_algorithm::AES)
+            {
+                key_size = this->op_mode.cbc.at(e_cbc_algorithm::AES).secure_key;
+                iv_size = this->op_mode.cbc.at(e_cbc_algorithm::AES).secure_ivector;
+            }
 
-    __hint_derive_key_iv__ void __derive_gcm_key_iv(const string_t &u_pwd, byte *key, byte *init_vector) const
-    {
-        byte random_salt[16];
-        entropy_seed_t entropy;
-        entropy.GenerateBlock(random_salt, sizeof(random_salt));
-        entropy.GenerateBlock(init_vector, sizeof(init_vector));
-        hmac_s256_t hmac_converter((const byte *)u_pwd.data(), u_pwd.size());
-        hmac_converter.Update(random_salt, sizeof(random_salt));
-        hmac_converter.Final(key);
-    };
+            key.CleanNew(key_size);
+            iv.CleanNew(iv_size);
 
-    __hint_derive_key_iv__ void __derive_eax_key_iv(const string_t &u_pwd, byte *key, byte *init_vector) const
-    {
-        entropy_seed_t entropy;
-        byte salt[16];
-        entropy.GenerateBlock(salt, sizeof(salt));
-        sha256_hmac_t transformer;
-        transformer.DeriveKey(key, default_sec_key_size, 0, reinterpret_cast<const byte *>(u_pwd.data()), u_pwd.size(), salt, sizeof(salt), cipher_iteration_count);
-        transformer.DeriveKey(init_vector, default_sec_iv_size, 0, reinterpret_cast<const byte *>(u_pwd.data()), u_pwd.size(), salt, sizeof(salt), cipher_iteration_count);
-    };
-
-    __temp_perform_keyiv_cbc_intersection__ __hint_perform_keyiv_intersection__ inline void __perform_keyiv_cbc_intersection(cipherT &encryption_class) const noexcept
-    {
-        encryption_class.SetKeyWithIV(this->__key__, sizeof(this->__key__), this->__iv__);
-    };
-
-    __temp_perform_keyiv_gcm_intersection__ __hint_perform_keyiv_intersection__ inline void __perform_keyiv_gcm_intersection(cipherT &encryption_class) const noexcept
-    {
-        encryption_class.SetKeyWithIV(this->__key__, sizeof(this->__key__), this->__iv__);
-    };
-
-    __temp_perform_keyiv_eax_intersection__ __hint_perform_keyiv_intersection__ inline void __perform_keyiv_eax_intersection(cipherT &encryption_class) const noexcept
-    {
-        encryption_class.SetKeyWithIV(this->__key__, sizeof(this->__key__), this->__iv__);
+            hmac.DeriveKey(key, key.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt, salt_size, this->cipher_iteration_count);
+            hmac.DeriveKey(iv, iv.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt, salt_size, this->cipher_iteration_count);
+        }
     };
 
     __hint_rsa_key_pair_verify__ const bool __rsa_key_pair_verify(const rsa_key_pair_struct &key_block)
@@ -1485,66 +1318,6 @@ __temp_byte_crypt__ class ByteCrypt
             }
         }
         return std::move(rsa_key);
-    };
-
-    __temp_perform_encryption__ __hint_perform_encryption__ inline void __perform_cbc_encryption(const string_t &plain_text, string_t &cipher, string_t &encoded_cipher)
-    {
-        static_assert(is_accepted_cbc_encryption_algorithm_v<encryptionType>, "not a valid CBC Mode encryption function.");
-        encryptionType encryption;
-        __perform_keyiv_cbc_intersection<encryptionType>(encryption);
-        string_source_t(plain_text, true, new transformer_filter_t(encryption, new string_sink_t(cipher)));
-        string_source_t(cipher, true, new hex_encoder_t(new string_sink_t(encoded_cipher)));
-    };
-
-    __temp_perform_decryption__ __hint_perform_decryption__ void __perform_cbc_decryption(const string_t &cipher_text, string_t &decrypted_data, string_t &decoded_data)
-    {
-        static_assert(is_accepted_cbc_encryption_algorithm_v<decryptionType>, "not a valid CBC Mode decryption function.");
-        decryptionType decryption;
-        __perform_keyiv_cbc_intersection<decryptionType>(decryption);
-        string_source_t(cipher_text, true, new hex_decoder_t(new string_sink_t(decoded_data)));
-        string_source_t(decoded_data, true, new transformer_filter_t(decryption, new string_sink_t(decrypted_data)));
-    };
-
-    __temp_perform_encryption__ __hint_perform_encryption__ inline void __perform_gcm_encryption(const string_t &plain_text, string_t &cipher, string_t &encoded_cipher)
-    {
-        static_assert(is_accepted_gcm_encryption_algorithm_v<encryptionType>, "not a valid GCM Mode encryption function.");
-        encryptionType encryption;
-        __perform_keyiv_gcm_intersection<encryptionType>(encryption);
-        string_source_t(plain_text, true, new auth_encryption_filter_t(encryption, new string_sink_t(cipher)));
-        string_source_t(cipher, true, new hex_encoder_t(new string_sink_t(encoded_cipher)));
-    };
-
-    __temp_perform_decryption__ __hint_perform_decryption__ void __perform_gcm_decryption(string_t &cipher_text, string_t &decrypted_data, string_t &decoded_data)
-    {
-        static_assert(is_accepted_gcm_encryption_algorithm_v<decryptionType>, "not a valid GCM Mode decryption function.");
-        decryptionType decryption;
-        __perform_keyiv_gcm_intersection<decryptionType>(decryption);
-        string_source_t(cipher_text, true, new hex_decoder_t(new string_sink_t(decoded_data)));
-        auth_decryption_filter_t df(decryption, new string_sink_t(decrypted_data));
-
-        df.ChannelPut(CryptoPP::DEFAULT_CHANNEL, (const byte *)decoded_data.data(), decoded_data.size());
-        df.ChannelMessageEnd(CryptoPP::DEFAULT_CHANNEL);
-
-        if (!df.GetLastResult()) [[unlikely]]
-            throw std::runtime_error("Decryption failed");
-    };
-
-    __temp_perform_encryption__ __hint_perform_encryption__ inline void __perform_eax_encryption(const string_t &plain_text, string_t &cipher, string_t &encoded_cipher)
-    {
-        static_assert(is_accepted_eax_encryption_algorithm_v<encryptionType>, "not a valid EAX Mode encryption function.");
-        encryptionType encryption;
-        __perform_keyiv_eax_intersection<encryptionType>(encryption);
-        string_source_t(plain_text, true, new auth_encryption_filter_t(encryption, new string_sink_t(cipher)));
-        string_source_t(cipher, true, new hex_encoder_t(new string_sink_t(encoded_cipher)));
-    };
-
-    __temp_perform_decryption__ __hint_perform_decryption__ void __perform_eax_decryption(const string_t &cipher_text, string_t &decrypted_data, string_t &decoded_data)
-    {
-        static_assert(is_accepted_eax_encryption_algorithm_v<decryptionType>, "not a valid EAX Mode decryption function.");
-        decryptionType decryption;
-        __perform_keyiv_eax_intersection<decryptionType>(decryption);
-        string_source_t(cipher_text, true, new hex_decoder_t(new string_sink_t(decoded_data)));
-        string_source_t(decoded_data, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_data)));
     };
 
     inline void __constructor_copy_handler(const ByteCrypt &o_instance) noexcept
