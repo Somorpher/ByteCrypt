@@ -160,7 +160,8 @@ namespace ByteCryptModule
 #define __hint_generate_random_bytes__ __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("used"), optimize("3")))
 #define __hint_store_secret__ __attribute__((cold, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
 #define __hint_load_secret_from_file__ __attribute__((cold, warn_unused_result, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
-#define __hint_prepare_secure_keys__ __attribute__((stack_protect, zero_call_used_regs("all"), access(read_only, 1), optimize("3")))
+#define __hint_prepare_secure_keys__ __attribute__((stack_protect, zero_call_used_regs("all"), optimize("3")))
+#define __hint_cipher_transformation__ __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("all"), noinline, access(read_only, 1), access(read_only, 2), optimize("3")))
 
 #else
 
@@ -197,8 +198,6 @@ namespace ByteCryptModule
 
 #endif
 
-#define __temp_perform_encryption__ template <typename encryptionType>
-#define __temp_perform_decryption__ template <typename decryptionType>
 #define __temp_byte_crypt__ template <typename std::size_t key_size_t = e_key_block_size::AES, typename std::size_t iv_size_t = e_iv_block_size::AES>
 
 /*                      Namespace                        *\
@@ -260,7 +259,6 @@ enum class e_eax_algorithm
 {
     AES = 0,
     BLOWFISH,
-    TWOFISH,
     CAST128,
     CAST256,
     IDEA,
@@ -280,16 +278,16 @@ enum class e_eax_algorithm
 // struct but not regular purpose... goes here...
 struct e_key_block_size
 {
-    static const std::size_t AES = CryptoPP::AES::DEFAULT_KEYLENGTH, BLOWFISH = CryptoPP::Blowfish::DEFAULT_KEYLENGTH, TWOFISH = CryptoPP::Twofish::DEFAULT_KEYLENGTH, CAST128 = CryptoPP::CAST128::DEFAULT_KEYLENGTH, CAST256 = CryptoPP::CAST256::DEFAULT_KEYLENGTH, IDEA = CryptoPP::IDEA::DEFAULT_KEYLENGTH,
-                             RC2 = CryptoPP::RC2::DEFAULT_KEYLENGTH, RC5 = CryptoPP::RC5::DEFAULT_KEYLENGTH, RC6 = CryptoPP::RC6::DEFAULT_KEYLENGTH, MARS = CryptoPP::MARS::DEFAULT_KEYLENGTH, SERPENT = CryptoPP::Serpent::DEFAULT_KEYLENGTH, GOST = CryptoPP::GOST::DEFAULT_KEYLENGTH, ARIA = CryptoPP::ARIA::BLOCKSIZE,
-                             HIGHT = CryptoPP::HIGHT::BLOCKSIZE, LEA = CryptoPP::LEA::DEFAULT_KEYLENGTH, SEED = CryptoPP::GOST::DEFAULT_KEYLENGTH, SPECK128 = CryptoPP::SPECK128::DEFAULT_KEYLENGTH, SIMON128 = CryptoPP::SIMON128::DEFAULT_KEYLENGTH;
+    static const std::uint16_t AES = CryptoPP::AES::DEFAULT_KEYLENGTH, BLOWFISH = CryptoPP::Blowfish::DEFAULT_KEYLENGTH, TWOFISH = CryptoPP::Twofish::DEFAULT_KEYLENGTH, CAST128 = CryptoPP::CAST128::DEFAULT_KEYLENGTH, CAST256 = CryptoPP::CAST256::DEFAULT_KEYLENGTH, IDEA = CryptoPP::IDEA::DEFAULT_KEYLENGTH,
+                               RC2 = CryptoPP::RC2::DEFAULT_KEYLENGTH, RC5 = CryptoPP::RC5::DEFAULT_KEYLENGTH, RC6 = CryptoPP::RC6::DEFAULT_KEYLENGTH, MARS = CryptoPP::MARS::DEFAULT_KEYLENGTH, SERPENT = CryptoPP::Serpent::DEFAULT_KEYLENGTH, GOST = CryptoPP::GOST::DEFAULT_KEYLENGTH, ARIA = CryptoPP::ARIA::BLOCKSIZE,
+                               HIGHT = CryptoPP::HIGHT::BLOCKSIZE, LEA = CryptoPP::LEA::DEFAULT_KEYLENGTH, SEED = CryptoPP::GOST::DEFAULT_KEYLENGTH, SPECK128 = CryptoPP::SPECK128::DEFAULT_KEYLENGTH, SIMON128 = CryptoPP::SIMON128::DEFAULT_KEYLENGTH;
 };
 
 struct e_iv_block_size
 {
-    static const std::size_t AES = CryptoPP::AES::BLOCKSIZE, BLOWFISH = CryptoPP::Blowfish::BLOCKSIZE, TWOFISH = CryptoPP::Twofish::BLOCKSIZE, CAST128 = CryptoPP::CAST128::BLOCKSIZE, CAST256 = CryptoPP::CAST256::DEFAULT_KEYLENGTH, IDEA = CryptoPP::IDEA::BLOCKSIZE, RC2 = CryptoPP::RC2::BLOCKSIZE,
-                             RC5 = CryptoPP::RC5::BLOCKSIZE, RC6 = CryptoPP::RC6::BLOCKSIZE, MARS = CryptoPP::MARS::BLOCKSIZE, SERPENT = CryptoPP::Serpent::BLOCKSIZE, GOST = CryptoPP::GOST::BLOCKSIZE, ARIA = CryptoPP::ARIA::BLOCKSIZE, HIGHT = CryptoPP::HIGHT::BLOCKSIZE, LEA = CryptoPP::LEA::BLOCKSIZE,
-                             SEED = CryptoPP::GOST::BLOCKSIZE, SIMON128 = CryptoPP::SIMON128::BLOCKSIZE, SPECK128 = CryptoPP::SPECK128::BLOCKSIZE;
+    static const std::uint16_t AES = CryptoPP::AES::BLOCKSIZE, BLOWFISH = CryptoPP::Blowfish::BLOCKSIZE, TWOFISH = CryptoPP::Twofish::BLOCKSIZE, CAST128 = CryptoPP::CAST128::BLOCKSIZE, CAST256 = CryptoPP::CAST256::DEFAULT_KEYLENGTH, IDEA = CryptoPP::IDEA::BLOCKSIZE, RC2 = CryptoPP::RC2::BLOCKSIZE,
+                               RC5 = CryptoPP::RC5::BLOCKSIZE, RC6 = CryptoPP::RC6::BLOCKSIZE, MARS = CryptoPP::MARS::BLOCKSIZE, SERPENT = CryptoPP::Serpent::BLOCKSIZE, GOST = CryptoPP::GOST::BLOCKSIZE, ARIA = CryptoPP::ARIA::BLOCKSIZE, HIGHT = CryptoPP::HIGHT::BLOCKSIZE, LEA = CryptoPP::LEA::BLOCKSIZE,
+                               SEED = CryptoPP::GOST::BLOCKSIZE, SIMON128 = CryptoPP::SIMON128::BLOCKSIZE, SPECK128 = CryptoPP::SPECK128::BLOCKSIZE;
 };
 
 typedef struct e_key_block_size e_key_block_size_t;
@@ -321,6 +319,12 @@ using hmac_s256_t = CryptoPP::HMAC<CryptoPP::SHA256>;
 using auth_decryption_filter_t = CryptoPP::AuthenticatedDecryptionFilter;
 using auth_encryption_filter_t = CryptoPP::AuthenticatedEncryptionFilter;
 using sec_byte_block_t = CryptoPP::SecByteBlock;
+using sha1_t = CryptoPP::SHA1;
+using sha224_t = CryptoPP::SHA224;
+using sha256_t = CryptoPP::SHA256;
+using sha384_t = CryptoPP::SHA384;
+using sha512_t = CryptoPP::SHA512;
+using hash_transformer_t = CryptoPP::HashTransformation;
 
 /**
  * CBC Mode Encryption/Dec(< GCM)
@@ -377,7 +381,6 @@ using gcm_mars_decryption_t = CryptoPP::GCM<CryptoPP::MARS>::Decryption;
 
 using eax_aes_encryption_t = CryptoPP::EAX<CryptoPP::AES>::Encryption;
 using eax_blowfish_encryption_t = CryptoPP::EAX<CryptoPP::Blowfish>::Encryption;
-using eax_twofish_encryption_t = CryptoPP::EAX<CryptoPP::Twofish>::Encryption;
 using eax_serpent_encryption_t = CryptoPP::EAX<CryptoPP::Serpent>::Encryption;
 using eax_cast128_encryption_t = CryptoPP::EAX<CryptoPP::CAST128>::Encryption;
 using eax_cast256_encryption_t = CryptoPP::EAX<CryptoPP::CAST256>::Encryption;
@@ -394,7 +397,6 @@ using eax_hight_encryption_t = CryptoPP::EAX<CryptoPP::HIGHT>::Encryption;
 
 using eax_aes_decryption_t = CryptoPP::EAX<CryptoPP::AES>::Decryption;
 using eax_blowfish_decryption_t = CryptoPP::EAX<CryptoPP::Blowfish>::Decryption;
-using eax_twofish_decryption_t = CryptoPP::EAX<CryptoPP::Twofish>::Decryption;
 using eax_serpent_decryption_t = CryptoPP::EAX<CryptoPP::Serpent>::Decryption;
 using eax_cast128_decryption_t = CryptoPP::EAX<CryptoPP::CAST128>::Decryption;
 using eax_cast256_decryption_t = CryptoPP::EAX<CryptoPP::CAST256>::Decryption;
@@ -443,22 +445,17 @@ template <typename mT> constexpr bool is_accepted_gcm_encryption_algorithm_v = i
 // EAX Mode of Operation
 template <typename mT> __hint_encryption_algo_accept__ static constexpr bool eax_encryption_algo_accept()
 {
-    return std::is_same_v<mT, eax_aes_encryption_t> || std::is_same_v<mT, eax_blowfish_encryption_t> || std::is_same_v<mT, eax_twofish_encryption_t> || std::is_same_v<mT, eax_serpent_encryption_t> || std::is_same_v<mT, eax_cast128_encryption_t> || std::is_same_v<mT, eax_cast256_encryption_t> ||
-           std::is_same_v<mT, eax_idea_encryption_t> || std::is_same_v<mT, eax_rc5_encryption_t> || std::is_same_v<mT, eax_rc6_encryption_t> || std::is_same_v<mT, eax_gost_encryption_t> || std::is_same_v<mT, eax_mars_encryption_t> || std::is_same_v<mT, eax_seed_encryption_t> ||
-           std::is_same_v<mT, eax_speck128_encryption_t> || std::is_same_v<mT, eax_lea_encryption_t> || std::is_same_v<mT, eax_aes_decryption_t> || std::is_same_v<mT, eax_blowfish_decryption_t> || std::is_same_v<mT, eax_twofish_decryption_t> || std::is_same_v<mT, eax_serpent_decryption_t> ||
-           std::is_same_v<mT, eax_cast128_decryption_t> || std::is_same_v<mT, eax_cast256_decryption_t> || std::is_same_v<mT, eax_idea_decryption_t> || std::is_same_v<mT, eax_rc5_decryption_t> || std::is_same_v<mT, eax_rc6_decryption_t> || std::is_same_v<mT, eax_gost_decryption_t> ||
-           std::is_same_v<mT, eax_mars_decryption_t> || std::is_same_v<mT, eax_seed_decryption_t> || std::is_same_v<mT, eax_speck128_decryption_t> || std::is_same_v<mT, eax_lea_decryption_t> || std::is_same_v<mT, eax_simon128_encryption_t> || std::is_same_v<mT, eax_simon128_decryption_t> ||
-           std::is_same_v<mT, eax_hight_encryption_t> || std::is_same_v<mT, eax_hight_decryption_t>;
+    return std::is_same_v<mT, eax_aes_encryption_t> || std::is_same_v<mT, eax_blowfish_encryption_t> || std::is_same_v<mT, eax_serpent_encryption_t> || std::is_same_v<mT, eax_cast128_encryption_t> || std::is_same_v<mT, eax_cast256_encryption_t> || std::is_same_v<mT, eax_idea_encryption_t> ||
+           std::is_same_v<mT, eax_rc5_encryption_t> || std::is_same_v<mT, eax_rc6_encryption_t> || std::is_same_v<mT, eax_gost_encryption_t> || std::is_same_v<mT, eax_mars_encryption_t> || std::is_same_v<mT, eax_seed_encryption_t> || std::is_same_v<mT, eax_speck128_encryption_t> ||
+           std::is_same_v<mT, eax_lea_encryption_t> || std::is_same_v<mT, eax_aes_decryption_t> || std::is_same_v<mT, eax_blowfish_decryption_t> || std::is_same_v<mT, eax_serpent_decryption_t> || std::is_same_v<mT, eax_cast128_decryption_t> || std::is_same_v<mT, eax_cast256_decryption_t> ||
+           std::is_same_v<mT, eax_idea_decryption_t> || std::is_same_v<mT, eax_rc5_decryption_t> || std::is_same_v<mT, eax_rc6_decryption_t> || std::is_same_v<mT, eax_gost_decryption_t> || std::is_same_v<mT, eax_mars_decryption_t> || std::is_same_v<mT, eax_seed_decryption_t> ||
+           std::is_same_v<mT, eax_speck128_decryption_t> || std::is_same_v<mT, eax_lea_decryption_t> || std::is_same_v<mT, eax_simon128_encryption_t> || std::is_same_v<mT, eax_simon128_decryption_t> || std::is_same_v<mT, eax_hight_encryption_t> || std::is_same_v<mT, eax_hight_decryption_t>;
 }
 template <typename mT> struct is_accepted_eax_encryption_algorithm
 {
     static constexpr bool value = eax_encryption_algo_accept<mT>();
 };
 template <typename mT> constexpr bool is_accepted_eax_encryption_algorithm_v = is_accepted_eax_encryption_algorithm<mT>::value;
-
-#define __temp_encrypt__ template <e_operation_mode op_mode_t = e_operation_mode::CBC, e_cbc_algorithm algorithm_t = e_cbc_algorithm::AES>
-#define __temp_decrypt__ template <e_operation_mode op_mode_t = e_operation_mode::CBC, e_cbc_algorithm algorithm_t = e_cbc_algorithm::AES>
-#define __temp_prepare_secure_keys__ template <e_operation_mode op_mode_t, e_cbc_algorithm algorithm_t>
 
 /*                      Structure                        *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -504,65 +501,76 @@ typedef struct alignas(void *)
 
 typedef struct alignas(void *)
 {
-    int secure_key{};
-    int secure_ivector{};
+    std::uint16_t secure_key{};
+    std::uint16_t secure_ivector{};
+
 } mode_of_operation_map;
 
-struct operation_mode
+typedef struct alignas(void *)
 {
-    std::unordered_map<e_cbc_algorithm, mode_of_operation_map> cbc{
-        {e_cbc_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
-        {e_cbc_algorithm::ARIA, mode_of_operation_map{.secure_key{e_key_block_size::ARIA}, .secure_ivector{e_iv_block_size::ARIA}}},
-        {e_cbc_algorithm::BLOWFISH, mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH}, .secure_ivector{e_iv_block_size::BLOWFISH}}},
-        {e_cbc_algorithm::CAST128, mode_of_operation_map{.secure_key{e_key_block_size::CAST128}, .secure_ivector{e_iv_block_size::CAST128}}},
-        {e_cbc_algorithm::CAST256, mode_of_operation_map{.secure_key{e_key_block_size::CAST256}, .secure_ivector{e_iv_block_size::CAST256}}},
-        {e_cbc_algorithm::GOST, mode_of_operation_map{.secure_key{e_key_block_size::GOST}, .secure_ivector{e_iv_block_size::GOST}}},
-        {e_cbc_algorithm::HIGHT, mode_of_operation_map{.secure_key{e_key_block_size::HIGHT}, .secure_ivector{e_iv_block_size::HIGHT}}},
-        {e_cbc_algorithm::IDEA, mode_of_operation_map{.secure_key{e_key_block_size::IDEA}, .secure_ivector{e_iv_block_size::IDEA}}},
-        {e_cbc_algorithm::MARS, mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
-        {e_cbc_algorithm::RC2, mode_of_operation_map{.secure_key{e_key_block_size::RC2}, .secure_ivector{e_iv_block_size::RC2}}},
-        {e_cbc_algorithm::RC5, mode_of_operation_map{.secure_key{e_key_block_size::RC5}, .secure_ivector{e_iv_block_size::RC5}}},
-        {e_cbc_algorithm::RC6, mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
-        {e_cbc_algorithm::SEED, mode_of_operation_map{.secure_key{e_key_block_size::SEED}, .secure_ivector{e_iv_block_size::SEED}}},
-        {e_cbc_algorithm::SERPENT, mode_of_operation_map{.secure_key{e_key_block_size::SERPENT}, .secure_ivector{e_iv_block_size::SERPENT}}},
-        {e_cbc_algorithm::SIMON128, mode_of_operation_map{.secure_key{e_key_block_size::SIMON128}, .secure_ivector{e_iv_block_size::SIMON128}}},
-        {e_cbc_algorithm::SPECK128, mode_of_operation_map{.secure_key{e_key_block_size::SPECK128}, .secure_ivector{e_iv_block_size::SPECK128}}},
-        {e_cbc_algorithm::TWOFISH, mode_of_operation_map{.secure_key{e_key_block_size::TWOFISH}, .secure_ivector{e_iv_block_size::TWOFISH}}},
-    };
-    std::unordered_map<e_gcm_algorithm, mode_of_operation_map> gcm{{e_gcm_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
-                                                                   {e_gcm_algorithm::MARS, mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
-                                                                   {e_gcm_algorithm::RC6, mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
-                                                                   {e_gcm_algorithm::TWOFISH, mode_of_operation_map{.secure_key{e_key_block_size::TWOFISH}, .secure_ivector{e_iv_block_size::TWOFISH}}}};
-    std::unordered_map<e_eax_algorithm, mode_of_operation_map> eax{
-        {e_eax_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
-        {e_eax_algorithm::BLOWFISH, mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH}, .secure_ivector{e_iv_block_size::BLOWFISH}}},
-        {e_eax_algorithm::CAST128, mode_of_operation_map{.secure_key{e_key_block_size::CAST128}, .secure_ivector{e_iv_block_size::CAST128}}},
-        {e_eax_algorithm::CAST256, mode_of_operation_map{.secure_key{e_key_block_size::CAST256}, .secure_ivector{e_iv_block_size::CAST256}}},
-        {e_eax_algorithm::GOST, mode_of_operation_map{.secure_key{e_key_block_size::GOST}, .secure_ivector{e_iv_block_size::GOST}}},
-        {e_eax_algorithm::HIGHT, mode_of_operation_map{.secure_key{e_key_block_size::HIGHT}, .secure_ivector{e_iv_block_size::HIGHT}}},
-        {e_eax_algorithm::IDEA, mode_of_operation_map{.secure_key{e_key_block_size::IDEA}, .secure_ivector{e_iv_block_size::IDEA}}},
-        {e_eax_algorithm::LEA, mode_of_operation_map{.secure_key{e_key_block_size::LEA}, .secure_ivector{e_iv_block_size::LEA}}},
-        {e_eax_algorithm::MARS, mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
-        {e_eax_algorithm::RC5, mode_of_operation_map{.secure_key{e_key_block_size::RC5}, .secure_ivector{e_iv_block_size::RC5}}},
-        {e_eax_algorithm::RC6, mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
-        {e_eax_algorithm::SEED, mode_of_operation_map{.secure_key{e_key_block_size::SEED}, .secure_ivector{e_iv_block_size::SEED}}},
-        {e_eax_algorithm::SERPENT, mode_of_operation_map{.secure_key{e_key_block_size::SERPENT}, .secure_ivector{e_iv_block_size::SERPENT}}},
-        {e_eax_algorithm::SIMON128, mode_of_operation_map{.secure_key{e_key_block_size::SIMON128}, .secure_ivector{e_iv_block_size::SIMON128}}},
-        {e_eax_algorithm::SPECK128, mode_of_operation_map{.secure_key{e_key_block_size::SPECK128}, .secure_ivector{e_iv_block_size::SPECK128}}},
-        {e_eax_algorithm::TWOFISH, mode_of_operation_map{.secure_key{e_key_block_size::TWOFISH}, .secure_ivector{e_iv_block_size::TWOFISH}}},
-    };
+    std::unordered_map<e_cbc_algorithm, mode_of_operation_map> cbc{};
+    std::unordered_map<e_gcm_algorithm, mode_of_operation_map> gcm{};
+    std::unordered_map<e_eax_algorithm, mode_of_operation_map> eax{};
+} operation_mode;
+
+std::unordered_map<e_cbc_algorithm, mode_of_operation_map> cbc_map_block{
+    {e_cbc_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
+    {e_cbc_algorithm::ARIA, mode_of_operation_map{.secure_key{e_key_block_size::ARIA}, .secure_ivector{e_iv_block_size::ARIA}}},
+    {e_cbc_algorithm::BLOWFISH, mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH}, .secure_ivector{e_iv_block_size::BLOWFISH}}},
+    {e_cbc_algorithm::CAST128, mode_of_operation_map{.secure_key{e_key_block_size::CAST128}, .secure_ivector{e_iv_block_size::CAST128}}},
+    {e_cbc_algorithm::CAST256, mode_of_operation_map{.secure_key{e_key_block_size::CAST256}, .secure_ivector{e_iv_block_size::CAST256}}},
+    {e_cbc_algorithm::GOST, mode_of_operation_map{.secure_key{e_key_block_size::GOST}, .secure_ivector{e_iv_block_size::GOST}}},
+    {e_cbc_algorithm::HIGHT, mode_of_operation_map{.secure_key{e_key_block_size::HIGHT}, .secure_ivector{e_iv_block_size::HIGHT}}},
+    {e_cbc_algorithm::IDEA, mode_of_operation_map{.secure_key{e_key_block_size::IDEA}, .secure_ivector{e_iv_block_size::IDEA}}},
+    {e_cbc_algorithm::MARS, mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
+    {e_cbc_algorithm::RC2, mode_of_operation_map{.secure_key{e_key_block_size::RC2}, .secure_ivector{e_iv_block_size::RC2}}},
+    {e_cbc_algorithm::RC5, mode_of_operation_map{.secure_key{e_key_block_size::RC5}, .secure_ivector{e_iv_block_size::RC5}}},
+    {e_cbc_algorithm::RC6, mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
+    {e_cbc_algorithm::SEED, mode_of_operation_map{.secure_key{e_key_block_size::SEED}, .secure_ivector{e_iv_block_size::SEED}}},
+    {e_cbc_algorithm::SERPENT, mode_of_operation_map{.secure_key{e_key_block_size::SERPENT}, .secure_ivector{e_iv_block_size::SERPENT}}},
+    {e_cbc_algorithm::SIMON128, mode_of_operation_map{.secure_key{e_key_block_size::SIMON128}, .secure_ivector{e_iv_block_size::SIMON128}}},
+    {e_cbc_algorithm::SPECK128, mode_of_operation_map{.secure_key{e_key_block_size::SPECK128}, .secure_ivector{e_iv_block_size::SPECK128}}},
+    {e_cbc_algorithm::TWOFISH, mode_of_operation_map{.secure_key{e_key_block_size::TWOFISH}, .secure_ivector{e_iv_block_size::TWOFISH}}},
 };
+std::unordered_map<e_gcm_algorithm, mode_of_operation_map> gcm_map_block{{e_gcm_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
+                                                                         {e_gcm_algorithm::MARS, mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
+                                                                         {e_gcm_algorithm::RC6, mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
+                                                                         {e_gcm_algorithm::TWOFISH, mode_of_operation_map{.secure_key{e_key_block_size::TWOFISH}, .secure_ivector{e_iv_block_size::TWOFISH}}}};
+std::unordered_map<e_eax_algorithm, mode_of_operation_map> eax_map_block{
+    {e_eax_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
+    {e_eax_algorithm::BLOWFISH, mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH}, .secure_ivector{e_iv_block_size::BLOWFISH}}},
+    {e_eax_algorithm::CAST128, mode_of_operation_map{.secure_key{e_key_block_size::CAST128}, .secure_ivector{e_iv_block_size::CAST128}}},
+    {e_eax_algorithm::CAST256, mode_of_operation_map{.secure_key{e_key_block_size::CAST256}, .secure_ivector{e_iv_block_size::CAST256}}},
+    {e_eax_algorithm::GOST, mode_of_operation_map{.secure_key{e_key_block_size::GOST}, .secure_ivector{e_iv_block_size::GOST}}},
+    {e_eax_algorithm::HIGHT, mode_of_operation_map{.secure_key{e_key_block_size::HIGHT}, .secure_ivector{e_iv_block_size::HIGHT}}},
+    {e_eax_algorithm::IDEA, mode_of_operation_map{.secure_key{e_key_block_size::IDEA}, .secure_ivector{e_iv_block_size::IDEA}}},
+    {e_eax_algorithm::LEA, mode_of_operation_map{.secure_key{e_key_block_size::LEA}, .secure_ivector{e_iv_block_size::LEA}}},
+    {e_eax_algorithm::MARS, mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
+    {e_eax_algorithm::RC5, mode_of_operation_map{.secure_key{e_key_block_size::RC5}, .secure_ivector{e_iv_block_size::RC5}}},
+    {e_eax_algorithm::RC6, mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
+    {e_eax_algorithm::SEED, mode_of_operation_map{.secure_key{e_key_block_size::SEED}, .secure_ivector{e_iv_block_size::SEED}}},
+    {e_eax_algorithm::SERPENT, mode_of_operation_map{.secure_key{e_key_block_size::SERPENT}, .secure_ivector{e_iv_block_size::SERPENT}}},
+    {e_eax_algorithm::SIMON128, mode_of_operation_map{.secure_key{e_key_block_size::SIMON128}, .secure_ivector{e_iv_block_size::SIMON128}}},
+    {e_eax_algorithm::SPECK128, mode_of_operation_map{.secure_key{e_key_block_size::SPECK128}, .secure_ivector{e_iv_block_size::SPECK128}}},
+};
+
+#define __temp_prepare_secure_keys__ template <e_cbc_algorithm algorithm_t = e_cbc_algorithm::AES>
 
 /*                      Class                            *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-__temp_byte_crypt__ class ByteCrypt
+class ByteCrypt
 {
-    std::unique_ptr<string_t> secret_key = std::make_unique<string_t>();
+    std::unique_ptr<string_t> secret_key = std::make_unique<string_t>("");
     std::uint16_t cipher_iteration_count = DEFAULT_CIPHER_ITERATION_COUNTER;
     std::uint16_t default_sec_key_size = DEFAULT_SEC_BLOCK_KEY_SIZE;
     std::uint16_t default_sec_iv_size = DEFAULT_SEC_BLOCK_IV_SIZE;
+
     static constexpr std::array<std::uint16_t, 5> rsa_key_size_options{512u, 1024u, 2048u, 3072u, 4096u};
-    operation_mode op_mode;
+    operation_mode op_mode{
+        .cbc{cbc_map_block},
+        .gcm{gcm_map_block},
+        .eax{eax_map_block},
+    };
 
   public:
     inline ByteCrypt() noexcept {};
@@ -595,17 +603,15 @@ __temp_byte_crypt__ class ByteCrypt
     inline ByteCrypt(const string_view_t &initial_secret_key, const byte key[], const byte iv[], const std::uint16_t key_size, const std::uint16_t iv_size) noexcept
     {
         *this->secret_key = (string_t)initial_secret_key;
-        if (key_size == std::size(this->__key__))
-            for (std::uint16_t j{0}; j < key_size; ++j)
-                this->__key__[j] = key[j];
-        if (iv_size == std::size(this->__iv__))
-            for (std::uint16_t j{0}; j < iv_size; ++j)
-                this->__iv__[j] = iv[j];
     };
 
     inline const bool operator==(const ByteCrypt &o_instance) const noexcept
     {
         return this->secret_key.get()->compare(o_instance.secret_key.get()->c_str()) == 0;
+    };
+    inline const bool operator!=(const ByteCrypt &o_instance) const noexcept
+    {
+        return this->secret_key.get()->compare(o_instance.secret_key.get()->c_str()) != 0;
     };
 
     /**
@@ -662,23 +668,23 @@ __temp_byte_crypt__ class ByteCrypt
     __hint_hash__ const string_t hash(const string_t &buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
     {
         string_t digest_block;
-        std::unique_ptr<CryptoPP::HashTransformation> algo;
+        std::unique_ptr<hash_transformer_t> algo;
         switch (sha)
         {
         case e_hash_algo_option::SHA1:
-            algo = std::make_unique<CryptoPP::SHA1>();
+            algo = std::make_unique<sha1_t>();
             break;
         case e_hash_algo_option::SHA224:
-            algo = std::make_unique<CryptoPP::SHA224>();
+            algo = std::make_unique<sha224_t>();
             break;
         case e_hash_algo_option::SHA256:
-            algo = std::make_unique<CryptoPP::SHA256>();
+            algo = std::make_unique<sha256_t>();
             break;
         case e_hash_algo_option::SHA384:
-            algo = std::make_unique<CryptoPP::SHA384>();
+            algo = std::make_unique<sha384_t>();
             break;
         case e_hash_algo_option::SHA512:
-            algo = std::make_unique<CryptoPP::SHA512>();
+            algo = std::make_unique<sha512_t>();
             break;
         }
         CryptoPP::StringSource(buffer, true, new CryptoPP::HashFilter(*algo, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest_block))));
@@ -1114,28 +1120,123 @@ __temp_byte_crypt__ class ByteCrypt
         return local_bytes;
     };
 
-    __temp_encrypt__ __hint_encrypt__ const encryption_result encrypt(const string_t &buffer, const string_t &secret)
+    __hint_cipher_transformation__ const encryption_result cbc_encrypt(const string_t &buffer, const string_t &secret, const e_cbc_algorithm algorithm = e_cbc_algorithm::AES)
     {
         encryption_result result;
-
         try
         {
-            if (op_mode_t == e_operation_mode::CBC)
+            string_t target, r0;
+            entropy_seed_t ring;
+            byte salt[16];
+            ring.GenerateBlock(salt, sizeof(salt));
+            sec_byte_block_t key, iv;
+            this->__prepare_cbc_secure_keys(secret, key, iv, salt, sizeof(salt), algorithm);
+            if (algorithm == e_cbc_algorithm::AES)
             {
-                string_t target;
-                entropy_seed_t ring;
-                byte salt[16];
-                ring.GenerateBlock(salt, sizeof(salt));
-                sec_byte_block_t key, iv;
-                this->__prepare_secure_keys<op_mode_t, algorithm_t>(secret, key, iv, salt, sizeof(salt));
                 cbc_aes_encryption_t encryption;
                 encryption.SetKeyWithIV(key, key.size(), iv);
-                string_t r0;
                 string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-                const string_t r2(string_t(reinterpret_cast<char *>(salt), sizeof(salt)) + r0);
-                string_source_t(r2, true, new hex_encoder_t(new string_sink_t(target)));
-                result.encrypted_block = std::move(target);
             }
+            else if (algorithm == e_cbc_algorithm::ARIA)
+            {
+                cbc_aria_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::BLOWFISH)
+            {
+                cbc_blowfish_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::CAST128)
+            {
+                cbc_cast128_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::CAST256)
+            {
+                cbc_cast256_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::GOST)
+            {
+                cbc_gost_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::HIGHT)
+            {
+                cbc_hight_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::IDEA)
+            {
+                cbc_idea_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::MARS)
+            {
+                cbc_mars_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::RC2)
+            {
+                cbc_rc2_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::RC5)
+            {
+                cbc_rc5_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::RC6)
+            {
+                cbc_rc6_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::SEED)
+            {
+                cbc_seed_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::SERPENT)
+            {
+                cbc_serpent_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::SIMON128)
+            {
+                cbc_simon128_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::SPECK128)
+            {
+                cbc_speck128_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::TWOFISH)
+            {
+                cbc_twofish_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
+            }
+
+            const string_t r2(string_t(reinterpret_cast<char *>(salt), sizeof(salt)) + r0);
+            string_source_t(r2, true, new hex_encoder_t(new string_sink_t(target)));
+            result.encrypted_block = std::move(target);
         }
         catch (const std::exception &e)
         {
@@ -1146,27 +1247,121 @@ __temp_byte_crypt__ class ByteCrypt
         return result;
     };
 
-    __temp_decrypt__ __hint_decrypt__ const decryption_result decrypt(const string_t &buffer, const string_t &secret)
+    __hint_cipher_transformation__ const decryption_result cbc_decrypt(const string_t &buffer, const string_t &secret, const e_cbc_algorithm algorithm = e_cbc_algorithm::AES)
     {
         decryption_result result;
         try
         {
-            if (op_mode_t == e_operation_mode::CBC)
+            byte salt[16];
+            string_t rd, r0;
+            string_source_t(buffer, true, new hex_decoder_t(new string_sink_t(rd)));
+            memcpy(salt, rd.data(), sizeof(salt));
+            string_t ciphertext(rd.substr(sizeof(salt)));
+            sec_byte_block_t key, iv;
+            this->__prepare_cbc_secure_keys(secret, key, iv, salt, sizeof(salt), algorithm);
+            if (algorithm == e_cbc_algorithm::AES)
             {
-                string_t target;
-                byte salt[16];
-                string_t rd;
-                string_source_t(buffer, true, new hex_decoder_t(new string_sink_t(rd)));
-                memcpy(salt, rd.data(), sizeof(salt));
-                string_t ciphertext(rd.substr(sizeof(salt)));
-                sec_byte_block_t key, iv;
-                this->__prepare_secure_keys<op_mode_t, algorithm_t>(secret, key, iv, salt, sizeof(salt));
-                string_t r0;
                 cbc_aes_decryption_t decryption;
                 decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(target)));
-                result.decrypted_block = std::move(target);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
             }
+            else if (algorithm == e_cbc_algorithm::ARIA)
+            {
+                cbc_aria_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::BLOWFISH)
+            {
+                cbc_blowfish_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::CAST128)
+            {
+                cbc_cast128_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::CAST256)
+            {
+                cbc_cast256_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::GOST)
+            {
+                cbc_gost_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::HIGHT)
+            {
+                cbc_hight_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::IDEA)
+            {
+                cbc_idea_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::MARS)
+            {
+                cbc_mars_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::RC2)
+            {
+                cbc_rc2_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::RC5)
+            {
+                cbc_rc5_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::RC6)
+            {
+                cbc_rc6_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::SEED)
+            {
+                cbc_seed_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::SERPENT)
+            {
+                cbc_serpent_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::SIMON128)
+            {
+                cbc_simon128_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::SPECK128)
+            {
+                cbc_speck128_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            else if (algorithm == e_cbc_algorithm::TWOFISH)
+            {
+                cbc_twofish_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv);
+                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
+            }
+            result.decrypted_block = std::move(r0);
         }
         catch (const std::exception &e)
         {
@@ -1176,27 +1371,426 @@ __temp_byte_crypt__ class ByteCrypt
         return result;
     };
 
+    __hint_cipher_transformation__ const encryption_result gcm_encrypt(const string_t &plaintext_cipher, const string_t &secret, const e_gcm_algorithm algorithm = e_gcm_algorithm::AES)
+    {
+        encryption_result result;
+        try
+        {
+            string_t encrypted_block, encoded_block;
+            sec_byte_block_t key, iv;
+            this->__prepare_gcm_secure_keys(secret, key, iv, algorithm);
+            if (algorithm == e_gcm_algorithm::AES)
+            {
+                gcm_aes_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_gcm_algorithm::MARS)
+            {
+                gcm_mars_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_gcm_algorithm::RC6)
+            {
+                gcm_rc6_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_gcm_algorithm::TWOFISH)
+            {
+                gcm_twofish_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            result.encrypted_block = std::move(encoded_block);
+        }
+        catch (const std::exception &e)
+        {
+            result.error.has_error = true;
+            result.error.error_msg = e.what();
+        }
+        return result;
+    }
+
+    __hint_cipher_transformation__ const decryption_result gcm_decrypt(const string_t &encrypted_cipher, const string_t &secret, const e_gcm_algorithm algorithm = e_gcm_algorithm::AES)
+    {
+        decryption_result result;
+        try
+        {
+            const std::uint16_t iv_block_size(this->op_mode.gcm.at(algorithm).secure_ivector);
+            string_t decrypted_block, decoded_block;
+            string_source_t(encrypted_cipher, true, new hex_decoder_t(new string_sink_t(decoded_block)));
+            sec_byte_block_t key, iv;
+            this->__prepare_gcm_secure_keys(secret, key, iv, algorithm);
+            if (algorithm == e_gcm_algorithm::AES)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), iv_block_size);
+                string_t ciphertext = decoded_block.substr(iv_block_size);
+                gcm_aes_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_gcm_algorithm::MARS)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), iv_block_size);
+                string_t ciphertext = decoded_block.substr(iv_block_size);
+                gcm_mars_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_gcm_algorithm::RC6)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), iv_block_size);
+                string_t ciphertext = decoded_block.substr(iv_block_size);
+                gcm_rc6_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_gcm_algorithm::TWOFISH)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), iv_block_size);
+                string_t ciphertext = decoded_block.substr(iv_block_size);
+                gcm_twofish_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            result.decrypted_block = std::move(decrypted_block);
+        }
+        catch (const std::exception &e)
+        {
+            result.error.has_error = true;
+            result.error.error_msg = e.what();
+        }
+        return result;
+    };
+
+    __hint_cipher_transformation__ const encryption_result eax_encrypt(const string_t &plaintext_cipher, const string_t &secret, const e_eax_algorithm algorithm = e_eax_algorithm::AES)
+    {
+        encryption_result result;
+        try
+        {
+            string_t encrypted_block, encoded_block;
+            sec_byte_block_t key, iv;
+            this->__prepare_eax_secure_keys(secret, key, iv, algorithm);
+            if (algorithm == e_eax_algorithm::AES)
+            {
+                eax_aes_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_eax_algorithm::BLOWFISH)
+            {
+                eax_blowfish_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_eax_algorithm::CAST128)
+            {
+                eax_cast128_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_eax_algorithm::CAST256)
+            {
+                eax_cast256_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_eax_algorithm::GOST)
+            {
+                eax_gost_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_eax_algorithm::HIGHT)
+            {
+                eax_hight_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_eax_algorithm::IDEA)
+            {
+                eax_idea_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_eax_algorithm::LEA)
+            {
+                eax_lea_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_eax_algorithm::MARS)
+            {
+                eax_mars_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_eax_algorithm::RC5)
+            {
+                eax_rc5_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_eax_algorithm::RC6)
+            {
+                eax_rc6_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_eax_algorithm::SEED)
+            {
+                eax_seed_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_eax_algorithm::SERPENT)
+            {
+                eax_serpent_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_eax_algorithm::SIMON128)
+            {
+                eax_simon128_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else if (algorithm == e_eax_algorithm::SPECK128)
+            {
+                eax_speck128_encryption_t encryption;
+                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+            }
+            else
+            {
+                throw std::invalid_argument("invalid eax algorithm.");
+            }
+
+            result.encrypted_block = std::move(encoded_block);
+        }
+        catch (const std::exception &e)
+        {
+            result.error.has_error = true;
+            result.error.error_msg = e.what();
+        }
+        return result;
+    }
+
+    __hint_cipher_transformation__ const decryption_result eax_decrypt(const string_t &encrypted_cipher, const string_t &secret, const e_eax_algorithm algorithm = e_eax_algorithm::AES)
+    {
+        decryption_result result;
+        try
+        {
+            string_t decrypted_block, decoded_block;
+            string_source_t(encrypted_cipher, true, new hex_decoder_t(new string_sink_t(decoded_block)));
+            sec_byte_block_t key, iv;
+            this->__prepare_eax_secure_keys(secret, key, iv, algorithm);
+            if (algorithm == e_eax_algorithm::AES)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::AES);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::AES);
+                eax_aes_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_eax_algorithm::BLOWFISH)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::BLOWFISH);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::BLOWFISH);
+                eax_blowfish_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_eax_algorithm::CAST128)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::CAST128);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::CAST128);
+                eax_cast128_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_eax_algorithm::CAST256)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::CAST256);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::CAST256);
+                eax_cast256_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_eax_algorithm::GOST)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::GOST);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::GOST);
+                eax_gost_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_eax_algorithm::HIGHT)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::HIGHT);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::HIGHT);
+                eax_hight_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_eax_algorithm::IDEA)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::IDEA);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::IDEA);
+                eax_idea_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_eax_algorithm::LEA)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::LEA);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::LEA);
+                eax_lea_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_eax_algorithm::MARS)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::MARS);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::MARS);
+                eax_mars_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_eax_algorithm::RC5)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::RC5);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::RC5);
+                eax_rc5_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_eax_algorithm::RC6)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::RC6);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::RC6);
+                eax_rc6_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_eax_algorithm::SEED)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::SEED);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::SEED);
+                eax_seed_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_eax_algorithm::SERPENT)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::SERPENT);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::SERPENT);
+                eax_serpent_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_eax_algorithm::SIMON128)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::SIMON128);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::SIMON128);
+                eax_simon128_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else if (algorithm == e_eax_algorithm::SPECK128)
+            {
+                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::SPECK128);
+                string_t ciphertext = decoded_block.substr(e_iv_block_size::SPECK128);
+                eax_speck128_decryption_t decryption;
+                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+                string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+            }
+            else
+            {
+                throw std::invalid_argument("invalid eax algorithm provided!");
+            }
+            result.decrypted_block = std::move(decrypted_block);
+        }
+        catch (const std::exception &e)
+        {
+            result.error.has_error = true;
+            result.error.error_msg = e.what();
+        }
+        return result;
+    }
+
     ~ByteCrypt() {};
 
   private:
-    __temp_prepare_secure_keys__ __hint_prepare_secure_keys__ inline void __prepare_secure_keys(const string_t &cipher, sec_byte_block_t &key, sec_byte_block_t &iv, const byte *salt, const std::size_t salt_size)
+    __hint_prepare_secure_keys__ inline void __prepare_cbc_secure_keys(const string_t &cipher, sec_byte_block_t &key, sec_byte_block_t &iv, const byte *salt, const std::size_t salt_size, const e_cbc_algorithm algorithm)
     {
-        std::size_t key_size = this->default_sec_key_size, iv_size = this->default_sec_iv_size;
-        if (op_mode_t == e_operation_mode::CBC)
-        {
-            sha256_hmac_t hmac;
-            if (algorithm_t == e_cbc_algorithm::AES)
-            {
-                key_size = this->op_mode.cbc.at(e_cbc_algorithm::AES).secure_key;
-                iv_size = this->op_mode.cbc.at(e_cbc_algorithm::AES).secure_ivector;
-            }
+        sha256_hmac_t hmac;
+        const std::uint16_t key_size = this->op_mode.cbc.at(algorithm).secure_key;
+        const std::uint16_t iv_size = this->op_mode.cbc.at(algorithm).secure_ivector;
+        key.CleanNew(key_size);
+        iv.CleanNew(iv_size);
+        hmac.DeriveKey(key, key.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt, salt_size, this->cipher_iteration_count);
+        hmac.DeriveKey(iv, iv.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt, salt_size, this->cipher_iteration_count);
+    };
 
-            key.CleanNew(key_size);
-            iv.CleanNew(iv_size);
+    __hint_prepare_secure_keys__ inline void __prepare_gcm_secure_keys(const string_t &secret, sec_byte_block_t &key, sec_byte_block_t &iv, const e_gcm_algorithm algorithm)
+    {
+        CryptoPP::SHA256 hash;
+        key.resize(this->op_mode.gcm.at(algorithm).secure_key);
+        hash.CalculateDigest(key, (const byte *)secret.data(), secret.size());
+        iv.resize(this->op_mode.gcm.at(algorithm).secure_ivector);
+        entropy_seed_t rng;
+        rng.GenerateBlock(iv, iv.size());
+    };
 
-            hmac.DeriveKey(key, key.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt, salt_size, this->cipher_iteration_count);
-            hmac.DeriveKey(iv, iv.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt, salt_size, this->cipher_iteration_count);
-        }
+    __hint_prepare_secure_keys__ inline void __prepare_eax_secure_keys(const string_t &secret, sec_byte_block_t &key, sec_byte_block_t &iv, const e_eax_algorithm algorithm)
+    {
+        CryptoPP::SHA256 hash;
+        key.resize(this->op_mode.eax.at(algorithm).secure_key);
+        hash.CalculateDigest(key, (const byte *)secret.data(), secret.size());
+        iv.resize(this->op_mode.eax.at(algorithm).secure_ivector);
+        entropy_seed_t e_gen;
+        e_gen.GenerateBlock(iv, iv.size());
     };
 
     __hint_rsa_key_pair_verify__ const bool __rsa_key_pair_verify(const rsa_key_pair_struct &key_block)
@@ -1328,12 +1922,6 @@ __temp_byte_crypt__ class ByteCrypt
             this->cipher_iteration_count = o_instance.cipher_iteration_count;
             this->default_sec_iv_size = o_instance.default_sec_iv_size;
             this->default_sec_key_size = o_instance.default_sec_key_size;
-            if (std::size(o_instance.__key__) > 0)
-                for (std::uint16_t j{0}; j < std::size(o_instance.__key__); ++j)
-                    this->__key__[j] = o_instance.__key__[j];
-            if (std::size(o_instance.__iv__) == std::size(this->__iv__))
-                for (std::uint16_t j{0}; j < std::size(o_instance.__iv__); ++j)
-                    this->__iv__[j] = o_instance.__iv__[j];
         }
     };
 };
