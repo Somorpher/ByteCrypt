@@ -30,15 +30,13 @@
  */
 // Platform detection
 
-#if defined(__linux__) || defined(__APPLE__) || defined(_WIN32) || defined(_WIN64) || defined(__FreeBSD__) ||          
-    defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__) || defined(__sun) || defined(__CYGWIN__) ||  
-    defined(__MINGW32__) || defined(__MINGW64__) || defined(__ANDROID__) || defined(__unix__) || defined(__HAIKU__)
+#if defined(__linux__) || defined(__APPLE__) || defined(_WIN32) || defined(_WIN64) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__) ||       \
+    defined(__sun) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__MINGW64__) || defined(__ANDROID__) || defined(__unix__) || defined(__HAIKU__)
 
 // Architecture detection
-#if defined(__x86_64__) || defined(__amd64__) || defined(__i386__) || defined(__M_X64) || defined(__aarch64__) ||      
-    defined(__arm__) || defined(__powerpc64__) || defined(__ppc64__) || defined(__powerpc__) || defined(__ppc__) ||    
-    defined(__sparc__) || defined(__mips__) || defined(__mips64__) || defined(__s390__) || defined(__s390x__) ||       
-    defined(__riscv) || defined(__riscv64__)
+#if defined(__x86_64__) || defined(__amd64__) || defined(__i386__) || defined(__M_X64) || defined(__aarch64__) || defined(__arm__) || defined(__powerpc64__) || defined(__ppc64__) ||        \
+    defined(__powerpc__) || defined(__ppc__) || defined(__sparc__) || defined(__mips__) || defined(__mips64__) || defined(__s390__) || defined(__s390x__) || defined(__riscv) ||             \
+    defined(__riscv64__)
 
 #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__) || defined(_MSC_VER)
 
@@ -137,74 +135,35 @@ namespace ByteCryptModule
 #define __hint_set_iter_counter__ __attribute__((cold, nothrow, noipa, no_stack_protector))
 #define __hint_set_def_key_size__ __attribute__((cold, nothrow, noipa, no_stack_protector))
 #define __hint_set_def_iv_size__ __attribute__((cold, nothrow, noipa, no_stack_protector))
-#define __hint_encryption_algo_accept__                                                                                
-    __attribute__((cold, nothrow, warn_unused_result, pure, no_sanitize_address, no_stack_protector, optimize(3)))
-#define __hint_hash__                                                                                                  
-    __attribute__((stack_protect, zero_call_used_regs("all"), warn_unused_result, access(read_only, 1),                
-                   access(read_only, 2), optimize(3)))
-#define __hint_encrypt__                                                                                               
-    __attribute__((warn_unused_result, zero_call_used_regs("used"), stack_protect, access(read_only, 1),               
-                   access(read_only, 2), optimize(3)))
-#define __hint_decrypt__                                                                                               
-    __attribute__((warn_unused_result, zero_call_used_regs("used"), stack_protect, access(read_only, 1),               
-                   access(read_only, 2), optimize(3)))
+#define __hint_encryption_algo_accept__ __attribute__((cold, nothrow, warn_unused_result, pure, no_sanitize_address, no_stack_protector, optimize(3)))
+#define __hint_hash__ __attribute__((stack_protect, zero_call_used_regs("all"), warn_unused_result, access(read_only, 1), access(read_only, 2), optimize(3)))
+#define __hint_encrypt__ __attribute__((warn_unused_result, zero_call_used_regs("used"), stack_protect, access(read_only, 1), access(read_only, 2), optimize(3)))
+#define __hint_decrypt__ __attribute__((warn_unused_result, zero_call_used_regs("used"), stack_protect, access(read_only, 1), access(read_only, 2), optimize(3)))
 #define __hint_base64_encode__ __attribute__((warn_unused_result, stack_protect, access(read_only, 1), optimize("3")))
 #define __hint_base64_decode__ __attribute__((warn_unused_result, stack_protect, access(read_only, 1), optimize("3")))
 #define __hint_hex_encode__ __attribute__((warn_unused_result, no_stack_protector, access(read_only, 1), optimize("3")))
 #define __hint_hex_decode__ __attribute__((warn_unused_result, no_stack_protector, access(read_only, 1), optimize("3")))
-#define __hint_generate_rsa_key_der_pair__                                                                             
-    __attribute__((cold, warn_unused_result, stack_protect, access(read_only, 1), zero_call_used_regs("used"),         
-                   optimize("3")))
-#define __hint_generate_rsa_key_pem_pair__                                                                             
-    __attribute__((cold, warn_unused_result, stack_protect, access(read_only, 1), zero_call_used_regs("used"),         
-                   optimize("3")))
-#define __hint_sign_message__                                                                                          
-    __attribute__((warn_unused_result, stack_protect, access(read_only, 1), access(read_only, 2),                      
-                   zero_call_used_regs("used"), optimize("3")))
-#define __hint_verify_signature__                                                                                      
-    __attribute__((warn_unused_result, access(read_only, 1), access(read_only, 2), access(read_only, 3),               
-                   stack_protect, zero_call_used_regs("used"), optimize("3")))
-#define __hint_save_rsa_key__                                                                                          
-    __attribute__((stack_protect, zero_call_used_regs("used"), tainted_args, access(read_only, 1),                     
-                   access(read_only, 2), optimize("3")))
-#define __hint_load_rsa_key__                                                                                          
-    __attribute__((warn_unused_result, cold, stack_protect, zero_call_used_regs("used"), access(read_only, 1),         
-                   optimize("3")))
-#define __hint_derive_key_iv__                                                                                         
-    __attribute__((stack_protect, zero_call_used_regs("used"), access(read_only, 1), access(read_only, 2),             
-                   access(read_only, 3), optimize("1")))
-#define __hint_perform_keyiv_intersection__                                                                            
-    __attribute__((stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
-#define __hint_rsa_key_pair_verify__                                                                                   
-    __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
-#define __hint_rsa_key_pem_set_header__                                                                                
-    __attribute__((nothrow, always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1),           
-                   optimize("3")))
-#define __hint_rsa_key_pem_set_footer__                                                                                
-    __attribute__((always_inline, nothrow, stack_protect, zero_call_used_regs("used"), access(read_only, 1),           
-                   optimize("3")))
-#define __hint_is_rsa_key_size_valid__                                                                                 
-    __attribute__((nothrow, warn_unused_result, always_inline, const, no_stack_protector, access(read_only, 1),        
-                   optimize("1")))
-#define __hint_is_rsa_key_pem__                                                                                        
-    __attribute__((warn_unused_result, nothrow, stack_protect, zero_call_used_regs("used"), access(read_only, 1),      
-                   optimize("1")))
-#define __hint_is_rsa_encrypted_key__                                                                                  
-    __attribute__((nothrow, warn_unused_result, const, always_inline, stack_protect, zero_call_used_regs("used"),      
-                   access(read_only, 1), optimize("0")))
-#define __hint_rsa_key_meta_wipe__                                                                                     
-    __attribute__((const, zero_call_used_regs("used"), warn_unused_result, access(read_only, 1), optimize("2")))
-#define __hint_generate_random_bytes__                                                                                 
-    __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("used"), optimize("3")))
-#define __hint_store_secret__                                                                                          
-    __attribute__((cold, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
-#define __hint_load_secret_from_file__                                                                                 
-    __attribute__((cold, warn_unused_result, stack_protect, optimize("3"), zero_call_used_regs("used"),                
-                   access(read_only, 1)))
+#define __hint_generate_rsa_key_der_pair__ __attribute__((cold, warn_unused_result, stack_protect, access(read_only, 1), zero_call_used_regs("used"), optimize("3")))
+#define __hint_generate_rsa_key_pem_pair__ __attribute__((cold, warn_unused_result, stack_protect, access(read_only, 1), zero_call_used_regs("used"), optimize("3")))
+#define __hint_sign_message__ __attribute__((warn_unused_result, stack_protect, access(read_only, 1), access(read_only, 2), zero_call_used_regs("used"), optimize("3")))
+#define __hint_verify_signature__                                                                                                                                                            \
+    __attribute__((warn_unused_result, access(read_only, 1), access(read_only, 2), access(read_only, 3), stack_protect, zero_call_used_regs("used"), optimize("3")))
+#define __hint_save_rsa_key__ __attribute__((stack_protect, zero_call_used_regs("used"), tainted_args, access(read_only, 1), access(read_only, 2), optimize("3")))
+#define __hint_load_rsa_key__ __attribute__((warn_unused_result, cold, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
+#define __hint_derive_key_iv__ __attribute__((stack_protect, zero_call_used_regs("used"), access(read_only, 1), access(read_only, 2), access(read_only, 3), optimize("1")))
+#define __hint_perform_keyiv_intersection__ __attribute__((stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
+#define __hint_rsa_key_pair_verify__ __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
+#define __hint_rsa_key_pem_set_header__ __attribute__((nothrow, always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
+#define __hint_rsa_key_pem_set_footer__ __attribute__((always_inline, nothrow, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
+#define __hint_is_rsa_key_size_valid__ __attribute__((nothrow, warn_unused_result, always_inline, const, no_stack_protector, access(read_only, 1), optimize("1")))
+#define __hint_is_rsa_key_pem__ __attribute__((warn_unused_result, nothrow, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("1")))
+#define __hint_is_rsa_encrypted_key__ __attribute__((nothrow, warn_unused_result, const, always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("0")))
+#define __hint_rsa_key_meta_wipe__ __attribute__((const, zero_call_used_regs("used"), warn_unused_result, access(read_only, 1), optimize("2")))
+#define __hint_generate_random_bytes__ __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("used"), optimize("3")))
+#define __hint_store_secret__ __attribute__((cold, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
+#define __hint_load_secret_from_file__ __attribute__((cold, warn_unused_result, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
 #define __hint_prepare_secure_keys__ __attribute__((stack_protect, zero_call_used_regs("all"), optimize("3")))
-#define __hint_cipher_transformation__                                                                                 
-    __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("all"), noinline, access(read_only, 1),      
-                   access(read_only, 2), optimize("3")))
+#define __hint_cipher_transformation__ __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("all"), noinline, access(read_only, 1), access(read_only, 2), optimize("3")))
 
 #else
 
@@ -241,9 +200,7 @@ namespace ByteCryptModule
 
 #endif
 
-#define __temp_byte_crypt__                                                                                            
-    template <typename std::size_t key_size_t = e_key_block_size::AES,                                                 
-              typename std::size_t iv_size_t = e_iv_block_size::AES>
+#define __temp_byte_crypt__ template <typename std::size_t key_size_t = e_key_block_size::AES, typename std::size_t iv_size_t = e_iv_block_size::AES>
 
 /*                      Namespace                        *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -323,29 +280,20 @@ enum class e_eax_algorithm
 // struct but not regular purpose... goes here...
 struct e_key_block_size
 {
-    static const std::uint16_t AES = CryptoPP::AES::DEFAULT_KEYLENGTH, BLOWFISH = CryptoPP::Blowfish::DEFAULT_KEYLENGTH,
-                               TWOFISH = CryptoPP::Twofish::DEFAULT_KEYLENGTH,
-                               CAST128 = CryptoPP::CAST128::DEFAULT_KEYLENGTH,
-                               CAST256 = CryptoPP::CAST256::DEFAULT_KEYLENGTH, IDEA = CryptoPP::IDEA::DEFAULT_KEYLENGTH,
-                               RC2 = CryptoPP::RC2::DEFAULT_KEYLENGTH, RC5 = CryptoPP::RC5::DEFAULT_KEYLENGTH,
-                               RC6 = CryptoPP::RC6::DEFAULT_KEYLENGTH, MARS = CryptoPP::MARS::DEFAULT_KEYLENGTH,
-                               SERPENT = CryptoPP::Serpent::DEFAULT_KEYLENGTH, GOST = CryptoPP::GOST::DEFAULT_KEYLENGTH,
-                               ARIA = CryptoPP::ARIA::BLOCKSIZE, HIGHT = CryptoPP::HIGHT::BLOCKSIZE,
-                               LEA = CryptoPP::LEA::DEFAULT_KEYLENGTH, SEED = CryptoPP::GOST::DEFAULT_KEYLENGTH,
-                               SPECK128 = CryptoPP::SPECK128::DEFAULT_KEYLENGTH,
-                               SIMON128 = CryptoPP::SIMON128::DEFAULT_KEYLENGTH;
+    static const std::uint16_t AES = CryptoPP::AES::DEFAULT_KEYLENGTH, BLOWFISH = CryptoPP::Blowfish::DEFAULT_KEYLENGTH, TWOFISH = CryptoPP::Twofish::DEFAULT_KEYLENGTH,
+                               CAST128 = CryptoPP::CAST128::DEFAULT_KEYLENGTH, CAST256 = CryptoPP::CAST256::DEFAULT_KEYLENGTH, IDEA = CryptoPP::IDEA::DEFAULT_KEYLENGTH,
+                               RC2 = CryptoPP::RC2::DEFAULT_KEYLENGTH, RC5 = CryptoPP::RC5::DEFAULT_KEYLENGTH, RC6 = CryptoPP::RC6::DEFAULT_KEYLENGTH,
+                               MARS = CryptoPP::MARS::DEFAULT_KEYLENGTH, SERPENT = CryptoPP::Serpent::DEFAULT_KEYLENGTH, GOST = CryptoPP::GOST::DEFAULT_KEYLENGTH,
+                               ARIA = CryptoPP::ARIA::BLOCKSIZE, HIGHT = CryptoPP::HIGHT::BLOCKSIZE * 2, LEA = CryptoPP::LEA::DEFAULT_KEYLENGTH, SEED = CryptoPP::SEED::DEFAULT_KEYLENGTH,
+                               SPECK128 = CryptoPP::SPECK128::DEFAULT_KEYLENGTH, SIMON128 = CryptoPP::SIMON128::DEFAULT_KEYLENGTH;
 };
 
 struct e_iv_block_size
 {
-    static const std::uint16_t AES = CryptoPP::AES::BLOCKSIZE, BLOWFISH = CryptoPP::Blowfish::BLOCKSIZE,
-                               TWOFISH = CryptoPP::Twofish::BLOCKSIZE, CAST128 = CryptoPP::CAST128::BLOCKSIZE,
-                               CAST256 = CryptoPP::CAST256::DEFAULT_KEYLENGTH, IDEA = CryptoPP::IDEA::BLOCKSIZE,
-                               RC2 = CryptoPP::RC2::BLOCKSIZE, RC5 = CryptoPP::RC5::BLOCKSIZE,
-                               RC6 = CryptoPP::RC6::BLOCKSIZE, MARS = CryptoPP::MARS::BLOCKSIZE,
-                               SERPENT = CryptoPP::Serpent::BLOCKSIZE, GOST = CryptoPP::GOST::BLOCKSIZE,
-                               ARIA = CryptoPP::ARIA::BLOCKSIZE, HIGHT = CryptoPP::HIGHT::BLOCKSIZE,
-                               LEA = CryptoPP::LEA::BLOCKSIZE, SEED = CryptoPP::GOST::BLOCKSIZE,
+    static const std::uint16_t AES = CryptoPP::AES::BLOCKSIZE, BLOWFISH = CryptoPP::Blowfish::BLOCKSIZE, TWOFISH = CryptoPP::Twofish::BLOCKSIZE, CAST128 = CryptoPP::CAST128::BLOCKSIZE,
+                               CAST256 = CryptoPP::CAST256::DEFAULT_KEYLENGTH, IDEA = CryptoPP::IDEA::BLOCKSIZE, RC2 = CryptoPP::RC2::BLOCKSIZE, RC5 = CryptoPP::RC5::BLOCKSIZE,
+                               RC6 = CryptoPP::RC6::BLOCKSIZE, MARS = CryptoPP::MARS::BLOCKSIZE, SERPENT = CryptoPP::Serpent::BLOCKSIZE, GOST = CryptoPP::GOST::BLOCKSIZE * 2,
+                               ARIA = CryptoPP::ARIA::BLOCKSIZE, HIGHT = CryptoPP::HIGHT::BLOCKSIZE * 2, LEA = CryptoPP::LEA::BLOCKSIZE, SEED = CryptoPP::SEED::BLOCKSIZE,
                                SIMON128 = CryptoPP::SIMON128::BLOCKSIZE, SPECK128 = CryptoPP::SPECK128::BLOCKSIZE;
 };
 
@@ -384,6 +332,7 @@ using sha256_t = CryptoPP::SHA256;
 using sha384_t = CryptoPP::SHA384;
 using sha512_t = CryptoPP::SHA512;
 using hash_transformer_t = CryptoPP::HashTransformation;
+using hash_filter_t = CryptoPP::HashFilter;
 
 /**
  * CBC Mode Encryption/Dec(< GCM)
@@ -476,72 +425,56 @@ using eax_hight_decryption_t = CryptoPP::EAX<CryptoPP::HIGHT>::Decryption;
 // CBC Mode of Operation
 template <typename mT> __hint_encryption_algo_accept__ static constexpr bool cbc_encryption_algo_accept()
 {
-    return std::is_same_v<mT, cbc_aes_encryption_t> || std::is_same_v<mT, cbc_blowfish_encryption_t> ||
-           std::is_same_v<mT, cbc_twofish_encryption_t> || std::is_same_v<mT, cbc_cast128_encryption_t> ||
-           std::is_same_v<mT, cbc_cast256_encryption_t> || std::is_same_v<mT, cbc_idea_encryption_t> ||
-           std::is_same_v<mT, cbc_rc2_encryption_t> || std::is_same_v<mT, cbc_rc5_encryption_t> ||
-           std::is_same_v<mT, cbc_rc6_encryption_t> || std::is_same_v<mT, cbc_mars_encryption_t> ||
-           std::is_same_v<mT, cbc_aes_decryption_t> || std::is_same_v<mT, cbc_blowfish_decryption_t> ||
-           std::is_same_v<mT, cbc_twofish_decryption_t> || std::is_same_v<mT, cbc_cast128_decryption_t> ||
-           std::is_same_v<mT, cbc_cast256_decryption_t> || std::is_same_v<mT, cbc_idea_decryption_t> ||
-           std::is_same_v<mT, cbc_rc2_decryption_t> || std::is_same_v<mT, cbc_rc5_decryption_t> ||
-           std::is_same_v<mT, cbc_rc6_decryption_t> || std::is_same_v<mT, cbc_mars_decryption_t> ||
-           std::is_same_v<mT, cbc_serpent_encryption_t> || std::is_same_v<mT, cbc_gost_encryption_t> ||
-           std::is_same_v<mT, cbc_serpent_decryption_t> || std::is_same_v<mT, cbc_gost_decryption_t> ||
-           std::is_same_v<mT, cbc_aria_decryption_t> || std::is_same_v<mT, cbc_aria_encryption_t> ||
-           std::is_same_v<mT, cbc_seed_decryption_t> || std::is_same_v<mT, cbc_gost_encryption_t> ||
-           std::is_same_v<mT, cbc_simon128_encryption_t> || std::is_same_v<mT, cbc_simon128_decryption_t> ||
-           std::is_same_v<mT, cbc_hight_encryption_t> || std::is_same_v<mT, cbc_hight_decryption_t> ||
-           std::is_same_v<mT, cbc_speck128_encryption_t> || std::is_same_v<mT, cbc_speck128_decryption_t> ||
-           std::is_same_v<mT, cbc_seed_encryption_t> || std::is_same_v<mT, cbc_seed_decryption_t>;
+    return std::is_same_v<mT, cbc_aes_encryption_t> || std::is_same_v<mT, cbc_blowfish_encryption_t> || std::is_same_v<mT, cbc_twofish_encryption_t> ||
+           std::is_same_v<mT, cbc_cast128_encryption_t> || std::is_same_v<mT, cbc_cast256_encryption_t> || std::is_same_v<mT, cbc_idea_encryption_t> ||
+           std::is_same_v<mT, cbc_rc2_encryption_t> || std::is_same_v<mT, cbc_rc5_encryption_t> || std::is_same_v<mT, cbc_rc6_encryption_t> || std::is_same_v<mT, cbc_mars_encryption_t> ||
+           std::is_same_v<mT, cbc_aes_decryption_t> || std::is_same_v<mT, cbc_blowfish_decryption_t> || std::is_same_v<mT, cbc_twofish_decryption_t> ||
+           std::is_same_v<mT, cbc_cast128_decryption_t> || std::is_same_v<mT, cbc_cast256_decryption_t> || std::is_same_v<mT, cbc_idea_decryption_t> ||
+           std::is_same_v<mT, cbc_rc2_decryption_t> || std::is_same_v<mT, cbc_rc5_decryption_t> || std::is_same_v<mT, cbc_rc6_decryption_t> || std::is_same_v<mT, cbc_mars_decryption_t> ||
+           std::is_same_v<mT, cbc_serpent_encryption_t> || std::is_same_v<mT, cbc_gost_encryption_t> || std::is_same_v<mT, cbc_serpent_decryption_t> ||
+           std::is_same_v<mT, cbc_gost_decryption_t> || std::is_same_v<mT, cbc_aria_decryption_t> || std::is_same_v<mT, cbc_aria_encryption_t> || std::is_same_v<mT, cbc_seed_decryption_t> ||
+           std::is_same_v<mT, cbc_gost_encryption_t> || std::is_same_v<mT, cbc_simon128_encryption_t> || std::is_same_v<mT, cbc_simon128_decryption_t> ||
+           std::is_same_v<mT, cbc_hight_encryption_t> || std::is_same_v<mT, cbc_hight_decryption_t> || std::is_same_v<mT, cbc_speck128_encryption_t> ||
+           std::is_same_v<mT, cbc_speck128_decryption_t> || std::is_same_v<mT, cbc_seed_encryption_t> || std::is_same_v<mT, cbc_seed_decryption_t>;
 };
 template <typename mT> struct is_accepted_cbc_encryption_algorithm
 {
     static constexpr bool value = cbc_encryption_algo_accept<mT>();
 };
-template <typename mT>
-constexpr bool is_accepted_cbc_encryption_algorithm_v = is_accepted_cbc_encryption_algorithm<mT>::value;
+template <typename mT> constexpr bool is_accepted_cbc_encryption_algorithm_v = is_accepted_cbc_encryption_algorithm<mT>::value;
 
 // GCM Mode of Operation
 template <typename mT> __hint_encryption_algo_accept__ static constexpr bool gcm_encryption_algo_accept()
 {
-    return std::is_same_v<mT, gcm_aes_encryption_t> || std::is_same_v<mT, gcm_twofish_encryption_t> ||
-           std::is_same_v<mT, gcm_rc6_encryption_t> || std::is_same_v<mT, gcm_mars_encryption_t> ||
-           std::is_same_v<mT, gcm_aes_decryption_t> || std::is_same_v<mT, gcm_twofish_decryption_t> ||
+    return std::is_same_v<mT, gcm_aes_encryption_t> || std::is_same_v<mT, gcm_twofish_encryption_t> || std::is_same_v<mT, gcm_rc6_encryption_t> ||
+           std::is_same_v<mT, gcm_mars_encryption_t> || std::is_same_v<mT, gcm_aes_decryption_t> || std::is_same_v<mT, gcm_twofish_decryption_t> ||
            std::is_same_v<mT, gcm_rc6_decryption_t> || std::is_same_v<mT, gcm_mars_decryption_t>;
 };
 template <typename mT> struct is_accepted_gcm_encryption_algorithm
 {
     static constexpr bool value = gcm_encryption_algo_accept<mT>();
 };
-template <typename mT>
-constexpr bool is_accepted_gcm_encryption_algorithm_v = is_accepted_gcm_encryption_algorithm<mT>::value;
+template <typename mT> constexpr bool is_accepted_gcm_encryption_algorithm_v = is_accepted_gcm_encryption_algorithm<mT>::value;
 
 // EAX Mode of Operation
 template <typename mT> __hint_encryption_algo_accept__ static constexpr bool eax_encryption_algo_accept()
 {
-    return std::is_same_v<mT, eax_aes_encryption_t> || std::is_same_v<mT, eax_blowfish_encryption_t> ||
-           std::is_same_v<mT, eax_serpent_encryption_t> || std::is_same_v<mT, eax_cast128_encryption_t> ||
-           std::is_same_v<mT, eax_cast256_encryption_t> || std::is_same_v<mT, eax_idea_encryption_t> ||
-           std::is_same_v<mT, eax_rc5_encryption_t> || std::is_same_v<mT, eax_rc6_encryption_t> ||
-           std::is_same_v<mT, eax_gost_encryption_t> || std::is_same_v<mT, eax_mars_encryption_t> ||
-           std::is_same_v<mT, eax_seed_encryption_t> || std::is_same_v<mT, eax_speck128_encryption_t> ||
-           std::is_same_v<mT, eax_lea_encryption_t> || std::is_same_v<mT, eax_aes_decryption_t> ||
-           std::is_same_v<mT, eax_blowfish_decryption_t> || std::is_same_v<mT, eax_serpent_decryption_t> ||
-           std::is_same_v<mT, eax_cast128_decryption_t> || std::is_same_v<mT, eax_cast256_decryption_t> ||
-           std::is_same_v<mT, eax_idea_decryption_t> || std::is_same_v<mT, eax_rc5_decryption_t> ||
-           std::is_same_v<mT, eax_rc6_decryption_t> || std::is_same_v<mT, eax_gost_decryption_t> ||
-           std::is_same_v<mT, eax_mars_decryption_t> || std::is_same_v<mT, eax_seed_decryption_t> ||
-           std::is_same_v<mT, eax_speck128_decryption_t> || std::is_same_v<mT, eax_lea_decryption_t> ||
-           std::is_same_v<mT, eax_simon128_encryption_t> || std::is_same_v<mT, eax_simon128_decryption_t> ||
-           std::is_same_v<mT, eax_hight_encryption_t> || std::is_same_v<mT, eax_hight_decryption_t>;
+    return std::is_same_v<mT, eax_aes_encryption_t> || std::is_same_v<mT, eax_blowfish_encryption_t> || std::is_same_v<mT, eax_serpent_encryption_t> ||
+           std::is_same_v<mT, eax_cast128_encryption_t> || std::is_same_v<mT, eax_cast256_encryption_t> || std::is_same_v<mT, eax_idea_encryption_t> ||
+           std::is_same_v<mT, eax_rc5_encryption_t> || std::is_same_v<mT, eax_rc6_encryption_t> || std::is_same_v<mT, eax_gost_encryption_t> || std::is_same_v<mT, eax_mars_encryption_t> ||
+           std::is_same_v<mT, eax_seed_encryption_t> || std::is_same_v<mT, eax_speck128_encryption_t> || std::is_same_v<mT, eax_lea_encryption_t> ||
+           std::is_same_v<mT, eax_aes_decryption_t> || std::is_same_v<mT, eax_blowfish_decryption_t> || std::is_same_v<mT, eax_serpent_decryption_t> ||
+           std::is_same_v<mT, eax_cast128_decryption_t> || std::is_same_v<mT, eax_cast256_decryption_t> || std::is_same_v<mT, eax_idea_decryption_t> ||
+           std::is_same_v<mT, eax_rc5_decryption_t> || std::is_same_v<mT, eax_rc6_decryption_t> || std::is_same_v<mT, eax_gost_decryption_t> || std::is_same_v<mT, eax_mars_decryption_t> ||
+           std::is_same_v<mT, eax_seed_decryption_t> || std::is_same_v<mT, eax_speck128_decryption_t> || std::is_same_v<mT, eax_lea_decryption_t> ||
+           std::is_same_v<mT, eax_simon128_encryption_t> || std::is_same_v<mT, eax_simon128_decryption_t> || std::is_same_v<mT, eax_hight_encryption_t> ||
+           std::is_same_v<mT, eax_hight_decryption_t>;
 }
 template <typename mT> struct is_accepted_eax_encryption_algorithm
 {
     static constexpr bool value = eax_encryption_algo_accept<mT>();
 };
-template <typename mT>
-constexpr bool is_accepted_eax_encryption_algorithm_v = is_accepted_eax_encryption_algorithm<mT>::value;
+template <typename mT> constexpr bool is_accepted_eax_encryption_algorithm_v = is_accepted_eax_encryption_algorithm<mT>::value;
 
 /*                      Structure                        *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -599,81 +532,45 @@ typedef struct alignas(void *)
 } operation_mode;
 
 std::unordered_map<e_cbc_algorithm, mode_of_operation_map> cbc_map_block{
-    {e_cbc_algorithm::AES,
-     mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
-    {e_cbc_algorithm::ARIA,
-     mode_of_operation_map{.secure_key{e_key_block_size::ARIA}, .secure_ivector{e_iv_block_size::ARIA}}},
-    {e_cbc_algorithm::BLOWFISH,
-     mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH}, .secure_ivector{e_iv_block_size::BLOWFISH}}},
-    {e_cbc_algorithm::CAST128,
-     mode_of_operation_map{.secure_key{e_key_block_size::CAST128}, .secure_ivector{e_iv_block_size::CAST128}}},
-    {e_cbc_algorithm::CAST256,
-     mode_of_operation_map{.secure_key{e_key_block_size::CAST256}, .secure_ivector{e_iv_block_size::CAST256}}},
-    {e_cbc_algorithm::GOST,
-     mode_of_operation_map{.secure_key{e_key_block_size::GOST}, .secure_ivector{e_iv_block_size::GOST}}},
-    {e_cbc_algorithm::HIGHT,
-     mode_of_operation_map{.secure_key{e_key_block_size::HIGHT}, .secure_ivector{e_iv_block_size::HIGHT}}},
-    {e_cbc_algorithm::IDEA,
-     mode_of_operation_map{.secure_key{e_key_block_size::IDEA}, .secure_ivector{e_iv_block_size::IDEA}}},
-    {e_cbc_algorithm::MARS,
-     mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
-    {e_cbc_algorithm::RC2,
-     mode_of_operation_map{.secure_key{e_key_block_size::RC2}, .secure_ivector{e_iv_block_size::RC2}}},
-    {e_cbc_algorithm::RC5,
-     mode_of_operation_map{.secure_key{e_key_block_size::RC5}, .secure_ivector{e_iv_block_size::RC5}}},
-    {e_cbc_algorithm::RC6,
-     mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
-    {e_cbc_algorithm::SEED,
-     mode_of_operation_map{.secure_key{e_key_block_size::SEED}, .secure_ivector{e_iv_block_size::SEED}}},
-    {e_cbc_algorithm::SERPENT,
-     mode_of_operation_map{.secure_key{e_key_block_size::SERPENT}, .secure_ivector{e_iv_block_size::SERPENT}}},
-    {e_cbc_algorithm::SIMON128,
-     mode_of_operation_map{.secure_key{e_key_block_size::SIMON128}, .secure_ivector{e_iv_block_size::SIMON128}}},
-    {e_cbc_algorithm::SPECK128,
-     mode_of_operation_map{.secure_key{e_key_block_size::SPECK128}, .secure_ivector{e_iv_block_size::SPECK128}}},
-    {e_cbc_algorithm::TWOFISH,
-     mode_of_operation_map{.secure_key{e_key_block_size::TWOFISH}, .secure_ivector{e_iv_block_size::TWOFISH}}},
+    {e_cbc_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
+    {e_cbc_algorithm::ARIA, mode_of_operation_map{.secure_key{e_key_block_size::ARIA}, .secure_ivector{e_iv_block_size::ARIA}}},
+    {e_cbc_algorithm::BLOWFISH, mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH}, .secure_ivector{e_iv_block_size::BLOWFISH}}},
+    {e_cbc_algorithm::CAST128, mode_of_operation_map{.secure_key{e_key_block_size::CAST128}, .secure_ivector{e_iv_block_size::CAST128}}},
+    {e_cbc_algorithm::CAST256, mode_of_operation_map{.secure_key{e_key_block_size::CAST256}, .secure_ivector{e_iv_block_size::CAST256}}},
+    {e_cbc_algorithm::GOST, mode_of_operation_map{.secure_key{e_key_block_size::GOST}, .secure_ivector{e_iv_block_size::GOST}}},
+    {e_cbc_algorithm::HIGHT, mode_of_operation_map{.secure_key{e_key_block_size::HIGHT}, .secure_ivector{e_iv_block_size::HIGHT}}},
+    {e_cbc_algorithm::IDEA, mode_of_operation_map{.secure_key{e_key_block_size::IDEA}, .secure_ivector{e_iv_block_size::IDEA}}},
+    {e_cbc_algorithm::MARS, mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
+    {e_cbc_algorithm::RC2, mode_of_operation_map{.secure_key{e_key_block_size::RC2}, .secure_ivector{e_iv_block_size::RC2}}},
+    {e_cbc_algorithm::RC5, mode_of_operation_map{.secure_key{e_key_block_size::RC5}, .secure_ivector{e_iv_block_size::RC5}}},
+    {e_cbc_algorithm::RC6, mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
+    {e_cbc_algorithm::SEED, mode_of_operation_map{.secure_key{e_key_block_size::SEED}, .secure_ivector{e_iv_block_size::SEED}}},
+    {e_cbc_algorithm::SERPENT, mode_of_operation_map{.secure_key{e_key_block_size::SERPENT}, .secure_ivector{e_iv_block_size::SERPENT}}},
+    {e_cbc_algorithm::SIMON128, mode_of_operation_map{.secure_key{e_key_block_size::SIMON128}, .secure_ivector{e_iv_block_size::SIMON128}}},
+    {e_cbc_algorithm::SPECK128, mode_of_operation_map{.secure_key{e_key_block_size::SPECK128}, .secure_ivector{e_iv_block_size::SPECK128}}},
+    {e_cbc_algorithm::TWOFISH, mode_of_operation_map{.secure_key{e_key_block_size::TWOFISH}, .secure_ivector{e_iv_block_size::TWOFISH}}},
 };
 std::unordered_map<e_gcm_algorithm, mode_of_operation_map> gcm_map_block{
-    {e_gcm_algorithm::AES,
-     mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
-    {e_gcm_algorithm::MARS,
-     mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
-    {e_gcm_algorithm::RC6,
-     mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
-    {e_gcm_algorithm::TWOFISH,
-     mode_of_operation_map{.secure_key{e_key_block_size::TWOFISH}, .secure_ivector{e_iv_block_size::TWOFISH}}}};
+    {e_gcm_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
+    {e_gcm_algorithm::MARS, mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
+    {e_gcm_algorithm::RC6, mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
+    {e_gcm_algorithm::TWOFISH, mode_of_operation_map{.secure_key{e_key_block_size::TWOFISH}, .secure_ivector{e_iv_block_size::TWOFISH}}}};
 std::unordered_map<e_eax_algorithm, mode_of_operation_map> eax_map_block{
-    {e_eax_algorithm::AES,
-     mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
-    {e_eax_algorithm::BLOWFISH,
-     mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH}, .secure_ivector{e_iv_block_size::BLOWFISH}}},
-    {e_eax_algorithm::CAST128,
-     mode_of_operation_map{.secure_key{e_key_block_size::CAST128}, .secure_ivector{e_iv_block_size::CAST128}}},
-    {e_eax_algorithm::CAST256,
-     mode_of_operation_map{.secure_key{e_key_block_size::CAST256}, .secure_ivector{e_iv_block_size::CAST256}}},
-    {e_eax_algorithm::GOST,
-     mode_of_operation_map{.secure_key{e_key_block_size::GOST}, .secure_ivector{e_iv_block_size::GOST}}},
-    {e_eax_algorithm::HIGHT,
-     mode_of_operation_map{.secure_key{e_key_block_size::HIGHT}, .secure_ivector{e_iv_block_size::HIGHT}}},
-    {e_eax_algorithm::IDEA,
-     mode_of_operation_map{.secure_key{e_key_block_size::IDEA}, .secure_ivector{e_iv_block_size::IDEA}}},
-    {e_eax_algorithm::LEA,
-     mode_of_operation_map{.secure_key{e_key_block_size::LEA}, .secure_ivector{e_iv_block_size::LEA}}},
-    {e_eax_algorithm::MARS,
-     mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
-    {e_eax_algorithm::RC5,
-     mode_of_operation_map{.secure_key{e_key_block_size::RC5}, .secure_ivector{e_iv_block_size::RC5}}},
-    {e_eax_algorithm::RC6,
-     mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
-    {e_eax_algorithm::SEED,
-     mode_of_operation_map{.secure_key{e_key_block_size::SEED}, .secure_ivector{e_iv_block_size::SEED}}},
-    {e_eax_algorithm::SERPENT,
-     mode_of_operation_map{.secure_key{e_key_block_size::SERPENT}, .secure_ivector{e_iv_block_size::SERPENT}}},
-    {e_eax_algorithm::SIMON128,
-     mode_of_operation_map{.secure_key{e_key_block_size::SIMON128}, .secure_ivector{e_iv_block_size::SIMON128}}},
-    {e_eax_algorithm::SPECK128,
-     mode_of_operation_map{.secure_key{e_key_block_size::SPECK128}, .secure_ivector{e_iv_block_size::SPECK128}}},
+    {e_eax_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
+    {e_eax_algorithm::BLOWFISH, mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH}, .secure_ivector{e_iv_block_size::BLOWFISH}}},
+    {e_eax_algorithm::CAST128, mode_of_operation_map{.secure_key{e_key_block_size::CAST128}, .secure_ivector{e_iv_block_size::CAST128}}},
+    {e_eax_algorithm::CAST256, mode_of_operation_map{.secure_key{e_key_block_size::CAST256}, .secure_ivector{e_iv_block_size::CAST256}}},
+    {e_eax_algorithm::GOST, mode_of_operation_map{.secure_key{e_key_block_size::GOST}, .secure_ivector{e_iv_block_size::GOST}}},
+    {e_eax_algorithm::HIGHT, mode_of_operation_map{.secure_key{e_key_block_size::HIGHT}, .secure_ivector{e_iv_block_size::HIGHT}}},
+    {e_eax_algorithm::IDEA, mode_of_operation_map{.secure_key{e_key_block_size::IDEA}, .secure_ivector{e_iv_block_size::IDEA}}},
+    {e_eax_algorithm::LEA, mode_of_operation_map{.secure_key{e_key_block_size::LEA}, .secure_ivector{e_iv_block_size::LEA}}},
+    {e_eax_algorithm::MARS, mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
+    {e_eax_algorithm::RC5, mode_of_operation_map{.secure_key{e_key_block_size::RC5}, .secure_ivector{e_iv_block_size::RC5}}},
+    {e_eax_algorithm::RC6, mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
+    {e_eax_algorithm::SEED, mode_of_operation_map{.secure_key{e_key_block_size::SEED}, .secure_ivector{e_iv_block_size::SEED}}},
+    {e_eax_algorithm::SERPENT, mode_of_operation_map{.secure_key{e_key_block_size::SERPENT}, .secure_ivector{e_iv_block_size::SERPENT}}},
+    {e_eax_algorithm::SIMON128, mode_of_operation_map{.secure_key{e_key_block_size::SIMON128}, .secure_ivector{e_iv_block_size::SIMON128}}},
+    {e_eax_algorithm::SPECK128, mode_of_operation_map{.secure_key{e_key_block_size::SPECK128}, .secure_ivector{e_iv_block_size::SPECK128}}},
 };
 
 #define __temp_prepare_secure_keys__ template <e_cbc_algorithm algorithm_t = e_cbc_algorithm::AES>
@@ -722,8 +619,7 @@ class ByteCrypt
         *this->secret_key = initial_secret_key;
     };
 
-    inline ByteCrypt(const string_view_t &initial_secret_key, const byte key[], const byte iv[],
-                     const std::uint16_t key_size, const std::uint16_t iv_size) noexcept
+    inline ByteCrypt(const string_view_t &initial_secret_key, const byte key[], const byte iv[], const std::uint16_t key_size, const std::uint16_t iv_size) noexcept
     {
         *this->secret_key = (string_t)initial_secret_key;
     };
@@ -788,32 +684,29 @@ class ByteCrypt
      * @param e_hash_algo_option hash algorithm
      * @returns string_t const string hash buffer
      */
-    __hint_hash__ const string_t hash(const string_t &buffer,
-                                      const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
+    __hint_hash__ const string_t hash(const string_t &buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
     {
         string_t digest_block;
         std::unique_ptr<hash_transformer_t> algo;
-        switch (sha)
+        switch ((std::uint16_t)sha)
         {
-        case e_hash_algo_option::SHA1:
+        case (std::uint16_t)e_hash_algo_option::SHA1:
             algo = std::make_unique<sha1_t>();
             break;
-        case e_hash_algo_option::SHA224:
+        case (std::uint16_t)e_hash_algo_option::SHA224:
             algo = std::make_unique<sha224_t>();
             break;
-        case e_hash_algo_option::SHA256:
+        case (std::uint16_t)e_hash_algo_option::SHA256:
             algo = std::make_unique<sha256_t>();
             break;
-        case e_hash_algo_option::SHA384:
+        case (std::uint16_t)e_hash_algo_option::SHA384:
             algo = std::make_unique<sha384_t>();
             break;
-        case e_hash_algo_option::SHA512:
+        case (std::uint16_t)e_hash_algo_option::SHA512:
             algo = std::make_unique<sha512_t>();
             break;
         }
-        CryptoPP::StringSource(
-            buffer, true,
-            new CryptoPP::HashFilter(*algo, new CryptoPP::HexEncoder(new CryptoPP::StringSink(digest_block))));
+        string_source_t(buffer, true, new hash_filter_t(*algo, new hex_encoder_t(new string_sink_t(digest_block))));
         return digest_block;
     };
 
@@ -825,7 +718,7 @@ class ByteCrypt
     __hint_base64_encode__ inline const string_t base64_encode(const string_t &plain_text)
     {
         string_t b64_encoded;
-        CryptoPP::StringSource(plain_text, true, new CryptoPP::Base64Encoder(new CryptoPP::StringSink(b64_encoded)));
+        string_source_t(plain_text, true, new base64_encoder_t(new string_sink_t(b64_encoded)));
         return b64_encoded;
     };
 
@@ -837,8 +730,7 @@ class ByteCrypt
     __hint_base64_decode__ inline const string_t base64_decode(const string_t &encoded_cipher)
     {
         string_t b64_decoded;
-        CryptoPP::StringSource(encoded_cipher, true,
-                               new CryptoPP::Base64Decoder(new CryptoPP::StringSink(b64_decoded)));
+        string_source_t(encoded_cipher, true, new base64_decoder_t(new string_sink_t(b64_decoded)));
         return b64_decoded;
     };
 
@@ -883,8 +775,7 @@ class ByteCrypt
      * @param std::size_t rsa key size
      * @returns rsa_key_pair_struct structure with public and private key association
      */
-    __hint_generate_rsa_key_der_pair__ const rsa_key_pair_struct
-    generate_rsa_key_der_pair(const std::size_t rsa_key_size = 2048U)
+    __hint_generate_rsa_key_der_pair__ const rsa_key_pair_struct generate_rsa_key_der_pair(const std::size_t rsa_key_size = 2048U)
     {
         rsa_key_pair_struct local_kps{};
         if (!this->__is_rsa_key_size_valid(rsa_key_size)) [[unlikely]]
@@ -899,8 +790,7 @@ class ByteCrypt
             string_sink_t private_key_sink(private_key_result);
             private_key.DEREncode(private_key_sink);
             private_key_sink.MessageEnd();
-            string_source_t(private_key_result, true,
-                            new base64_encoder_t(new string_sink_t(private_key_result_encoded)));
+            string_source_t(private_key_result, true, new base64_encoder_t(new string_sink_t(private_key_result_encoded)));
 
             if (!private_key_result.empty()) [[likely]]
             {
@@ -910,8 +800,7 @@ class ByteCrypt
                     string_sink_t public_key_sink(public_key_result);
                     public_key.DEREncode(public_key_sink);
                     public_key_sink.MessageEnd();
-                    string_source_t(public_key_result, true,
-                                    new base64_encoder_t(new string_sink_t(public_key_result_encoded)));
+                    string_source_t(public_key_result, true, new base64_encoder_t(new string_sink_t(public_key_result_encoded)));
                 }
                 catch (const std::exception &e)
                 {
@@ -942,8 +831,7 @@ class ByteCrypt
      * @param std::size_t rsa key size
      * @returns rsa_key_pair_struct structure with the rsa generated PEM keys.
      */
-    __hint_generate_rsa_key_pem_pair__ const rsa_key_pair_struct
-    generate_rsa_key_pem_pair(const std::size_t rsa_key_size = 2048U)
+    __hint_generate_rsa_key_pem_pair__ const rsa_key_pair_struct generate_rsa_key_pem_pair(const std::size_t rsa_key_size = 2048U)
     {
         rsa_key_pair_struct rsa_keys = this->generate_rsa_key_der_pair(rsa_key_size);
         if (!this->__is_rsa_key_size_valid(rsa_key_size)) [[unlikely]]
@@ -1010,8 +898,7 @@ class ByteCrypt
      * @param string_t& RSA public key
      * @returns bool true if verification succeded
      */
-    __hint_verify_signature__ const bool verify_signature(const string_t &message, const string_t &signature_str,
-                                                          const string_t &rsa_key)
+    __hint_verify_signature__ const bool verify_signature(const string_t &message, const string_t &signature_str, const string_t &rsa_key)
     {
         if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PUBLIC)) [[unlikely]]
             return false;
@@ -1026,9 +913,7 @@ class ByteCrypt
             string_t signature_decoded;
             string_source_t(signature_str, true, new base64_decoder_t(new string_sink_t(signature_decoded)));
             rsa_signature_verify_t verifier(public_key);
-            const bool result =
-                verifier.VerifyMessage((const byte *)message.data(), message.size(),
-                                       (const byte *)signature_decoded.data(), signature_decoded.size());
+            const bool result = verifier.VerifyMessage((const byte *)message.data(), message.size(), (const byte *)signature_decoded.data(), signature_decoded.size());
             return result;
         }
         catch (const crypto_exception_t &e)
@@ -1122,8 +1007,7 @@ class ByteCrypt
             entropy_seed_t entropy;
             byte random_bytes[16];
             entropy.GenerateBlock(random_bytes, sizeof(random_bytes));
-            string_source_t(random_bytes, sizeof(random_bytes), true,
-                            new hex_encoder_t(new string_sink_t(final_secret)));
+            string_source_t(random_bytes, sizeof(random_bytes), true, new hex_encoder_t(new string_sink_t(final_secret)));
         }
         catch (const std::exception &e)
         {
@@ -1142,8 +1026,7 @@ class ByteCrypt
      * @param bool if true it will hide the secret file name
      *
      */
-    __hint_store_secret__ bool store_secret(const string_view_t &secret, string_t &secret_path,
-                                            const bool hide = false) noexcept
+    __hint_store_secret__ bool store_secret(const string_view_t &secret, string_t &secret_path, const bool hide = false) noexcept
     {
         if (secret.empty() || secret_path.empty())
             return false;
@@ -1258,120 +1141,53 @@ class ByteCrypt
         return local_bytes;
     };
 
-    __hint_cipher_transformation__ const encryption_result
-    cbc_encrypt(const string_t &buffer, const string_t &secret, const e_cbc_algorithm algorithm = e_cbc_algorithm::AES)
+    __hint_cipher_transformation__ const encryption_result cbc_encrypt(const string_t &buffer, const string_t &secret, const e_cbc_algorithm algorithm = e_cbc_algorithm::AES)
     {
         encryption_result result;
         try
         {
             string_t target, r0;
-            entropy_seed_t ring;
+            entropy_seed_t entropy;
             byte salt[16];
-            ring.GenerateBlock(salt, sizeof(salt));
+            entropy.GenerateBlock(salt, sizeof(salt));
             sec_byte_block_t key, iv;
             this->__prepare_cbc_secure_keys(secret, key, iv, salt, sizeof(salt), algorithm);
             if (algorithm == e_cbc_algorithm::AES)
-            {
-                cbc_aes_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_aes_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::ARIA)
-            {
-                cbc_aria_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_aria_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::BLOWFISH)
-            {
-                cbc_blowfish_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_blowfish_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::CAST128)
-            {
-                cbc_cast128_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_cast128_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::CAST256)
-            {
-                cbc_cast256_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_cast256_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::GOST)
-            {
-                cbc_gost_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_gost_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::HIGHT)
-            {
-                cbc_hight_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_hight_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::IDEA)
-            {
-                cbc_idea_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_idea_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::MARS)
-            {
-                cbc_mars_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_mars_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::RC2)
-            {
-                cbc_rc2_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_rc2_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::RC5)
-            {
-                cbc_rc5_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_rc5_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::RC6)
-            {
-                cbc_rc6_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_rc6_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::SEED)
-            {
-                cbc_seed_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_seed_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::SERPENT)
-            {
-                cbc_serpent_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_serpent_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::SIMON128)
-            {
-                cbc_simon128_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_simon128_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::SPECK128)
-            {
-                cbc_speck128_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_speck128_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::TWOFISH)
-            {
-                cbc_twofish_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(buffer, true, new transformer_filter_t(encryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_twofish_encryption_t>(key, iv, buffer, r0);
+            else
+                throw std::invalid_argument("invalid cbc algorithm!");
 
             const string_t r2(string_t(reinterpret_cast<char *>(salt), sizeof(salt)) + r0);
             string_source_t(r2, true, new hex_encoder_t(new string_sink_t(target)));
@@ -1386,8 +1202,7 @@ class ByteCrypt
         return result;
     };
 
-    __hint_cipher_transformation__ const decryption_result
-    cbc_decrypt(const string_t &buffer, const string_t &secret, const e_cbc_algorithm algorithm = e_cbc_algorithm::AES)
+    __hint_cipher_transformation__ const decryption_result cbc_decrypt(const string_t &buffer, const string_t &secret, const e_cbc_algorithm algorithm = e_cbc_algorithm::AES)
     {
         decryption_result result;
         try
@@ -1400,107 +1215,42 @@ class ByteCrypt
             sec_byte_block_t key, iv;
             this->__prepare_cbc_secure_keys(secret, key, iv, salt, sizeof(salt), algorithm);
             if (algorithm == e_cbc_algorithm::AES)
-            {
-                cbc_aes_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_aes_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::ARIA)
-            {
-                cbc_aria_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_aria_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::BLOWFISH)
-            {
-                cbc_blowfish_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_blowfish_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::CAST128)
-            {
-                cbc_cast128_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_cast128_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::CAST256)
-            {
-                cbc_cast256_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_cast256_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::GOST)
-            {
-                cbc_gost_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_gost_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::HIGHT)
-            {
-                cbc_hight_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_hight_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::IDEA)
-            {
-                cbc_idea_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_idea_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::MARS)
-            {
-                cbc_mars_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_mars_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::RC2)
-            {
-                cbc_rc2_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_rc2_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::RC5)
-            {
-                cbc_rc5_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_rc5_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::RC6)
-            {
-                cbc_rc6_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_rc6_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::SEED)
-            {
-                cbc_seed_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_seed_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::SERPENT)
-            {
-                cbc_serpent_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_serpent_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::SIMON128)
-            {
-                cbc_simon128_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_simon128_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::SPECK128)
-            {
-                cbc_speck128_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_speck128_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::TWOFISH)
-            {
-                cbc_twofish_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv);
-                string_source_t(ciphertext, true, new transformer_filter_t(decryption, new string_sink_t(r0)));
-            }
+                this->__cbc_execute<cbc_twofish_decryption_t>(key, iv, ciphertext, r0);
+            else
+                throw std::invalid_argument("invalid cbc algorithm!");
+
             result.decrypted_block = std::move(r0);
         }
         catch (const std::exception &e)
@@ -1511,9 +1261,7 @@ class ByteCrypt
         return result;
     };
 
-    __hint_cipher_transformation__ const encryption_result
-    gcm_encrypt(const string_t &plaintext_cipher, const string_t &secret,
-                const e_gcm_algorithm algorithm = e_gcm_algorithm::AES)
+    __hint_cipher_transformation__ const encryption_result gcm_encrypt(const string_t &plaintext_cipher, const string_t &secret, const e_gcm_algorithm algorithm = e_gcm_algorithm::AES)
     {
         encryption_result result;
         try
@@ -1522,41 +1270,15 @@ class ByteCrypt
             sec_byte_block_t key, iv;
             this->__prepare_gcm_secure_keys(secret, key, iv, algorithm);
             if (algorithm == e_gcm_algorithm::AES)
-            {
-                gcm_aes_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__gcm_execute<gcm_aes_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_gcm_algorithm::MARS)
-            {
-                gcm_mars_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__gcm_execute<gcm_mars_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_gcm_algorithm::RC6)
-            {
-                gcm_rc6_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__gcm_execute<gcm_rc6_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_gcm_algorithm::TWOFISH)
-            {
-                gcm_twofish_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__gcm_execute<gcm_twofish_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+            else
+                throw std::invalid_argument("invalid gcm algorithm!");
             result.encrypted_block = std::move(encoded_block);
         }
         catch (const std::exception &e)
@@ -1567,9 +1289,7 @@ class ByteCrypt
         return result;
     }
 
-    __hint_cipher_transformation__ const decryption_result
-    gcm_decrypt(const string_t &encrypted_cipher, const string_t &secret,
-                const e_gcm_algorithm algorithm = e_gcm_algorithm::AES)
+    __hint_cipher_transformation__ const decryption_result gcm_decrypt(const string_t &encrypted_cipher, const string_t &secret, const e_gcm_algorithm algorithm = e_gcm_algorithm::AES)
     {
         decryption_result result;
         try
@@ -1580,41 +1300,15 @@ class ByteCrypt
             sec_byte_block_t key, iv;
             this->__prepare_gcm_secure_keys(secret, key, iv, algorithm);
             if (algorithm == e_gcm_algorithm::AES)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), iv_block_size);
-                string_t ciphertext = decoded_block.substr(iv_block_size);
-                gcm_aes_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__gcm_reverse_execution<gcm_aes_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_gcm_algorithm::MARS)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), iv_block_size);
-                string_t ciphertext = decoded_block.substr(iv_block_size);
-                gcm_mars_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__gcm_reverse_execution<gcm_mars_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_gcm_algorithm::RC6)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), iv_block_size);
-                string_t ciphertext = decoded_block.substr(iv_block_size);
-                gcm_rc6_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__gcm_reverse_execution<gcm_rc6_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_gcm_algorithm::TWOFISH)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), iv_block_size);
-                string_t ciphertext = decoded_block.substr(iv_block_size);
-                gcm_twofish_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__gcm_reverse_execution<gcm_twofish_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+            else
+                throw std::invalid_argument("invalid gcm algorithm!");
             result.decrypted_block = std::move(decrypted_block);
         }
         catch (const std::exception &e)
@@ -1625,9 +1319,7 @@ class ByteCrypt
         return result;
     };
 
-    __hint_cipher_transformation__ const encryption_result
-    eax_encrypt(const string_t &plaintext_cipher, const string_t &secret,
-                const e_eax_algorithm algorithm = e_eax_algorithm::AES)
+    __hint_cipher_transformation__ const encryption_result eax_encrypt(const string_t &plaintext_cipher, const string_t &secret, const e_eax_algorithm algorithm = e_eax_algorithm::AES)
     {
         encryption_result result;
         try
@@ -1636,144 +1328,37 @@ class ByteCrypt
             sec_byte_block_t key, iv;
             this->__prepare_eax_secure_keys(secret, key, iv, algorithm);
             if (algorithm == e_eax_algorithm::AES)
-            {
-                eax_aes_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_aes_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::BLOWFISH)
-            {
-                eax_blowfish_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_blowfish_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::CAST128)
-            {
-                eax_cast128_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_cast128_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::CAST256)
-            {
-                eax_cast256_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_cast256_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::GOST)
-            {
-                eax_gost_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_gost_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::HIGHT)
-            {
-                eax_hight_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_hight_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::IDEA)
-            {
-                eax_idea_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_idea_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::LEA)
-            {
-                eax_lea_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_lea_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::MARS)
-            {
-                eax_mars_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_mars_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::RC5)
-            {
-                eax_rc5_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_rc5_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::RC6)
-            {
-                eax_rc6_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_rc6_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::SEED)
-            {
-                eax_seed_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_seed_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::SERPENT)
-            {
-                eax_serpent_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_serpent_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::SIMON128)
-            {
-                eax_simon128_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_simon128_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::SPECK128)
-            {
-                eax_speck128_encryption_t encryption;
-                encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(plaintext_cipher, true,
-                                new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
-                encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
-                string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
-            }
+                this->__eax_execute<eax_speck128_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else
-            {
                 throw std::invalid_argument("invalid eax algorithm.");
-            }
 
             result.encrypted_block = std::move(encoded_block);
         }
@@ -1785,156 +1370,49 @@ class ByteCrypt
         return result;
     }
 
-    __hint_cipher_transformation__ const decryption_result
-    eax_decrypt(const string_t &encrypted_cipher, const string_t &secret,
-                const e_eax_algorithm algorithm = e_eax_algorithm::AES)
+    __hint_cipher_transformation__ const decryption_result eax_decrypt(const string_t &encrypted_cipher, const string_t &secret, const e_eax_algorithm algorithm = e_eax_algorithm::AES)
     {
         decryption_result result;
         try
         {
+            const std::uint16_t iv_block_size(this->op_mode.eax.at(algorithm).secure_ivector);
             string_t decrypted_block, decoded_block;
             string_source_t(encrypted_cipher, true, new hex_decoder_t(new string_sink_t(decoded_block)));
             sec_byte_block_t key, iv;
+            iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::AES);
             this->__prepare_eax_secure_keys(secret, key, iv, algorithm);
             if (algorithm == e_eax_algorithm::AES)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::AES);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::AES);
-                eax_aes_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_aes_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::BLOWFISH)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::BLOWFISH);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::BLOWFISH);
-                eax_blowfish_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_blowfish_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::CAST128)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::CAST128);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::CAST128);
-                eax_cast128_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_cast128_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::CAST256)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::CAST256);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::CAST256);
-                eax_cast256_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_cast256_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::GOST)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::GOST);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::GOST);
-                eax_gost_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_gost_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::HIGHT)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::HIGHT);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::HIGHT);
-                eax_hight_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_hight_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::IDEA)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::IDEA);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::IDEA);
-                eax_idea_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_idea_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::LEA)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::LEA);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::LEA);
-                eax_lea_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_lea_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::MARS)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::MARS);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::MARS);
-                eax_mars_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_mars_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::RC5)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::RC5);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::RC5);
-                eax_rc5_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_rc5_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::RC6)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::RC6);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::RC6);
-                eax_rc6_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_rc6_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::SEED)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::SEED);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::SEED);
-                eax_seed_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_seed_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::SERPENT)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::SERPENT);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::SERPENT);
-                eax_serpent_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_serpent_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::SIMON128)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::SIMON128);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::SIMON128);
-                eax_simon128_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_simon128_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::SPECK128)
-            {
-                iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::SPECK128);
-                string_t ciphertext = decoded_block.substr(e_iv_block_size::SPECK128);
-                eax_speck128_decryption_t decryption;
-                decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
-                string_source_t(ciphertext, true,
-                                new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
-            }
+                this->__eax_reverse_execution<eax_speck128_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
             else
-            {
                 throw std::invalid_argument("invalid eax algorithm provided!");
-            }
             result.decrypted_block = std::move(decrypted_block);
         }
         catch (const std::exception &e)
@@ -1948,25 +1426,65 @@ class ByteCrypt
     ~ByteCrypt() {};
 
   private:
-    __hint_prepare_secure_keys__ inline void __prepare_cbc_secure_keys(const string_t &cipher, sec_byte_block_t &key,
-                                                                       sec_byte_block_t &iv, const byte *salt,
-                                                                       const std::size_t salt_size,
+  template <typename ExecutionType> void __cbc_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &source, string_t &output)
+    {
+        ExecutionType executor;
+        executor.SetKeyWithIV(key, key.size(), iv);
+        string_source_t(source, true, new transformer_filter_t(executor, new string_sink_t(output)));
+    };
+
+    template <typename ExecutionType> void __gcm_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &plaintext_cipher, string_t &encrypted_block, string_t &encoded_block)
+    {
+        ExecutionType encryption;
+        encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+        string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+        encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+        string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+    };
+
+    template <typename ExecutionType>
+    void __gcm_reverse_execution(sec_byte_block_t &key, sec_byte_block_t &iv, const std::uint16_t iv_block_size, const string_t &decoded_block, string_t &decrypted_block)
+    {
+        iv = sec_byte_block_t((const byte *)decoded_block.data(), iv_block_size);
+        string_t ciphertext = decoded_block.substr(iv_block_size);
+        ExecutionType decryption;
+        decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+        string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+    };
+
+    template <typename encryption_mode_t> void __eax_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &plaintext_cipher, string_t &encrypted_block, string_t &encoded_block)
+    {
+        encryption_mode_t encryption;
+        encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+        string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
+        encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
+        string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
+    };
+
+    template <typename decryption_mode_t>
+    void __eax_reverse_execution(sec_byte_block_t &key, sec_byte_block_t &iv, const std::uint16_t iv_block_size, const string_t &decoded_block, string_t &decrypted_block)
+    {
+        iv = sec_byte_block_t((const byte *)decoded_block.data(), iv_block_size);
+        string_t ciphertext = decoded_block.substr(iv_block_size);
+        decryption_mode_t decryption;
+        decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
+        string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
+    };
+
+    __hint_prepare_secure_keys__ inline void __prepare_cbc_secure_keys(const string_t &cipher, sec_byte_block_t &key, sec_byte_block_t &iv, const byte *salt, const std::size_t salt_size,
                                                                        const e_cbc_algorithm algorithm)
     {
         sha256_hmac_t hmac;
         const std::uint16_t key_size = this->op_mode.cbc.at(algorithm).secure_key;
         const std::uint16_t iv_size = this->op_mode.cbc.at(algorithm).secure_ivector;
+
         key.CleanNew(key_size);
         iv.CleanNew(iv_size);
-        hmac.DeriveKey(key, key.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt,
-                       salt_size, this->cipher_iteration_count);
-        hmac.DeriveKey(iv, iv.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt,
-                       salt_size, this->cipher_iteration_count);
+        hmac.DeriveKey(key, key.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt, salt_size, this->cipher_iteration_count);
+        hmac.DeriveKey(iv, iv.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt, salt_size, this->cipher_iteration_count);
     };
 
-    __hint_prepare_secure_keys__ inline void __prepare_gcm_secure_keys(const string_t &secret, sec_byte_block_t &key,
-                                                                       sec_byte_block_t &iv,
-                                                                       const e_gcm_algorithm algorithm)
+    __hint_prepare_secure_keys__ inline void __prepare_gcm_secure_keys(const string_t &secret, sec_byte_block_t &key, sec_byte_block_t &iv, const e_gcm_algorithm algorithm)
     {
         CryptoPP::SHA256 hash;
         key.resize(this->op_mode.gcm.at(algorithm).secure_key);
@@ -1976,9 +1494,7 @@ class ByteCrypt
         rng.GenerateBlock(iv, iv.size());
     };
 
-    __hint_prepare_secure_keys__ inline void __prepare_eax_secure_keys(const string_t &secret, sec_byte_block_t &key,
-                                                                       sec_byte_block_t &iv,
-                                                                       const e_eax_algorithm algorithm)
+    __hint_prepare_secure_keys__ inline void __prepare_eax_secure_keys(const string_t &secret, sec_byte_block_t &key, sec_byte_block_t &iv, const e_eax_algorithm algorithm)
     {
         CryptoPP::SHA256 hash;
         key.resize(this->op_mode.eax.at(algorithm).secure_key);
@@ -1999,10 +1515,8 @@ class ByteCrypt
             rsa_public_key_t rsa_public_key;
             std::size_t private_key_byte_size, public_key_byte_size;
 
-            string_source_t(key_block.private_key.value(), true,
-                            new base64_decoder_t(new string_sink_t(private_key_decoded_result)));
-            string_source_t(key_block.public_key.value(), true,
-                            new base64_decoder_t(new string_sink_t(public_key_decoded_result)));
+            string_source_t(key_block.private_key.value(), true, new base64_decoder_t(new string_sink_t(private_key_decoded_result)));
+            string_source_t(key_block.public_key.value(), true, new base64_decoder_t(new string_sink_t(public_key_decoded_result)));
 
             {
                 string_source_t rsa_key_source(private_key_decoded_result, true, nullptr);
@@ -2027,8 +1541,7 @@ class ByteCrypt
         return false;
     };
 
-    __hint_rsa_key_pem_set_header__ inline void __rsa_key_pem_set_header(string_t &rsa_key_var,
-                                                                         const bool is_public_key) const noexcept
+    __hint_rsa_key_pem_set_header__ inline void __rsa_key_pem_set_header(string_t &rsa_key_var, const bool is_public_key) const noexcept
     {
         rsa_key_var.clear();
         if (is_public_key)
@@ -2037,8 +1550,7 @@ class ByteCrypt
             rsa_key_var = RSA_PRIVATE_KEY_HEADER;
     };
 
-    __hint_rsa_key_pem_set_footer__ inline void __rsa_key_pem_set_footer(string_t &rsa_key_var,
-                                                                         const bool is_public_key) const noexcept
+    __hint_rsa_key_pem_set_footer__ inline void __rsa_key_pem_set_footer(string_t &rsa_key_var, const bool is_public_key) const noexcept
     {
         if (rsa_key_var.empty())
             return;
@@ -2060,21 +1572,18 @@ class ByteCrypt
         return false;
     };
 
-    __hint_is_rsa_key_pem__ const bool __is_rsa_key_pem(const string_view_t &rsa_key,
-                                                        const e_rsa_key_pem_version version) noexcept
+    __hint_is_rsa_key_pem__ const bool __is_rsa_key_pem(const string_view_t &rsa_key, const e_rsa_key_pem_version version) noexcept
     {
         if (version == e_rsa_key_pem_version::PUBLIC)
         {
-            if (!rsa_key.empty() && (rsa_key.find(RSA_PUBLIC_KEY_FOOTER) != std::string::npos &&
-                                     rsa_key.find(RSA_PUBLIC_KEY_HEADER) != std::string::npos)) [[likely]]
+            if (!rsa_key.empty() && (rsa_key.find(RSA_PUBLIC_KEY_FOOTER) != std::string::npos && rsa_key.find(RSA_PUBLIC_KEY_HEADER) != std::string::npos)) [[likely]]
             {
                 return true;
             }
         }
         else if (version == e_rsa_key_pem_version::PRIVATE)
         {
-            if (!rsa_key.empty() && (rsa_key.find(RSA_PRIVATE_KEY_FOOTER) != std::string::npos &&
-                                     rsa_key.find(RSA_PRIVATE_KEY_HEADER) != std::string::npos)) [[likely]]
+            if (!rsa_key.empty() && (rsa_key.find(RSA_PRIVATE_KEY_FOOTER) != std::string::npos && rsa_key.find(RSA_PRIVATE_KEY_HEADER) != std::string::npos)) [[likely]]
             {
                 return true;
             }
@@ -2096,8 +1605,7 @@ class ByteCrypt
             string_t wipe_rsa_meta(rsa_key.c_str());
             wipe_rsa_meta.erase(0, std::strlen(RSA_PRIVATE_KEY_HEADER));
             wipe_rsa_meta.erase(wipe_rsa_meta.find(RSA_PRIVATE_KEY_FOOTER), std::strlen(RSA_PRIVATE_KEY_FOOTER));
-            std::size_t expected_rsa_key_size(
-                rsa_key.length() - (std::strlen(RSA_PRIVATE_KEY_HEADER) + std::strlen(RSA_PRIVATE_KEY_FOOTER)));
+            std::size_t expected_rsa_key_size(rsa_key.length() - (std::strlen(RSA_PRIVATE_KEY_HEADER) + std::strlen(RSA_PRIVATE_KEY_FOOTER)));
             if (wipe_rsa_meta.length() == expected_rsa_key_size) [[likely]]
             {
                 return wipe_rsa_meta;
@@ -2108,8 +1616,7 @@ class ByteCrypt
             string_t wipe_rsa_meta(rsa_key.c_str());
             wipe_rsa_meta.erase(0, std::strlen(RSA_PUBLIC_KEY_HEADER));
             wipe_rsa_meta.erase(wipe_rsa_meta.find(RSA_PUBLIC_KEY_FOOTER), std::strlen(RSA_PUBLIC_KEY_FOOTER));
-            std::size_t expected_rsa_key_size(
-                rsa_key.length() - (std::strlen(RSA_PUBLIC_KEY_HEADER) + std::strlen(RSA_PUBLIC_KEY_FOOTER)));
+            std::size_t expected_rsa_key_size(rsa_key.length() - (std::strlen(RSA_PUBLIC_KEY_HEADER) + std::strlen(RSA_PUBLIC_KEY_FOOTER)));
             if (wipe_rsa_meta.length() == expected_rsa_key_size) [[likely]]
             {
                 return wipe_rsa_meta;
