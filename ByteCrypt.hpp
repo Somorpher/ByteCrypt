@@ -54,6 +54,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <deque>
 #include <errno.h>
 #include <exception>
 #include <fstream>
@@ -201,6 +202,7 @@ namespace ByteCryptModule
 #endif
 
 #define __temp_byte_crypt__ template <typename std::size_t key_size_t = e_key_block_size::AES, typename std::size_t iv_size_t = e_iv_block_size::AES>
+#define __temp_cipher_exec__ template <typename cipher_mode>
 
 /*                      Namespace                        *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -230,7 +232,6 @@ enum class e_cbc_algorithm
 {
     AES = 0,
     BLOWFISH,
-    TWOFISH,
     CAST128,
     CAST256,
     IDEA,
@@ -340,7 +341,6 @@ using hash_filter_t = CryptoPP::HashFilter;
 
 using cbc_aes_encryption_t = CryptoPP::CBC_Mode<cbc_cipher_t>::Encryption;
 using cbc_blowfish_encryption_t = CryptoPP::CBC_Mode<CryptoPP::Blowfish>::Encryption;
-using cbc_twofish_encryption_t = CryptoPP::CBC_Mode<CryptoPP::Twofish>::Encryption;
 using cbc_cast128_encryption_t = CryptoPP::CBC_Mode<CryptoPP::CAST128>::Encryption;
 using cbc_cast256_encryption_t = CryptoPP::CBC_Mode<CryptoPP::CAST256>::Encryption;
 using cbc_idea_encryption_t = CryptoPP::CBC_Mode<CryptoPP::IDEA>::Encryption;
@@ -358,7 +358,6 @@ using cbc_seed_encryption_t = CryptoPP::CBC_Mode<CryptoPP::SEED>::Encryption;
 
 using cbc_aes_decryption_t = CryptoPP::CBC_Mode<cbc_cipher_t>::Decryption;
 using cbc_blowfish_decryption_t = CryptoPP::CBC_Mode<CryptoPP::Blowfish>::Decryption;
-using cbc_twofish_decryption_t = CryptoPP::CBC_Mode<CryptoPP::Twofish>::Decryption;
 using cbc_cast128_decryption_t = CryptoPP::CBC_Mode<CryptoPP::CAST128>::Decryption;
 using cbc_cast256_decryption_t = CryptoPP::CBC_Mode<CryptoPP::CAST256>::Decryption;
 using cbc_idea_decryption_t = CryptoPP::CBC_Mode<CryptoPP::IDEA>::Decryption;
@@ -419,63 +418,6 @@ using eax_lea_decryption_t = CryptoPP::EAX<CryptoPP::LEA>::Decryption;
 using eax_simon128_decryption_t = CryptoPP::EAX<CryptoPP::SIMON128>::Decryption;
 using eax_hight_decryption_t = CryptoPP::EAX<CryptoPP::HIGHT>::Decryption;
 
-/*                      Type Traits                      *\
-\*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
-// CBC Mode of Operation
-template <typename mT> __hint_encryption_algo_accept__ static constexpr bool cbc_encryption_algo_accept()
-{
-    return std::is_same_v<mT, cbc_aes_encryption_t> || std::is_same_v<mT, cbc_blowfish_encryption_t> || std::is_same_v<mT, cbc_twofish_encryption_t> ||
-           std::is_same_v<mT, cbc_cast128_encryption_t> || std::is_same_v<mT, cbc_cast256_encryption_t> || std::is_same_v<mT, cbc_idea_encryption_t> ||
-           std::is_same_v<mT, cbc_rc2_encryption_t> || std::is_same_v<mT, cbc_rc5_encryption_t> || std::is_same_v<mT, cbc_rc6_encryption_t> || std::is_same_v<mT, cbc_mars_encryption_t> ||
-           std::is_same_v<mT, cbc_aes_decryption_t> || std::is_same_v<mT, cbc_blowfish_decryption_t> || std::is_same_v<mT, cbc_twofish_decryption_t> ||
-           std::is_same_v<mT, cbc_cast128_decryption_t> || std::is_same_v<mT, cbc_cast256_decryption_t> || std::is_same_v<mT, cbc_idea_decryption_t> ||
-           std::is_same_v<mT, cbc_rc2_decryption_t> || std::is_same_v<mT, cbc_rc5_decryption_t> || std::is_same_v<mT, cbc_rc6_decryption_t> || std::is_same_v<mT, cbc_mars_decryption_t> ||
-           std::is_same_v<mT, cbc_serpent_encryption_t> || std::is_same_v<mT, cbc_gost_encryption_t> || std::is_same_v<mT, cbc_serpent_decryption_t> ||
-           std::is_same_v<mT, cbc_gost_decryption_t> || std::is_same_v<mT, cbc_aria_decryption_t> || std::is_same_v<mT, cbc_aria_encryption_t> || std::is_same_v<mT, cbc_seed_decryption_t> ||
-           std::is_same_v<mT, cbc_gost_encryption_t> || std::is_same_v<mT, cbc_simon128_encryption_t> || std::is_same_v<mT, cbc_simon128_decryption_t> ||
-           std::is_same_v<mT, cbc_hight_encryption_t> || std::is_same_v<mT, cbc_hight_decryption_t> || std::is_same_v<mT, cbc_speck128_encryption_t> ||
-           std::is_same_v<mT, cbc_speck128_decryption_t> || std::is_same_v<mT, cbc_seed_encryption_t> || std::is_same_v<mT, cbc_seed_decryption_t>;
-};
-template <typename mT> struct is_accepted_cbc_encryption_algorithm
-{
-    static constexpr bool value = cbc_encryption_algo_accept<mT>();
-};
-template <typename mT> constexpr bool is_accepted_cbc_encryption_algorithm_v = is_accepted_cbc_encryption_algorithm<mT>::value;
-
-// GCM Mode of Operation
-template <typename mT> __hint_encryption_algo_accept__ static constexpr bool gcm_encryption_algo_accept()
-{
-    return std::is_same_v<mT, gcm_aes_encryption_t> || std::is_same_v<mT, gcm_twofish_encryption_t> || std::is_same_v<mT, gcm_rc6_encryption_t> ||
-           std::is_same_v<mT, gcm_mars_encryption_t> || std::is_same_v<mT, gcm_aes_decryption_t> || std::is_same_v<mT, gcm_twofish_decryption_t> ||
-           std::is_same_v<mT, gcm_rc6_decryption_t> || std::is_same_v<mT, gcm_mars_decryption_t>;
-};
-template <typename mT> struct is_accepted_gcm_encryption_algorithm
-{
-    static constexpr bool value = gcm_encryption_algo_accept<mT>();
-};
-template <typename mT> constexpr bool is_accepted_gcm_encryption_algorithm_v = is_accepted_gcm_encryption_algorithm<mT>::value;
-
-// EAX Mode of Operation
-template <typename mT> __hint_encryption_algo_accept__ static constexpr bool eax_encryption_algo_accept()
-{
-    return std::is_same_v<mT, eax_aes_encryption_t> || std::is_same_v<mT, eax_blowfish_encryption_t> || std::is_same_v<mT, eax_serpent_encryption_t> ||
-           std::is_same_v<mT, eax_cast128_encryption_t> || std::is_same_v<mT, eax_cast256_encryption_t> || std::is_same_v<mT, eax_idea_encryption_t> ||
-           std::is_same_v<mT, eax_rc5_encryption_t> || std::is_same_v<mT, eax_rc6_encryption_t> || std::is_same_v<mT, eax_gost_encryption_t> || std::is_same_v<mT, eax_mars_encryption_t> ||
-           std::is_same_v<mT, eax_seed_encryption_t> || std::is_same_v<mT, eax_speck128_encryption_t> || std::is_same_v<mT, eax_lea_encryption_t> ||
-           std::is_same_v<mT, eax_aes_decryption_t> || std::is_same_v<mT, eax_blowfish_decryption_t> || std::is_same_v<mT, eax_serpent_decryption_t> ||
-           std::is_same_v<mT, eax_cast128_decryption_t> || std::is_same_v<mT, eax_cast256_decryption_t> || std::is_same_v<mT, eax_idea_decryption_t> ||
-           std::is_same_v<mT, eax_rc5_decryption_t> || std::is_same_v<mT, eax_rc6_decryption_t> || std::is_same_v<mT, eax_gost_decryption_t> || std::is_same_v<mT, eax_mars_decryption_t> ||
-           std::is_same_v<mT, eax_seed_decryption_t> || std::is_same_v<mT, eax_speck128_decryption_t> || std::is_same_v<mT, eax_lea_decryption_t> ||
-           std::is_same_v<mT, eax_simon128_encryption_t> || std::is_same_v<mT, eax_simon128_decryption_t> || std::is_same_v<mT, eax_hight_encryption_t> ||
-           std::is_same_v<mT, eax_hight_decryption_t>;
-}
-template <typename mT> struct is_accepted_eax_encryption_algorithm
-{
-    static constexpr bool value = eax_encryption_algo_accept<mT>();
-};
-template <typename mT> constexpr bool is_accepted_eax_encryption_algorithm_v = is_accepted_eax_encryption_algorithm<mT>::value;
-
 /*                      Structure                        *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 typedef struct alignas(void *)
@@ -494,9 +436,15 @@ typedef struct alignas(void *)
 
 typedef struct alignas(void *)
 {
-    string_t error_msg{};
+    string_t error_msg{""};
     bool has_error{false};
 } error_frame;
+
+template <typename return_t> struct alignas(void *) op_frame
+{
+    return_t result{};
+    error_frame error{};
+};
 
 typedef struct alignas(void *)
 {
@@ -548,7 +496,6 @@ std::unordered_map<e_cbc_algorithm, mode_of_operation_map> cbc_map_block{
     {e_cbc_algorithm::SERPENT, mode_of_operation_map{.secure_key{e_key_block_size::SERPENT}, .secure_ivector{e_iv_block_size::SERPENT}}},
     {e_cbc_algorithm::SIMON128, mode_of_operation_map{.secure_key{e_key_block_size::SIMON128}, .secure_ivector{e_iv_block_size::SIMON128}}},
     {e_cbc_algorithm::SPECK128, mode_of_operation_map{.secure_key{e_key_block_size::SPECK128}, .secure_ivector{e_iv_block_size::SPECK128}}},
-    {e_cbc_algorithm::TWOFISH, mode_of_operation_map{.secure_key{e_key_block_size::TWOFISH}, .secure_ivector{e_iv_block_size::TWOFISH}}},
 };
 std::unordered_map<e_gcm_algorithm, mode_of_operation_map> gcm_map_block{
     {e_gcm_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
@@ -572,8 +519,6 @@ std::unordered_map<e_eax_algorithm, mode_of_operation_map> eax_map_block{
     {e_eax_algorithm::SIMON128, mode_of_operation_map{.secure_key{e_key_block_size::SIMON128}, .secure_ivector{e_iv_block_size::SIMON128}}},
     {e_eax_algorithm::SPECK128, mode_of_operation_map{.secure_key{e_key_block_size::SPECK128}, .secure_ivector{e_iv_block_size::SPECK128}}},
 };
-
-#define __temp_prepare_secure_keys__ template <e_cbc_algorithm algorithm_t = e_cbc_algorithm::AES>
 
 /*                      Class                            *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -682,32 +627,40 @@ class ByteCrypt
      * Hash buffer with sha algorithm and return hashed result.
      * @param string_t& buffer to hash
      * @param e_hash_algo_option hash algorithm
-     * @returns string_t const string hash buffer
+     * @returns op_frame<string_t> structure containing error and result blocks.
      */
-    __hint_hash__ const string_t hash(const string_t &buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
+    __hint_hash__ const op_frame<string_t> hash(const string_t &buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
     {
-        string_t digest_block;
+        op_frame<string_t> return_block{.result{}, .error{.error_msg{}, .has_error{false}}};
         std::unique_ptr<hash_transformer_t> algo;
-        switch ((std::uint16_t)sha)
+        try
         {
-        case (std::uint16_t)e_hash_algo_option::SHA1:
-            algo = std::make_unique<sha1_t>();
-            break;
-        case (std::uint16_t)e_hash_algo_option::SHA224:
-            algo = std::make_unique<sha224_t>();
-            break;
-        case (std::uint16_t)e_hash_algo_option::SHA256:
-            algo = std::make_unique<sha256_t>();
-            break;
-        case (std::uint16_t)e_hash_algo_option::SHA384:
-            algo = std::make_unique<sha384_t>();
-            break;
-        case (std::uint16_t)e_hash_algo_option::SHA512:
-            algo = std::make_unique<sha512_t>();
-            break;
+            switch ((std::uint16_t)sha)
+            {
+            case (std::uint16_t)e_hash_algo_option::SHA1:
+                algo = std::make_unique<sha1_t>();
+                break;
+            case (std::uint16_t)e_hash_algo_option::SHA224:
+                algo = std::make_unique<sha224_t>();
+                break;
+            case (std::uint16_t)e_hash_algo_option::SHA256:
+                algo = std::make_unique<sha256_t>();
+                break;
+            case (std::uint16_t)e_hash_algo_option::SHA384:
+                algo = std::make_unique<sha384_t>();
+                break;
+            case (std::uint16_t)e_hash_algo_option::SHA512:
+                algo = std::make_unique<sha512_t>();
+                break;
+            }
+            string_source_t(buffer, true, new hash_filter_t(*algo, new hex_encoder_t(new string_sink_t(return_block.result))));
         }
-        string_source_t(buffer, true, new hash_filter_t(*algo, new hex_encoder_t(new string_sink_t(digest_block))));
-        return digest_block;
+        catch (const std::exception &e)
+        {
+            return_block.error.has_error = true;
+            return_block.error.error_msg = e.what();
+        }
+        return return_block;
     };
 
     /**
@@ -859,20 +812,20 @@ class ByteCrypt
      * sign message with rsa_key private key, function generates signature and returns it.
      * @param string_t& message to sign
      * @param string_t& rsa private key for signature generation
-     * @returns string_t signature
+     * @returns op_frame<string_t> frame block containing signature as result and error(if any) as state meta-information
      */
-    __hint_sign_message__ const string_t sign_message(const string_t &message, const string_t &rsa_key)
+    __hint_sign_message__ const op_frame<string_t> sign_message(const string_t &message, const string_t &rsa_key)
     {
-        string_t signature;
+        op_frame<string_t> return_block;
         if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PRIVATE)) [[unlikely]]
-            return signature;
+            return return_block;
         string_t clean_key(this->__rsa_key_meta_wipe(const_cast<string_t &&>(std::move(rsa_key))));
         try
         {
             if (clean_key.empty() || message.empty()) [[unlikely]]
-                return signature;
+                return return_block;
 
-            string_t private_key_decoded;
+            string_t private_key_decoded, signature;
             string_source_t(clean_key, true, new base64_decoder_t(new string_sink_t(private_key_decoded)));
             rsa_private_key_t private_key;
             string_source_t private_key_source(private_key_decoded, true);
@@ -882,13 +835,15 @@ class ByteCrypt
             string_source_t(message, true, new rsa_signature_filter_t(entropy, signer, new string_sink_t(signature)));
             string_t encoded_signature;
             string_source_t(signature, true, new base64_encoder_t(new string_sink_t(encoded_signature)));
-            return encoded_signature;
+            return_block.result = encoded_signature;
+            return_block.error.has_error = false;
         }
         catch (const std::exception &e)
         {
-            std::cerr << "Sign Error: " << e.what() << "\n";
-            return "";
+            return_block.error.error_msg = e.what();
+            return_block.error.has_error = true;
         }
+        return return_block;
     };
 
     /**
@@ -898,10 +853,11 @@ class ByteCrypt
      * @param string_t& RSA public key
      * @returns bool true if verification succeded
      */
-    __hint_verify_signature__ const bool verify_signature(const string_t &message, const string_t &signature_str, const string_t &rsa_key)
+    __hint_verify_signature__ const op_frame<bool> verify_signature(const string_t &message, const string_t &signature_str, const string_t &rsa_key)
     {
+        op_frame<bool> return_block;
         if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PUBLIC)) [[unlikely]]
-            return false;
+            return return_block;
         try
         {
             string_t public_key_decoded;
@@ -913,19 +869,15 @@ class ByteCrypt
             string_t signature_decoded;
             string_source_t(signature_str, true, new base64_decoder_t(new string_sink_t(signature_decoded)));
             rsa_signature_verify_t verifier(public_key);
-            const bool result = verifier.VerifyMessage((const byte *)message.data(), message.size(), (const byte *)signature_decoded.data(), signature_decoded.size());
-            return result;
-        }
-        catch (const crypto_exception_t &e)
-        {
-            std::cerr << "CryptoPP Verify Error: " << e.what() << "\n";
-            return false;
+
+            return_block.result = verifier.VerifyMessage((const byte *)message.data(), message.size(), (const byte *)signature_decoded.data(), signature_decoded.size());
         }
         catch (const std::exception &e)
         {
-            std::cerr << "Verify Error: " << e.what() << "\n";
-            return false;
+            return_block.error.has_error = true;
+            return_block.error.error_msg = e.what();
         }
+        return return_block;
     };
 
     /**
@@ -934,8 +886,9 @@ class ByteCrypt
      * @param string_t& rsa key(public/private)
      * @returns bool true if key saved
      */
-    __hint_save_rsa_key__ const bool save_rsa_key(const string_view_t &path, const string_t &rsa_key)
+    __hint_save_rsa_key__ const op_frame<bool> save_rsa_key(const string_view_t &path, const string_t &rsa_key)
     {
+        op_frame<bool> return_block;
         try
         {
             if (path.empty()) [[unlikely]]
@@ -948,13 +901,14 @@ class ByteCrypt
                 throw std::ofstream::failure::runtime_error("file stream for writing rsa key not open!");
             file_handler << rsa_key;
             file_handler.close();
-            return true;
+            return_block.error.has_error = false;
         }
         catch (const std::exception &e)
         {
-            std::cerr << "Exception: " << e.what() << "\n";
+            return_block.error.has_error = true;
+            return_block.error.error_msg = e.what();
         }
-        return false;
+        return return_block;
     };
 
     /**
@@ -1070,9 +1024,9 @@ class ByteCrypt
      * @returns string_t loaded secret, if any...
      *
      */
-    __hint_load_secret_from_file__ const string_t load_secret_from_file(const string_view_t &secret_filename)
+    __hint_load_secret_from_file__ const op_frame<string_t> load_secret_from_file(const string_view_t &secret_filename)
     {
-        string_t loaded_secret;
+        op_frame<string_t> return_block;
         try
         {
             std::basic_ifstream<char> file_descriptor(&secret_filename[0], std::ios::binary);
@@ -1085,16 +1039,18 @@ class ByteCrypt
             buffer_bytes.resize(fsecret_size);
             do
             {
-                loaded_secret += buffer_bytes;
+                return_block.result += buffer_bytes;
             } while (std::getline(file_descriptor, buffer_bytes));
             file_descriptor.close();
             buffer_bytes.clear();
+            return_block.error.has_error = false;
         }
         catch (const std::exception &e)
         {
-            std::cerr << "LoadSecret Error: " << e.what() << '\n';
+            return_block.error.has_error = true;
+            return_block.error.error_msg = e.what();
         }
-        return loaded_secret;
+        return return_block;
     };
 
     /**
@@ -1106,7 +1062,7 @@ class ByteCrypt
      * @returns string_t the right shifted block
      *
      */
-    const string_t block_rshift(const string_view_t block, const short int shift_pos = 3)
+    const string_t block_rshift(const string_view_t block, const std::uint16_t shift_pos = 3)
     {
         if (block.empty())
             return "";
@@ -1128,7 +1084,7 @@ class ByteCrypt
      * @returns string_t the left shifted block
      *
      */
-    const string_t block_lshift(const string_view_t block, const short int shift_pos = 3)
+    const string_t block_lshift(const string_view_t block, const std::uint16_t shift_pos = 3)
     {
         if (block.empty())
             return "";
@@ -1184,8 +1140,6 @@ class ByteCrypt
                 this->__cbc_execute<cbc_simon128_encryption_t>(key, iv, buffer, r0);
             else if (algorithm == e_cbc_algorithm::SPECK128)
                 this->__cbc_execute<cbc_speck128_encryption_t>(key, iv, buffer, r0);
-            else if (algorithm == e_cbc_algorithm::TWOFISH)
-                this->__cbc_execute<cbc_twofish_encryption_t>(key, iv, buffer, r0);
             else
                 throw std::invalid_argument("invalid cbc algorithm!");
 
@@ -1246,8 +1200,6 @@ class ByteCrypt
                 this->__cbc_execute<cbc_simon128_decryption_t>(key, iv, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::SPECK128)
                 this->__cbc_execute<cbc_speck128_decryption_t>(key, iv, ciphertext, r0);
-            else if (algorithm == e_cbc_algorithm::TWOFISH)
-                this->__cbc_execute<cbc_twofish_decryption_t>(key, iv, ciphertext, r0);
             else
                 throw std::invalid_argument("invalid cbc algorithm!");
 
@@ -1426,47 +1378,47 @@ class ByteCrypt
     ~ByteCrypt() {};
 
   private:
-  template <typename ExecutionType> void __cbc_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &source, string_t &output)
+    __temp_cipher_exec__ void __cbc_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &source, string_t &output)
     {
-        ExecutionType executor;
+        cipher_mode executor;
         executor.SetKeyWithIV(key, key.size(), iv);
         string_source_t(source, true, new transformer_filter_t(executor, new string_sink_t(output)));
     };
 
-    template <typename ExecutionType> void __gcm_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &plaintext_cipher, string_t &encrypted_block, string_t &encoded_block)
+    __temp_cipher_exec__ void __gcm_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &plaintext_cipher, string_t &encrypted_block, string_t &encoded_block)
     {
-        ExecutionType encryption;
+        cipher_mode encryption;
         encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
         string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
         encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
         string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
     };
 
-    template <typename ExecutionType>
-    void __gcm_reverse_execution(sec_byte_block_t &key, sec_byte_block_t &iv, const std::uint16_t iv_block_size, const string_t &decoded_block, string_t &decrypted_block)
+    __temp_cipher_exec__ void __gcm_reverse_execution(sec_byte_block_t &key, sec_byte_block_t &iv, const std::uint16_t iv_block_size, const string_t &decoded_block,
+                                                      string_t &decrypted_block)
     {
         iv = sec_byte_block_t((const byte *)decoded_block.data(), iv_block_size);
         string_t ciphertext = decoded_block.substr(iv_block_size);
-        ExecutionType decryption;
+        cipher_mode decryption;
         decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
         string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
     };
 
-    template <typename encryption_mode_t> void __eax_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &plaintext_cipher, string_t &encrypted_block, string_t &encoded_block)
+    __temp_cipher_exec__ void __eax_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &plaintext_cipher, string_t &encrypted_block, string_t &encoded_block)
     {
-        encryption_mode_t encryption;
+        cipher_mode encryption;
         encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
         string_source_t(plaintext_cipher, true, new auth_encryption_filter_t(encryption, new string_sink_t(encrypted_block)));
         encrypted_block = string_t((const char *)iv.data(), iv.size()) + encrypted_block;
         string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
     };
 
-    template <typename decryption_mode_t>
-    void __eax_reverse_execution(sec_byte_block_t &key, sec_byte_block_t &iv, const std::uint16_t iv_block_size, const string_t &decoded_block, string_t &decrypted_block)
+    __temp_cipher_exec__ void __eax_reverse_execution(sec_byte_block_t &key, sec_byte_block_t &iv, const std::uint16_t iv_block_size, const string_t &decoded_block,
+                                                      string_t &decrypted_block)
     {
         iv = sec_byte_block_t((const byte *)decoded_block.data(), iv_block_size);
         string_t ciphertext = decoded_block.substr(iv_block_size);
-        decryption_mode_t decryption;
+        cipher_mode decryption;
         decryption.SetKeyWithIV(key, key.size(), iv, iv.size());
         string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
     };
