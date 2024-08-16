@@ -159,10 +159,7 @@ namespace ByteCryptModule
 #define __hint_set_iter_counter__ __attribute__((cold, nothrow, noipa, no_stack_protector))
 #define __hint_set_def_key_size__ __attribute__((cold, nothrow, noipa, no_stack_protector))
 #define __hint_set_def_iv_size__ __attribute__((cold, nothrow, noipa, no_stack_protector))
-#define __hint_encryption_algo_accept__ __attribute__((cold, nothrow, warn_unused_result, pure, no_sanitize_address, no_stack_protector, optimize(3)))
 #define __hint_hash__ __attribute__((stack_protect, zero_call_used_regs("used"), warn_unused_result, access(read_only, 1), optimize(3)))
-#define __hint_encrypt__ __attribute__((warn_unused_result, zero_call_used_regs("used"), stack_protect, access(read_only, 1), access(read_only, 2), optimize(3)))
-#define __hint_decrypt__ __attribute__((warn_unused_result, zero_call_used_regs("used"), stack_protect, access(read_only, 1), access(read_only, 2), optimize(3)))
 #define __hint_base64_encode__ __attribute__((warn_unused_result, stack_protect, access(read_only, 1), optimize("3")))
 #define __hint_base64_decode__ __attribute__((warn_unused_result, stack_protect, access(read_only, 1), optimize("3")))
 #define __hint_hex_encode__ __attribute__((warn_unused_result, no_stack_protector, access(read_only, 1), optimize("3")))
@@ -174,8 +171,6 @@ namespace ByteCryptModule
     __attribute__((warn_unused_result, access(read_only, 1), access(read_only, 2), access(read_only, 3), stack_protect, zero_call_used_regs("used"), optimize("3")))
 #define __hint_save_rsa_key__ __attribute__((stack_protect, zero_call_used_regs("used"), tainted_args, access(read_only, 1), access(read_only, 2), optimize("3")))
 #define __hint_load_rsa_key__ __attribute__((warn_unused_result, cold, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
-#define __hint_derive_key_iv__ __attribute__((stack_protect, zero_call_used_regs("used"), access(read_only, 1), access(read_only, 2), access(read_only, 3), optimize("1")))
-#define __hint_perform_keyiv_intersection__ __attribute__((stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
 #define __hint_rsa_key_pair_verify__ __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
 #define __hint_rsa_key_pem_set_header__ __attribute__((nothrow, always_inline, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
 #define __hint_rsa_key_pem_set_footer__ __attribute__((always_inline, nothrow, stack_protect, zero_call_used_regs("used"), access(read_only, 1), optimize("3")))
@@ -194,22 +189,17 @@ namespace ByteCryptModule
 #define __hint_set_iter_counter__ [[nothrow]]
 #define __hint_set_def_key_size__ [[nothrow]]
 #define __hint_set_def_iv_size__ [[nothrow]]
-#define __hint_encryption_algo_accept__ [[nothrow, nodiscard]]
 #define __hint_hash__ [[nodiscard]]
-#define __hint_encrypt__ [[nodiscard]]
-#define __hint_decrypt__ [[nodiscard]]
 #define __hint_base64_encode__ [[nodiscard]]
 #define __hint_base64_decode__ [[nodiscard]]
 #define __hint_hex_encode__ [[nodiscard]]
 #define __hint_hex_decode__ [[nodiscard]]
 #define __hint_generate_rsa_key_der_pair__ [[nodiscard]]
-#define __hint_generate_rsa_key_der_pair__ [[nodiscard]]
+#define __hint_generate_rsa_key_pem_pair__ [[nodiscard]]
 #define __hint_sign_message__ [[nodiscard]]
 #define __hint_verify_signature__ [[nodiscard]]
 #define __hint_save_rsa_key__ [[nodiscard]]
 #define __hint_load_rsa_key__ [[nodiscard]]
-#define __hint_derive_key_iv__ [[]]
-#define __hint_perform_keyiv_intersection__ [[]]
 #define __hint_rsa_key_pair_verify__ [[nodiscard]]
 #define __hint_rsa_key_pem_set_header__ [[nothrow]]
 #define __hint_rsa_key_pem_set_footer__ [[nothrow]]
@@ -221,10 +211,10 @@ namespace ByteCryptModule
 #define __hint_store_secret__ [[nodiscard]]
 #define __hint_load_secret_from_file__ [[nodiscard]]
 #define __hint_prepare_secure_keys__ [[]]
+#define __hint_cipher_transformation__ [[]]
 
 #endif
 
-#define __temp_byte_crypt__ template <typename std::size_t key_size_t = e_key_block_size::AES, typename std::size_t iv_size_t = e_iv_block_size::AES>
 #define __temp_cipher_exec__ template <typename cipher_mode>
 
 enum class e_hash_algo_option
@@ -394,9 +384,7 @@ using base64_decoder_t = CryptoPP::Base64Decoder;
 using rsa_signature_t = CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Signer;
 using rsa_signature_filter_t = CryptoPP::SignerFilter;
 using rsa_signature_verify_t = CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier;
-using crypto_exception_t = CryptoPP::Exception;
 using sha256_hmac_t = CryptoPP::PKCS5_PBKDF2_HMAC<CryptoPP::SHA256>;
-using hmac_s256_t = CryptoPP::HMAC<CryptoPP::SHA256>;
 using auth_decryption_filter_t = CryptoPP::AuthenticatedDecryptionFilter;
 using auth_encryption_filter_t = CryptoPP::AuthenticatedEncryptionFilter;
 using sec_byte_block_t = CryptoPP::SecByteBlock;
