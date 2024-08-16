@@ -23,7 +23,6 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  * ============================================================================
  *
  * Written by [Somorpher], [2024].
@@ -32,12 +31,13 @@
 /**
  * Cryptographic Utility library for most common cryptograpic operations, algorithms, modes, etc...
  *
- * Symmetric Encryption:
+ * Symmetric Cryptography:
  * Available Modes: CBC((16+-)algos), GCM((4+-)algos), EAX((15+-)algos), CFB((6+-)algos), OFB((7+-)algos), CTR((6+-)algos)
  * Hashing: SHA1, SHA224, SHA256, SHA384, SHA512, Tiger, Whirlpool, MD5, Blake2, Ripemd160
  * Encoding: base64, hex
  *
- * Asymmetric Encryption:
+ * Asymmetric Cryptography:
+ * RSA
  * Message Signing, message authentication, Signature generation/verification, RSA key generation(DER, PEM) with
  * different key size available(512, 1024, 2048, 3072, 4096), etc...
  *
@@ -251,7 +251,10 @@ enum class e_operation_mode
 {
     CBC = 0,
     GCM,
-    EAX
+    EAX,
+    CFB, 
+    OFB,
+    CTR
 };
 
 enum class e_cbc_algorithm
@@ -1561,19 +1564,19 @@ class ByteCrypt
                 throw std::runtime_error("error during key/iv preparation!");
 
             if (algorithm == e_cfb_algorithm::AES)
-                this->__cfb_execute<cfb_aes_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__cfb_execute<cfb_aes_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cfb_algorithm::BLOWFISH)
-                this->__cfb_execute<cfb_blowfish_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__cfb_execute<cfb_blowfish_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cfb_algorithm::CAST128)
-                this->__cfb_execute<cfb_cast128_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__cfb_execute<cfb_cast128_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cfb_algorithm::CAST256)
-                this->__cfb_execute<cfb_cast256_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__cfb_execute<cfb_cast256_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cfb_algorithm::IDEA)
-                this->__cfb_execute<cfb_idea_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__cfb_execute<cfb_idea_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cfb_algorithm::RC2)
-                this->__cfb_execute<cfb_rc2_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__cfb_execute<cfb_rc2_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cfb_algorithm::RC5)
-                this->__cfb_execute<cfb_rc5_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__cfb_execute<cfb_rc5_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else
                 throw std::invalid_argument("invalid cfb algorithm!");
 
@@ -1647,19 +1650,19 @@ class ByteCrypt
             if (secure_key.empty() || initialization_vector.empty())
                 throw std::runtime_error("error during key/iv preparation!");
             else if (algorithm == e_ofb_algorithm::AES)
-                this->__ofb_execute<ofb_aes_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__ofb_execute<ofb_aes_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_ofb_algorithm::BLOWFISH)
-                this->__ofb_execute<ofb_blowfish_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__ofb_execute<ofb_blowfish_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_ofb_algorithm::CAST128)
-                this->__ofb_execute<ofb_cast128_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__ofb_execute<ofb_cast128_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_ofb_algorithm::CAST256)
-                this->__ofb_execute<ofb_cast256_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__ofb_execute<ofb_cast256_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_ofb_algorithm::IDEA)
-                this->__ofb_execute<ofb_idea_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__ofb_execute<ofb_idea_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_ofb_algorithm::RC2)
-                this->__ofb_execute<ofb_rc2_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__ofb_execute<ofb_rc2_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_ofb_algorithm::RC5)
-                this->__ofb_execute<ofb_rc5_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__ofb_execute<ofb_rc5_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else
                 throw std::invalid_argument("invalid ofb algorithm!");
 
@@ -1733,19 +1736,19 @@ class ByteCrypt
             if (secure_key.empty() || initialization_vector.empty())
                 throw std::runtime_error("error during key/iv preparation!");
             else if (algorithm == e_ctr_algorithm::AES)
-                this->__ctr_execute<ctr_aes_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__ctr_execute<ctr_aes_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_ctr_algorithm::BLOWFISH)
-                this->__ctr_execute<ctr_blowfish_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__ctr_execute<ctr_blowfish_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_ctr_algorithm::CAST128)
-                this->__ctr_execute<ctr_cast128_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__ctr_execute<ctr_cast128_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_ctr_algorithm::CAST256)
-                this->__ctr_execute<ctr_cast256_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__ctr_execute<ctr_cast256_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_ctr_algorithm::IDEA)
-                this->__ctr_execute<ctr_idea_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__ctr_execute<ctr_idea_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_ctr_algorithm::RC2)
-                this->__ctr_execute<ctr_rc2_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__ctr_execute<ctr_rc2_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_ctr_algorithm::RC5)
-                this->__ctr_execute<ctr_rc5_decryption_t>(secure_key, initialization_vector, buffer, r0);
+                this->__ctr_execute<ctr_rc5_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else
                 throw std::invalid_argument("invalid ctr algorithm!");
 
