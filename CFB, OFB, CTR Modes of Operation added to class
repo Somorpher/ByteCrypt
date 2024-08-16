@@ -33,7 +33,7 @@
  * Cryptographic Utility library for most common cryptograpic operations, algorithms, modes, etc...
  *
  * Symmetric Encryption:
- * Available Modes: CBC((16+-)algos), GCM((4+-)algos), EAX((15+-)algos)
+ * Available Modes: CBC((16+-)algos), GCM((4+-)algos), EAX((15+-)algos), CFB((6+-)algos), OFB((7+-)algos), CTR((6+-)algos)
  * Hashing: SHA1, SHA224, SHA256, SHA384, SHA512, Tiger, Whirlpool, MD5, Blake2, Ripemd160
  * Encoding: base64, hex
  *
