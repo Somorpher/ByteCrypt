@@ -28,12 +28,24 @@
  *
  * Written by [Somorpher], [2024].
  */
-// Platform detection
+
+/**
+ * Cryptographic Utility library for most common cryptograpic operations, algorithms, modes, etc...
+ *
+ * Symmetric Encryption:
+ * Available Modes: CBC((16+-)algos), GCM((4+-)algos), EAX((15+-)algos)
+ * Hashing: SHA1, SHA224, SHA256, SHA384, SHA512, Tiger, Whirlpool, MD5, Blake2, Ripemd160
+ * Encoding: base64, hex
+ *
+ * Asymmetric Encryption:
+ * Message Signing, message authentication, Signature generation/verification, RSA key generation(DER, PEM) with
+ * different key size available(512, 1024, 2048, 3072, 4096), etc...
+ *
+ */
 
 #if defined(__linux__) || defined(__APPLE__) || defined(_WIN32) || defined(_WIN64) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__) ||       \
     defined(__sun) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__MINGW64__) || defined(__ANDROID__) || defined(__unix__) || defined(__HAIKU__)
 
-// Architecture detection
 #if defined(__x86_64__) || defined(__amd64__) || defined(__i386__) || defined(__M_X64) || defined(__aarch64__) || defined(__arm__) || defined(__powerpc64__) || defined(__ppc64__) ||        \
     defined(__powerpc__) || defined(__ppc__) || defined(__sparc__) || defined(__mips__) || defined(__mips64__) || defined(__s390__) || defined(__s390x__) || defined(__riscv) ||             \
     defined(__riscv64__)
@@ -42,9 +54,9 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #define PATH_SEPARATOR "\\"
-#include <windows.h>
+#include <windows.h> 
 #else
-#define PATH_SEPARATOR "/"
+#define PATH_SEPARATOR "/" // not about this as well, it should be inferred by the compiler ...
 #endif
 
 #include <assert.h>
@@ -74,6 +86,7 @@
 #include <crypto++/aes.h>
 #include <crypto++/aria.h>
 #include <crypto++/base64.h>
+#include <crypto++/blake2.h>
 #include <crypto++/blowfish.h>
 #include <crypto++/cast.h>
 #include <crypto++/chacha.h>
@@ -93,6 +106,7 @@
 #include <crypto++/rc5.h>
 #include <crypto++/rc6.h>
 #include <crypto++/rijndael.h>
+#include <crypto++/ripemd.h>
 #include <crypto++/rsa.h>
 #include <crypto++/seal.h>
 #include <crypto++/secblock.h>
@@ -101,14 +115,21 @@
 #include <crypto++/sha.h>
 #include <crypto++/simon.h>
 #include <crypto++/speck.h>
+#include <crypto++/tiger.h>
 #include <crypto++/twofish.h>
+#include <crypto++/whrlpool.h>
 #include <cryptopp/cryptlib.h>
 #include <cryptopp/pssr.h>
+#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
+#include <crypto++/md5.h>
 
 #ifndef __MODULE_BYTE_CRYPT__
 
 #define __MODULE_BYTE_CRYPT__
 
+/**
+ * Utility within namespace to avoid namespace pollution.
+ */
 namespace ByteCryptModule
 {
 
@@ -119,15 +140,18 @@ namespace ByteCryptModule
 #define RSA_PRIVATE_KEY_HEADER "-----BEGIN RSA PRIVATE KEY-----\n"
 #define RSA_PUBLIC_KEY_FOOTER "-----END PUBLIC KEY-----\n"
 #define RSA_PRIVATE_KEY_FOOTER "-----END RSA PRIVATE KEY-----\n"
-
 #define RSA_ENCRYPTED_PRIVATE_KEY_HEADER "-----BEGIN ENCRYPTED PRIVATE KEY-----\n"
 #define RSA_ENCRYPTED_PRIVATE_KEY_FOOTER "-----END ENCRYPTED PRIVATE KEY-----\n"
-
 #define DEFAULT_CIPHER_ITERATION_COUNTER 10000
 #define DEFAULT_SEC_BLOCK_KEY_SIZE CryptoPP::AES::DEFAULT_KEYLENGTH
 #define DEFAULT_SEC_BLOCK_IV_SIZE CryptoPP::AES::BLOCKSIZE
 
-// makes code more readable instead of using inline attributes directly with function defintion
+/**
+ * defining some top level macros, these are compiler optimization attributes, some of them are very strict with
+ * argument ordering for example access attribute might be affected if function signature changes but not
+ * the macro definition as well. Defining these macros here makes the code more readable also, but they
+ * only work with g++ or clang compilers.
+ */
 
 /*                      Attribution                      *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -137,7 +161,7 @@ namespace ByteCryptModule
 #define __hint_set_def_key_size__ __attribute__((cold, nothrow, noipa, no_stack_protector))
 #define __hint_set_def_iv_size__ __attribute__((cold, nothrow, noipa, no_stack_protector))
 #define __hint_encryption_algo_accept__ __attribute__((cold, nothrow, warn_unused_result, pure, no_sanitize_address, no_stack_protector, optimize(3)))
-#define __hint_hash__ __attribute__((stack_protect, zero_call_used_regs("all"), warn_unused_result, access(read_only, 1), access(read_only, 2), optimize(3)))
+#define __hint_hash__ __attribute__((stack_protect, zero_call_used_regs("used"), warn_unused_result, access(read_only, 1), optimize(3)))
 #define __hint_encrypt__ __attribute__((warn_unused_result, zero_call_used_regs("used"), stack_protect, access(read_only, 1), access(read_only, 2), optimize(3)))
 #define __hint_decrypt__ __attribute__((warn_unused_result, zero_call_used_regs("used"), stack_protect, access(read_only, 1), access(read_only, 2), optimize(3)))
 #define __hint_base64_encode__ __attribute__((warn_unused_result, stack_protect, access(read_only, 1), optimize("3")))
@@ -146,7 +170,7 @@ namespace ByteCryptModule
 #define __hint_hex_decode__ __attribute__((warn_unused_result, no_stack_protector, access(read_only, 1), optimize("3")))
 #define __hint_generate_rsa_key_der_pair__ __attribute__((cold, warn_unused_result, stack_protect, access(read_only, 1), zero_call_used_regs("used"), optimize("3")))
 #define __hint_generate_rsa_key_pem_pair__ __attribute__((cold, warn_unused_result, stack_protect, access(read_only, 1), zero_call_used_regs("used"), optimize("3")))
-#define __hint_sign_message__ __attribute__((warn_unused_result, stack_protect, access(read_only, 1), access(read_only, 2), zero_call_used_regs("used"), optimize("3")))
+#define __hint_sign_message__ __attribute__((warn_unused_result, stack_protect, access(read_only, 1), zero_call_used_regs("used"), optimize("3")))
 #define __hint_verify_signature__                                                                                                                                                            \
     __attribute__((warn_unused_result, access(read_only, 1), access(read_only, 2), access(read_only, 3), stack_protect, zero_call_used_regs("used"), optimize("3")))
 #define __hint_save_rsa_key__ __attribute__((stack_protect, zero_call_used_regs("used"), tainted_args, access(read_only, 1), access(read_only, 2), optimize("3")))
@@ -163,8 +187,8 @@ namespace ByteCryptModule
 #define __hint_generate_random_bytes__ __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("used"), optimize("3")))
 #define __hint_store_secret__ __attribute__((cold, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
 #define __hint_load_secret_from_file__ __attribute__((cold, warn_unused_result, stack_protect, optimize("3"), zero_call_used_regs("used"), access(read_only, 1)))
-#define __hint_prepare_secure_keys__ __attribute__((stack_protect, zero_call_used_regs("all"), optimize("3")))
-#define __hint_cipher_transformation__ __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("all"), noinline, access(read_only, 1), access(read_only, 2), optimize("3")))
+#define __hint_prepare_secure_keys__ __attribute__((stack_protect, zero_call_used_regs("used"), optimize("3")))
+#define __hint_cipher_transformation__ __attribute__((warn_unused_result, stack_protect, zero_call_used_regs("used"), noinline, access(read_only, 1), access(read_only, 2), optimize("3")))
 
 #else
 
@@ -204,8 +228,6 @@ namespace ByteCryptModule
 #define __temp_byte_crypt__ template <typename std::size_t key_size_t = e_key_block_size::AES, typename std::size_t iv_size_t = e_iv_block_size::AES>
 #define __temp_cipher_exec__ template <typename cipher_mode>
 
-/*                      Namespace                        *\
-\*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 enum class e_hash_algo_option
 {
     SHA1 = 0,
@@ -213,6 +235,11 @@ enum class e_hash_algo_option
     SHA256,
     SHA384,
     SHA512,
+    MD5,
+    RIPEMD160,
+    WHIRLPOOL,
+    BLAKE2,
+    TIGER,
 };
 
 enum class e_rsa_key_pem_version
@@ -278,7 +305,13 @@ enum class e_eax_algorithm
     __COUNT
 };
 
-// struct but not regular purpose... goes here...
+/**
+ *
+ */
+
+/**
+ * Algorithm specific key block size, refers to the key size used by the function.
+ */
 struct e_key_block_size
 {
     static const std::uint16_t AES = CryptoPP::AES::DEFAULT_KEYLENGTH, BLOWFISH = CryptoPP::Blowfish::DEFAULT_KEYLENGTH, TWOFISH = CryptoPP::Twofish::DEFAULT_KEYLENGTH,
@@ -289,6 +322,9 @@ struct e_key_block_size
                                SPECK128 = CryptoPP::SPECK128::DEFAULT_KEYLENGTH, SIMON128 = CryptoPP::SIMON128::DEFAULT_KEYLENGTH;
 };
 
+/**
+ * Algorithm specific initialization vector block size reference
+ */
 struct e_iv_block_size
 {
     static const std::uint16_t AES = CryptoPP::AES::BLOCKSIZE, BLOWFISH = CryptoPP::Blowfish::BLOCKSIZE, TWOFISH = CryptoPP::Twofish::BLOCKSIZE, CAST128 = CryptoPP::CAST128::BLOCKSIZE,
@@ -298,11 +334,13 @@ struct e_iv_block_size
                                SIMON128 = CryptoPP::SIMON128::BLOCKSIZE, SPECK128 = CryptoPP::SPECK128::BLOCKSIZE;
 };
 
-typedef struct e_key_block_size e_key_block_size_t;
-typedef struct e_iv_block_size e_iv_block_size_t;
 
 /*                      Type Alias                       *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+/**
+ * type alias for more readability, camel case makes it look like shit otherwise...
+ */
 using byte = CryptoPP::byte;
 using string_t = std::basic_string<char>;
 using string_view_t = std::basic_string_view<char>;
@@ -332,12 +370,14 @@ using sha224_t = CryptoPP::SHA224;
 using sha256_t = CryptoPP::SHA256;
 using sha384_t = CryptoPP::SHA384;
 using sha512_t = CryptoPP::SHA512;
+using md5_t = CryptoPP::Weak1::MD5;
+using ripemd160_t = CryptoPP::RIPEMD160;
+using whirlpool_t = CryptoPP::Whirlpool;
+using blake2_t = CryptoPP::BLAKE2b;
+using tiger_t = CryptoPP::Tiger;
+using gost_t = CryptoPP::GOST;
 using hash_transformer_t = CryptoPP::HashTransformation;
 using hash_filter_t = CryptoPP::HashFilter;
-
-/**
- * CBC Mode Encryption/Dec(< GCM)
- */
 
 using cbc_aes_encryption_t = CryptoPP::CBC_Mode<cbc_cipher_t>::Encryption;
 using cbc_blowfish_encryption_t = CryptoPP::CBC_Mode<CryptoPP::Blowfish>::Encryption;
@@ -373,9 +413,6 @@ using cbc_speck128_decryption_t = CryptoPP::CBC_Mode<CryptoPP::SPECK128>::Decryp
 using cbc_hight_decryption_t = CryptoPP::CBC_Mode<CryptoPP::HIGHT>::Decryption;
 using cbc_seed_decryption_t = CryptoPP::CBC_Mode<CryptoPP::SEED>::Decryption;
 
-/**
- * GCM Mode Encryption/Dec(> CBC)
- */
 using gcm_aes_encryption_t = CryptoPP::GCM<cbc_cipher_t>::Encryption;
 using gcm_twofish_encryption_t = CryptoPP::GCM<CryptoPP::Twofish>::Encryption;
 using gcm_rc6_encryption_t = CryptoPP::GCM<CryptoPP::RC6>::Encryption;
@@ -452,19 +489,9 @@ typedef struct alignas(void *)
     sec_byte_block_t iv;
 } secure_byte_pair;
 
-typedef struct alignas(void *)
-{
-    string_t encrypted_block;
-    error_frame error;
-    secure_byte_pair secure_keys;
-} encryption_result;
+typedef op_frame<string_t> encryption_result;
 
-typedef struct alignas(void *)
-{
-    string_t decrypted_block;
-    error_frame error;
-    secure_byte_pair secure_keys;
-} decryption_result;
+typedef op_frame<string_t> decryption_result;
 
 typedef struct alignas(void *)
 {
@@ -479,6 +506,13 @@ typedef struct alignas(void *)
     std::unordered_map<e_eax_algorithm, mode_of_operation_map> eax{};
 } operation_mode;
 
+/**
+ * --------------------------------------------------------------------------------------------
+ *
+ * Available algorithms for each operation mode available, add more algorithms if required.   |
+ *
+ * --------------------------------------------------------------------------------------------
+ */
 std::unordered_map<e_cbc_algorithm, mode_of_operation_map> cbc_map_block{
     {e_cbc_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
     {e_cbc_algorithm::ARIA, mode_of_operation_map{.secure_key{e_key_block_size::ARIA}, .secure_ivector{e_iv_block_size::ARIA}}},
@@ -531,9 +565,9 @@ class ByteCrypt
 
     static constexpr std::array<std::uint16_t, 5> rsa_key_size_options{512u, 1024u, 2048u, 3072u, 4096u};
     operation_mode op_mode{
-        .cbc{cbc_map_block},
-        .gcm{gcm_map_block},
-        .eax{eax_map_block},
+        .cbc{cbc_map_block}, // CBC mode of operation supported algorithms and key/initialization vector block size
+        .gcm{gcm_map_block}, // GCM mode of operation supported algorithms and key/initialization vector block size
+        .eax{eax_map_block}, // EAX mode of operation supported algorithms and key/initialization vector block size
     };
 
   public:
@@ -579,57 +613,12 @@ class ByteCrypt
     };
 
     /**
-     *
-     * Set cipher iteration count value.
-     * @param std::size_t new number of iterations.
-     * @returns void
-     *
-     */
-    __hint_set_iter_counter__ inline void set_cipher_iteration_counter(const std::size_t iterations) noexcept
-    {
-        if (iterations < 10000000UL)
-        {
-            this->cipher_iteration_count = iterations;
-        }
-    };
-
-    /**
-     *
-     * Set default secure block key size.
-     * @param std::size_t key size
-     * @returns void
-     *
-     */
-    __hint_set_def_key_size__ inline void set_sec_block_key_size(const std::size_t key_size) noexcept
-    {
-        if (key_size >= 8 && key_size <= 256)
-        {
-            this->default_sec_key_size = key_size;
-        }
-    };
-
-    /**
-     *
-     * Set default secure initialization vector size.
-     * @param std::size_t initialization vector size
-     * @returns void
-     *
-     */
-    __hint_set_def_iv_size__ inline void set_sec_block_iv_size(const std::size_t iv_size) noexcept
-    {
-        if (iv_size >= 8 && iv_size <= 256)
-        {
-            this->default_sec_iv_size = iv_size;
-        }
-    };
-
-    /**
      * Hash buffer with sha algorithm and return hashed result.
-     * @param string_t& buffer to hash
+     * @param string_view_t buffer to hash
      * @param e_hash_algo_option hash algorithm
      * @returns op_frame<string_t> structure containing error and result blocks.
      */
-    __hint_hash__ const op_frame<string_t> hash(const string_t &buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
+    __hint_hash__ const op_frame<string_t> hash(const string_view_t buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
     {
         op_frame<string_t> return_block{.result{}, .error{.error_msg{}, .has_error{false}}};
         std::unique_ptr<hash_transformer_t> algo;
@@ -652,8 +641,23 @@ class ByteCrypt
             case (std::uint16_t)e_hash_algo_option::SHA512:
                 algo = std::make_unique<sha512_t>();
                 break;
+            case (std::uint16_t)e_hash_algo_option::BLAKE2:
+                algo = std::make_unique<blake2_t>();
+                break;
+            case (std::uint16_t)e_hash_algo_option::MD5:
+                algo = std::make_unique<md5_t>();
+                break;
+            case (std::uint16_t)e_hash_algo_option::RIPEMD160:
+                algo = std::make_unique<ripemd160_t>();
+                break;
+            case (std::uint16_t)e_hash_algo_option::TIGER:
+                algo = std::make_unique<tiger_t>();
+                break;
+            case (std::uint16_t)e_hash_algo_option::WHIRLPOOL:
+                algo = std::make_unique<whirlpool_t>();
+                break;
             }
-            string_source_t(buffer, true, new hash_filter_t(*algo, new hex_encoder_t(new string_sink_t(return_block.result))));
+            string_source_t(buffer.data(), true, new hash_filter_t(*algo, new hex_encoder_t(new string_sink_t(return_block.result))));
         }
         catch (const std::exception &e)
         {
@@ -664,75 +668,26 @@ class ByteCrypt
     };
 
     /**
-     * base64 encoding of plain_text buffer
-     * @param string_t& data to encode using base64 encoding
-     * @returns string_t encoded data
-     */
-    __hint_base64_encode__ inline const string_t base64_encode(const string_t &plain_text)
-    {
-        string_t b64_encoded;
-        string_source_t(plain_text, true, new base64_encoder_t(new string_sink_t(b64_encoded)));
-        return b64_encoded;
-    };
-
-    /**
-     * decode encoded_cipher using base64.
-     * @param string_t& encoded cipher to decode
-     * @returns string_t base64 decoded data
-     */
-    __hint_base64_decode__ inline const string_t base64_decode(const string_t &encoded_cipher)
-    {
-        string_t b64_decoded;
-        string_source_t(encoded_cipher, true, new base64_decoder_t(new string_sink_t(b64_decoded)));
-        return b64_decoded;
-    };
-
-    /**
-     * encode plain_text with hex
-     * @param string_t& data to encode
-     * @returns string_t hex encoded data
-     */
-    __hint_hex_encode__ inline const string_t hex_encode(const string_t &plain_text)
-    {
-        std::ostringstream parser;
-        for (unsigned char _byte : plain_text)
-            parser << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(_byte);
-        return parser.str();
-    };
-
-    /**
-     * decode hex_encoded data
-     * @param string_t& hex encoded data
-     * @returns string_t hex decoded data
-     */
-    __hint_hex_decode__ inline const string_t hex_decode(const string_t &hex_encoded)
-    {
-        if (hex_encoded.length() % 2 != 0) [[unlikely]]
-        {
-            std::cerr << "hex encoded buffer length error!\n";
-            return "";
-        }
-        string_t hex_decoded;
-        hex_decoded.reserve(hex_encoded.length() / 2);
-        for (std::size_t _i{0}; _i < hex_encoded.length(); _i += 2)
-        {
-            string_t byte_code(hex_encoded.substr(_i, 2));
-            char byte_char = static_cast<char>(std::stoi(byte_code, nullptr, 16));
-            hex_decoded.push_back(byte_char);
-        }
-        return hex_decoded;
-    };
-
-    /**
      * generate a pair of DER RSA keys with rsa_key_size size, size defaults to 2048 bits.
-     * @param std::size_t rsa key size
-     * @returns rsa_key_pair_struct structure with public and private key association
+     * @param std::uint16_t rsa key size
+     * @returns op_frame<rsa_key_pair_struct> structure with public and private key association, and error info if any!
      */
-    __hint_generate_rsa_key_der_pair__ const rsa_key_pair_struct generate_rsa_key_der_pair(const std::size_t rsa_key_size = 2048U)
+    __hint_generate_rsa_key_der_pair__ const op_frame<rsa_key_pair_struct> generate_rsa_key_der_pair(const std::uint16_t rsa_key_size = 2048U)
     {
-        rsa_key_pair_struct local_kps{};
+        op_frame<rsa_key_pair_struct> return_block{.result{.public_key{std::nullopt}, .private_key{std::nullopt}, .state{false}}, .error{.error_msg{""}, .has_error{false}}};
+
+        std::function<void(const string_view_t &msg)> reset_block_state([&return_block](const string_view_t &msg) -> void {
+            return_block.error.has_error = true;
+            return_block.error.error_msg = msg.data();
+            return_block.result.state = false;
+            if (!return_block.result.private_key->empty())
+                return_block.result.private_key->clear();
+            if (!return_block.result.public_key->empty())
+                return_block.result.public_key->clear();
+        });
         if (!this->__is_rsa_key_size_valid(rsa_key_size)) [[unlikely]]
-            return local_kps;
+            return return_block;
+
         try
         {
             entropy_seed_t entropy;
@@ -745,7 +700,7 @@ class ByteCrypt
             private_key_sink.MessageEnd();
             string_source_t(private_key_result, true, new base64_encoder_t(new string_sink_t(private_key_result_encoded)));
 
-            if (!private_key_result.empty()) [[likely]]
+            if (!private_key_result_encoded.empty()) [[likely]]
             {
                 try
                 {
@@ -757,36 +712,36 @@ class ByteCrypt
                 }
                 catch (const std::exception &e)
                 {
-                    std::cerr << "RSA PublicKey: " << e.what() << "\n";
-                    if (!private_key_result.empty()) [[likely]]
-                        private_key_result.clear();
+                    throw;
                 }
             }
             if (!private_key_result_encoded.empty() && !public_key_result_encoded.empty()) [[likely]]
             {
-                local_kps.private_key = std::move(private_key_result_encoded);
-                local_kps.public_key = std::move(public_key_result_encoded);
-                if (this->__rsa_key_pair_verify(local_kps)) [[likely]]
+                return_block.result.private_key = std::move(private_key_result_encoded);
+                return_block.result.public_key = std::move(public_key_result_encoded);
+                if (this->__rsa_key_pair_verify(return_block.result)) [[likely]]
                 {
-                    local_kps.state = true;
+                    return_block.result.state = true;
+                    return_block.error.has_error = false;
                 }
             }
         }
         catch (const std::exception &e)
         {
-            std::cerr << "RSA PrivateKey: " << e.what() << "\n";
+            std::cerr << "Exception: " << e.what() << "\n";
+            reset_block_state(e.what());
         }
-        return local_kps;
+        return return_block;
     };
 
     /**
      * generate a pair of RSA PEM key pair with rsa_key_size size.
-     * @param std::size_t rsa key size
-     * @returns rsa_key_pair_struct structure with the rsa generated PEM keys.
+     * @param std::uint16_t rsa key size
+     * @returns op_frame<rsa_key_pair_struct> structure with the rsa generated PEM keys.
      */
-    __hint_generate_rsa_key_pem_pair__ const rsa_key_pair_struct generate_rsa_key_pem_pair(const std::size_t rsa_key_size = 2048U)
+    __hint_generate_rsa_key_pem_pair__ const op_frame<rsa_key_pair_struct> generate_rsa_key_pem_pair(const std::uint16_t rsa_key_size = 2048U)
     {
-        rsa_key_pair_struct rsa_keys = this->generate_rsa_key_der_pair(rsa_key_size);
+        op_frame<rsa_key_pair_struct> rsa_keys = this->generate_rsa_key_der_pair(rsa_key_size);
         if (!this->__is_rsa_key_size_valid(rsa_key_size)) [[unlikely]]
             return rsa_keys;
         try
@@ -794,36 +749,55 @@ class ByteCrypt
             string_t private_decoded, public_decoded;
             this->__rsa_key_pem_set_header(private_decoded, false);
             this->__rsa_key_pem_set_header(public_decoded, true);
-            private_decoded += rsa_keys.private_key.value();
-            public_decoded += rsa_keys.public_key.value();
+            private_decoded += rsa_keys.result.private_key.value_or("");
+            public_decoded += rsa_keys.result.public_key.value_or("");
             this->__rsa_key_pem_set_footer(private_decoded, false);
             this->__rsa_key_pem_set_footer(public_decoded, true);
-            rsa_keys.private_key = std::move(private_decoded);
-            rsa_keys.public_key = std::move(public_decoded);
+            if (private_decoded.empty() || public_decoded.empty()) [[unlikely]]
+                throw std::runtime_error("decoded private/public pem key error!");
+            rsa_keys.result.private_key = std::move(private_decoded);
+            rsa_keys.result.public_key = std::move(public_decoded);
         }
         catch (const std::exception &e)
         {
-            std::cerr << "RSA PrivateKey: " << e.what() << "\n";
+            rsa_keys.error.has_error = true;
+            rsa_keys.error.error_msg = e.what();
+            rsa_keys.result.state = false;
+            if (rsa_keys.result.private_key.has_value())
+                rsa_keys.result.private_key->clear();
+            if (rsa_keys.result.public_key.has_value())
+                rsa_keys.result.public_key->clear();
         }
         return rsa_keys;
     };
 
     /**
      * sign message with rsa_key private key, function generates signature and returns it.
-     * @param string_t& message to sign
+     * @param string_view_t message to sign
      * @param string_t& rsa private key for signature generation
      * @returns op_frame<string_t> frame block containing signature as result and error(if any) as state meta-information
      */
-    __hint_sign_message__ const op_frame<string_t> sign_message(const string_t &message, const string_t &rsa_key)
+    __hint_sign_message__ const op_frame<string_t> sign_message(const string_view_t message, const string_t &rsa_key)
     {
-        op_frame<string_t> return_block;
+        op_frame<string_t> return_block{.result{}, .error{.error_msg{}, .has_error{true}}};
         if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PRIVATE)) [[unlikely]]
+        {
+            return_block.error.error_msg = "rsa key size is invalid!";
             return return_block;
-        string_t clean_key(this->__rsa_key_meta_wipe(const_cast<string_t &&>(std::move(rsa_key))));
+        }
+        else if (message.empty() || message.length() >= UINT32_MAX) [[unlikely]]
+        {
+            return_block.error.error_msg = "message too long, cannot be > 4294967295U!";
+            return return_block;
+        }
+        string_t clean_key(this->__rsa_key_meta_wipe(const_cast<string_t &&>(rsa_key)));
         try
         {
-            if (clean_key.empty() || message.empty()) [[unlikely]]
+            if (clean_key.empty()) [[unlikely]]
+            {
+                return_block.error.error_msg = "cannot remove rsa key header/footer!\n";
                 return return_block;
+            }
 
             string_t private_key_decoded, signature;
             string_source_t(clean_key, true, new base64_decoder_t(new string_sink_t(private_key_decoded)));
@@ -832,7 +806,7 @@ class ByteCrypt
             private_key.BERDecode(private_key_source);
             rsa_signature_t signer(private_key);
             entropy_seed_t entropy;
-            string_source_t(message, true, new rsa_signature_filter_t(entropy, signer, new string_sink_t(signature)));
+            string_source_t(message.data(), true, new rsa_signature_filter_t(entropy, signer, new string_sink_t(signature)));
             string_t encoded_signature;
             string_source_t(signature, true, new base64_encoder_t(new string_sink_t(encoded_signature)));
             return_block.result = encoded_signature;
@@ -842,53 +816,53 @@ class ByteCrypt
         {
             return_block.error.error_msg = e.what();
             return_block.error.has_error = true;
+            if (return_block.result.empty() == false)
+                return_block.result.clear();
         }
         return return_block;
     };
 
     /**
      * verify message rsa private key signature with signature_str signature, and rsa_key public key
-     * @param string_t& message to verify signature from
-     * @param string_t& signature to use
+     * @param string_view_t& message to verify signature from
+     * @param string_view_t& signature to use
      * @param string_t& RSA public key
      * @returns bool true if verification succeded
      */
-    __hint_verify_signature__ const op_frame<bool> verify_signature(const string_t &message, const string_t &signature_str, const string_t &rsa_key)
+    __hint_verify_signature__ const bool verify_signature(const string_view_t &message, const string_view_t &signature_str, const string_t &rsa_key)
     {
-        op_frame<bool> return_block;
+        bool verification_result;
         if (!this->__is_rsa_key_pem(rsa_key, e_rsa_key_pem_version::PUBLIC)) [[unlikely]]
-            return return_block;
+            return false;
         try
         {
             string_t public_key_decoded;
-            string_t pure_key(this->__rsa_key_meta_wipe(const_cast<string_t &&>(std::move(rsa_key))));
+            string_t pure_key(this->__rsa_key_meta_wipe(const_cast<string_t &&>(rsa_key)));
             string_source_t(pure_key, true, new base64_decoder_t(new string_sink_t(public_key_decoded)));
             rsa_public_key_t public_key;
             string_source_t public_key_source(public_key_decoded, true);
             public_key.BERDecode(public_key_source);
             string_t signature_decoded;
-            string_source_t(signature_str, true, new base64_decoder_t(new string_sink_t(signature_decoded)));
+            string_source_t(signature_str.data(), true, new base64_decoder_t(new string_sink_t(signature_decoded)));
             rsa_signature_verify_t verifier(public_key);
-
-            return_block.result = verifier.VerifyMessage((const byte *)message.data(), message.size(), (const byte *)signature_decoded.data(), signature_decoded.size());
+            verification_result = verifier.VerifyMessage((const byte *)message.data(), message.length(), (const byte *)signature_decoded.data(), signature_decoded.size());
         }
         catch (const std::exception &e)
         {
-            return_block.error.has_error = true;
-            return_block.error.error_msg = e.what();
+            verification_result = false;
         }
-        return return_block;
+        return verification_result;
     };
 
     /**
      * save rsa_key into path(file name).
      * @param string_t& path to key
-     * @param string_t& rsa key(public/private)
-     * @returns bool true if key saved
+     * @param string_view_t& rsa key(public/private)
+     * @returns op_frame<bool> true if key saved
      */
     __hint_save_rsa_key__ const op_frame<bool> save_rsa_key(const string_view_t &path, const string_t &rsa_key)
     {
-        op_frame<bool> return_block;
+        op_frame<bool> return_block{.result{false}, .error{.error_msg{}, .has_error{true}}};
         try
         {
             if (path.empty()) [[unlikely]]
@@ -902,6 +876,7 @@ class ByteCrypt
             file_handler << rsa_key;
             file_handler.close();
             return_block.error.has_error = false;
+            return_block.result = true;
         }
         catch (const std::exception &e)
         {
@@ -931,18 +906,18 @@ class ByteCrypt
             string_t read_key;
             rsa_loader.key.clear();
             do
-            {
                 rsa_loader.key += read_key += "\n";
-            } while (std::getline(file_handler, read_key));
+            while (std::getline(file_handler, read_key));
             file_handler.close();
             if (!rsa_loader.key.empty()) [[likely]]
                 rsa_loader.status = true;
-
-            return rsa_loader;
         }
         catch (const std::exception &e)
         {
             rsa_loader.error = e.what();
+            rsa_loader.status = false;
+            if (!rsa_loader.key.empty())
+                rsa_loader.key.clear();
         }
         return rsa_loader;
     };
@@ -950,25 +925,26 @@ class ByteCrypt
     /**
      *
      * Generate Random Bytes using secure system entropy generator with 16 bytes output block size.
-     * @returns string_t the random generated string
+     * @returns op_frame<string_t> the random generated string block frame
      *
      */
-    __hint_generate_random_bytes__ const string_t generate_random_bytes(void)
+    __hint_generate_random_bytes__ const op_frame<string_t> generate_random_bytes(void)
     {
-        string_t final_secret;
+        op_frame<string_t> random_block{.result{}, .error{.error_msg{}, .has_error{false}}};
         try
         {
             entropy_seed_t entropy;
             byte random_bytes[16];
             entropy.GenerateBlock(random_bytes, sizeof(random_bytes));
-            string_source_t(random_bytes, sizeof(random_bytes), true, new hex_encoder_t(new string_sink_t(final_secret)));
+            string_source_t(random_bytes, sizeof(random_bytes), true, new hex_encoder_t(new string_sink_t(random_block.result)));
         }
         catch (const std::exception &e)
         {
-            std::cerr << "SecretGenerate Error: " << e.what() << "\n";
-            final_secret.clear();
+            random_block.error.has_error = true;
+            random_block.error.error_msg = e.what();
+            random_block.result.clear();
         }
-        return final_secret;
+        return random_block;
     };
 
     /**
@@ -976,19 +952,24 @@ class ByteCrypt
      * Store secret(K) within secret_path, if flag "hide" is true, this will preceed the destination file
      * with a "." so it hides it(kind of), default is false.
      * @param string_view_t& secret to store
-     * @param string_t& path to store
+     * @param string_view_t& path to store
      * @param bool if true it will hide the secret file name
-     *
+     * @returns op_frame<bool> result secret store
      */
-    __hint_store_secret__ bool store_secret(const string_view_t &secret, string_t &secret_path, const bool hide = false) noexcept
+    __hint_store_secret__ op_frame<bool> store_secret(const string_view_t &secret, const string_view_t &secret_path, const bool hide = false) noexcept
     {
+        op_frame<bool> return_block{.result{false}, .error{.error_msg{}, .has_error{true}}};
         if (secret.empty() || secret_path.empty())
-            return false;
+        {
+            return_block.error.error_msg = "empty secret or secret path!";
+            return return_block;
+        }
+        string_t secret_path2;
         try
         {
             if (hide)
             {
-                string_t last_path_segment(secret_path.c_str());
+                string_t last_path_segment(secret_path.data());
                 if (secret_path.find(PATH_SEPARATOR) != string_t::npos)
                 {
                     last_path_segment = secret_path.substr(secret_path.find(PATH_SEPARATOR) + 1);
@@ -997,24 +978,24 @@ class ByteCrypt
                 {
                     last_path_segment = "." + last_path_segment;
                 }
-                secret_path = std::move(last_path_segment);
+                secret_path2 = std::move(last_path_segment);
             }
-            std::ofstream file_descriptor(secret_path, std::ios::binary);
+            std::ofstream file_descriptor(secret_path2.data(), std::ios::binary);
             if (!file_descriptor.is_open())
                 throw std::ofstream::failure::runtime_error("cannot open file!");
             file_descriptor << secret;
             file_descriptor.close();
-            std::ifstream file_check(secret_path.c_str(), std::ios::binary);
+            std::ifstream file_check(secret_path2.data(), std::ios::binary);
             if (!file_check.is_open())
-                return false;
+                throw std::runtime_error("Cannot open file for secret store!");
             file_check.close();
-            return true;
         }
         catch (const std::exception &e)
         {
-            std::cerr << "Exception: " << e.what() << "\n";
+            return_block.error.has_error = true;
+            return_block.error.error_msg = e.what();
         }
-        return false;
+        return return_block;
     };
 
     /**
@@ -1026,16 +1007,18 @@ class ByteCrypt
      */
     __hint_load_secret_from_file__ const op_frame<string_t> load_secret_from_file(const string_view_t &secret_filename)
     {
-        op_frame<string_t> return_block;
+        op_frame<string_t> return_block{.result{}, .error{.error_msg{}, .has_error{true}}};
         try
         {
-            std::basic_ifstream<char> file_descriptor(&secret_filename[0], std::ios::binary);
+            std::ifstream file_descriptor(secret_filename.data(), std::ios::binary);
             if (!file_descriptor.is_open())
-                throw std::ifstream::failure::runtime_error("cannot open file for secret loading!");
+                throw std::runtime_error("cannot open file for secret loading!");
             string_t buffer_bytes;
             file_descriptor.seekg(0, std::ios::end);
-            const std::size_t fsecret_size(file_descriptor.tellg());
+            const std::size_t fsecret_size(((std::size_t)file_descriptor.tellg() < (std::size_t)UINT64_MAX) ? ((std::size_t)file_descriptor.tellg()) : (std::size_t)0);
             file_descriptor.seekg(0, std::ios::beg);
+            if (fsecret_size <= 0)
+                throw std::runtime_error("secret file content empty!");
             buffer_bytes.resize(fsecret_size);
             do
             {
@@ -1043,6 +1026,8 @@ class ByteCrypt
             } while (std::getline(file_descriptor, buffer_bytes));
             file_descriptor.close();
             buffer_bytes.clear();
+            if (return_block.result.empty())
+                throw std::runtime_error("collected 0 bytes from secret file address!");
             return_block.error.has_error = false;
         }
         catch (const std::exception &e)
@@ -1069,9 +1054,7 @@ class ByteCrypt
         string_t local_bytes;
         local_bytes.reserve(block.length());
         for (const char index_byte : block)
-        {
             local_bytes += static_cast<char>((static_cast<int>(index_byte) + (shift_pos % 256)) % 256);
-        }
         return local_bytes;
     }
 
@@ -1091,74 +1074,76 @@ class ByteCrypt
         string_t local_bytes;
         local_bytes.reserve(block.length());
         for (const char index_byte : block)
-        {
             local_bytes += static_cast<char>((static_cast<int>(index_byte) - (shift_pos % 256) + 256) % 256);
-        }
         return local_bytes;
     };
 
     __hint_cipher_transformation__ const encryption_result cbc_encrypt(const string_t &buffer, const string_t &secret, const e_cbc_algorithm algorithm = e_cbc_algorithm::AES)
     {
-        encryption_result result;
+        encryption_result result{.error{.has_error{false}}};
         try
         {
+            if (buffer.empty() || secret.empty())
+                throw std::runtime_error("Secret of buffer cannot be empty!");
             string_t target, r0;
             entropy_seed_t entropy;
-            byte salt[16];
+            byte salt[16u];
             entropy.GenerateBlock(salt, sizeof(salt));
-            sec_byte_block_t key, iv;
-            this->__prepare_cbc_secure_keys(secret, key, iv, salt, sizeof(salt), algorithm);
+
+            sec_byte_block_t secure_key, initialization_vector;
+            this->__prepare_cbc_secure_keys(secret, secure_key, initialization_vector, salt, sizeof(salt), algorithm);
+            if (secure_key.empty() || initialization_vector.empty())
+                throw std::runtime_error("Error during secure key/iv prepare!");
             if (algorithm == e_cbc_algorithm::AES)
-                this->__cbc_execute<cbc_aes_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_aes_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::ARIA)
-                this->__cbc_execute<cbc_aria_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_aria_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::BLOWFISH)
-                this->__cbc_execute<cbc_blowfish_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_blowfish_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::CAST128)
-                this->__cbc_execute<cbc_cast128_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_cast128_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::CAST256)
-                this->__cbc_execute<cbc_cast256_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_cast256_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::GOST)
-                this->__cbc_execute<cbc_gost_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_gost_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::HIGHT)
-                this->__cbc_execute<cbc_hight_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_hight_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::IDEA)
-                this->__cbc_execute<cbc_idea_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_idea_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::MARS)
-                this->__cbc_execute<cbc_mars_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_mars_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::RC2)
-                this->__cbc_execute<cbc_rc2_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_rc2_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::RC5)
-                this->__cbc_execute<cbc_rc5_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_rc5_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::RC6)
-                this->__cbc_execute<cbc_rc6_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_rc6_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::SEED)
-                this->__cbc_execute<cbc_seed_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_seed_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::SERPENT)
-                this->__cbc_execute<cbc_serpent_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_serpent_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::SIMON128)
-                this->__cbc_execute<cbc_simon128_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_simon128_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else if (algorithm == e_cbc_algorithm::SPECK128)
-                this->__cbc_execute<cbc_speck128_encryption_t>(key, iv, buffer, r0);
+                this->__cbc_execute<cbc_speck128_encryption_t>(secure_key, initialization_vector, buffer, r0);
             else
                 throw std::invalid_argument("invalid cbc algorithm!");
 
             const string_t r2(string_t(reinterpret_cast<char *>(salt), sizeof(salt)) + r0);
             string_source_t(r2, true, new hex_encoder_t(new string_sink_t(target)));
-            result.encrypted_block = std::move(target);
+            result.result = std::move(target);
         }
         catch (const std::exception &e)
         {
             result.error.has_error = true;
             result.error.error_msg = e.what();
         }
-
         return result;
     };
 
     __hint_cipher_transformation__ const decryption_result cbc_decrypt(const string_t &buffer, const string_t &secret, const e_cbc_algorithm algorithm = e_cbc_algorithm::AES)
     {
-        decryption_result result;
+        decryption_result result{.error{.has_error{false}}};
         try
         {
             byte salt[16];
@@ -1166,44 +1151,46 @@ class ByteCrypt
             string_source_t(buffer, true, new hex_decoder_t(new string_sink_t(rd)));
             memcpy(salt, rd.data(), sizeof(salt));
             string_t ciphertext(rd.substr(sizeof(salt)));
-            sec_byte_block_t key, iv;
-            this->__prepare_cbc_secure_keys(secret, key, iv, salt, sizeof(salt), algorithm);
+            sec_byte_block_t secure_key, initialization_vector;
+            this->__prepare_cbc_secure_keys(secret, secure_key, initialization_vector, salt, sizeof(salt), algorithm);
+            if (secure_key.empty() || initialization_vector.empty())
+                throw std::runtime_error("error during key/iv preparation!");
             if (algorithm == e_cbc_algorithm::AES)
-                this->__cbc_execute<cbc_aes_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_aes_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::ARIA)
-                this->__cbc_execute<cbc_aria_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_aria_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::BLOWFISH)
-                this->__cbc_execute<cbc_blowfish_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_blowfish_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::CAST128)
-                this->__cbc_execute<cbc_cast128_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_cast128_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::CAST256)
-                this->__cbc_execute<cbc_cast256_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_cast256_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::GOST)
-                this->__cbc_execute<cbc_gost_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_gost_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::HIGHT)
-                this->__cbc_execute<cbc_hight_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_hight_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::IDEA)
-                this->__cbc_execute<cbc_idea_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_idea_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::MARS)
-                this->__cbc_execute<cbc_mars_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_mars_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::RC2)
-                this->__cbc_execute<cbc_rc2_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_rc2_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::RC5)
-                this->__cbc_execute<cbc_rc5_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_rc5_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::RC6)
-                this->__cbc_execute<cbc_rc6_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_rc6_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::SEED)
-                this->__cbc_execute<cbc_seed_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_seed_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::SERPENT)
-                this->__cbc_execute<cbc_serpent_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_serpent_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::SIMON128)
-                this->__cbc_execute<cbc_simon128_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_simon128_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else if (algorithm == e_cbc_algorithm::SPECK128)
-                this->__cbc_execute<cbc_speck128_decryption_t>(key, iv, ciphertext, r0);
+                this->__cbc_execute<cbc_speck128_decryption_t>(secure_key, initialization_vector, ciphertext, r0);
             else
                 throw std::invalid_argument("invalid cbc algorithm!");
 
-            result.decrypted_block = std::move(r0);
+            result.result = std::move(r0);
         }
         catch (const std::exception &e)
         {
@@ -1231,7 +1218,7 @@ class ByteCrypt
                 this->__gcm_execute<gcm_twofish_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
             else
                 throw std::invalid_argument("invalid gcm algorithm!");
-            result.encrypted_block = std::move(encoded_block);
+            result.result = std::move(encoded_block);
         }
         catch (const std::exception &e)
         {
@@ -1243,25 +1230,27 @@ class ByteCrypt
 
     __hint_cipher_transformation__ const decryption_result gcm_decrypt(const string_t &encrypted_cipher, const string_t &secret, const e_gcm_algorithm algorithm = e_gcm_algorithm::AES)
     {
-        decryption_result result;
+        decryption_result result{.error{.has_error{false}}};
         try
         {
             const std::uint16_t iv_block_size(this->op_mode.gcm.at(algorithm).secure_ivector);
             string_t decrypted_block, decoded_block;
             string_source_t(encrypted_cipher, true, new hex_decoder_t(new string_sink_t(decoded_block)));
-            sec_byte_block_t key, iv;
-            this->__prepare_gcm_secure_keys(secret, key, iv, algorithm);
+            sec_byte_block_t secure_key, initialization_vector;
+            this->__prepare_gcm_secure_keys(secret, secure_key, initialization_vector, algorithm);
+            if (secure_key.empty() || initialization_vector.empty())
+                throw std::runtime_error("error during key/iv preparation!");
             if (algorithm == e_gcm_algorithm::AES)
-                this->__gcm_reverse_execution<gcm_aes_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__gcm_reverse_execution<gcm_aes_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_gcm_algorithm::MARS)
-                this->__gcm_reverse_execution<gcm_mars_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__gcm_reverse_execution<gcm_mars_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_gcm_algorithm::RC6)
-                this->__gcm_reverse_execution<gcm_rc6_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__gcm_reverse_execution<gcm_rc6_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_gcm_algorithm::TWOFISH)
-                this->__gcm_reverse_execution<gcm_twofish_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__gcm_reverse_execution<gcm_twofish_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else
                 throw std::invalid_argument("invalid gcm algorithm!");
-            result.decrypted_block = std::move(decrypted_block);
+            result.result = std::move(decrypted_block);
         }
         catch (const std::exception &e)
         {
@@ -1273,46 +1262,48 @@ class ByteCrypt
 
     __hint_cipher_transformation__ const encryption_result eax_encrypt(const string_t &plaintext_cipher, const string_t &secret, const e_eax_algorithm algorithm = e_eax_algorithm::AES)
     {
-        encryption_result result;
+        encryption_result result{.error{.has_error{false}}};
         try
         {
             string_t encrypted_block, encoded_block;
-            sec_byte_block_t key, iv;
-            this->__prepare_eax_secure_keys(secret, key, iv, algorithm);
+            sec_byte_block_t secure_key, initialization_vector;
+            this->__prepare_eax_secure_keys(secret, secure_key, initialization_vector, algorithm);
+            if (secure_key.empty() || initialization_vector.empty())
+                throw std::runtime_error("error during key/iv preparation!");
             if (algorithm == e_eax_algorithm::AES)
-                this->__eax_execute<eax_aes_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_aes_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::BLOWFISH)
-                this->__eax_execute<eax_blowfish_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_blowfish_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::CAST128)
-                this->__eax_execute<eax_cast128_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_cast128_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::CAST256)
-                this->__eax_execute<eax_cast256_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_cast256_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::GOST)
-                this->__eax_execute<eax_gost_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_gost_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::HIGHT)
-                this->__eax_execute<eax_hight_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_hight_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::IDEA)
-                this->__eax_execute<eax_idea_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_idea_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::LEA)
-                this->__eax_execute<eax_lea_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_lea_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::MARS)
-                this->__eax_execute<eax_mars_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_mars_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::RC5)
-                this->__eax_execute<eax_rc5_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_rc5_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::RC6)
-                this->__eax_execute<eax_rc6_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_rc6_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::SEED)
-                this->__eax_execute<eax_seed_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_seed_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::SERPENT)
-                this->__eax_execute<eax_serpent_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_serpent_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::SIMON128)
-                this->__eax_execute<eax_simon128_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_simon128_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else if (algorithm == e_eax_algorithm::SPECK128)
-                this->__eax_execute<eax_speck128_encryption_t>(key, iv, plaintext_cipher, encrypted_block, encoded_block);
+                this->__eax_execute<eax_speck128_encryption_t>(secure_key, initialization_vector, plaintext_cipher, encrypted_block, encoded_block);
             else
                 throw std::invalid_argument("invalid eax algorithm.");
 
-            result.encrypted_block = std::move(encoded_block);
+            result.result = std::move(encoded_block);
         }
         catch (const std::exception &e)
         {
@@ -1324,48 +1315,50 @@ class ByteCrypt
 
     __hint_cipher_transformation__ const decryption_result eax_decrypt(const string_t &encrypted_cipher, const string_t &secret, const e_eax_algorithm algorithm = e_eax_algorithm::AES)
     {
-        decryption_result result;
+        decryption_result result{.error{.has_error{false}}};
         try
         {
             const std::uint16_t iv_block_size(this->op_mode.eax.at(algorithm).secure_ivector);
             string_t decrypted_block, decoded_block;
             string_source_t(encrypted_cipher, true, new hex_decoder_t(new string_sink_t(decoded_block)));
-            sec_byte_block_t key, iv;
-            iv = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::AES);
-            this->__prepare_eax_secure_keys(secret, key, iv, algorithm);
+            sec_byte_block_t secure_key, initialization_vector;
+            initialization_vector = sec_byte_block_t((const byte *)decoded_block.data(), e_iv_block_size::AES);
+            this->__prepare_eax_secure_keys(secret, secure_key, initialization_vector, algorithm);
+            if (secure_key.empty() || initialization_vector.empty())
+                throw std::runtime_error("error during key/iv preparation!");
             if (algorithm == e_eax_algorithm::AES)
-                this->__eax_reverse_execution<eax_aes_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_aes_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::BLOWFISH)
-                this->__eax_reverse_execution<eax_blowfish_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_blowfish_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::CAST128)
-                this->__eax_reverse_execution<eax_cast128_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_cast128_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::CAST256)
-                this->__eax_reverse_execution<eax_cast256_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_cast256_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::GOST)
-                this->__eax_reverse_execution<eax_gost_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_gost_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::HIGHT)
-                this->__eax_reverse_execution<eax_hight_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_hight_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::IDEA)
-                this->__eax_reverse_execution<eax_idea_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_idea_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::LEA)
-                this->__eax_reverse_execution<eax_lea_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_lea_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::MARS)
-                this->__eax_reverse_execution<eax_mars_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_mars_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::RC5)
-                this->__eax_reverse_execution<eax_rc5_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_rc5_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::RC6)
-                this->__eax_reverse_execution<eax_rc6_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_rc6_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::SEED)
-                this->__eax_reverse_execution<eax_seed_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_seed_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::SERPENT)
-                this->__eax_reverse_execution<eax_serpent_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_serpent_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::SIMON128)
-                this->__eax_reverse_execution<eax_simon128_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_simon128_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else if (algorithm == e_eax_algorithm::SPECK128)
-                this->__eax_reverse_execution<eax_speck128_decryption_t>(key, iv, iv_block_size, decoded_block, decrypted_block);
+                this->__eax_reverse_execution<eax_speck128_decryption_t>(secure_key, initialization_vector, iv_block_size, decoded_block, decrypted_block);
             else
                 throw std::invalid_argument("invalid eax algorithm provided!");
-            result.decrypted_block = std::move(decrypted_block);
+            result.result = std::move(decrypted_block);
         }
         catch (const std::exception &e)
         {
@@ -1373,19 +1366,117 @@ class ByteCrypt
             result.error.error_msg = e.what();
         }
         return result;
-    }
+    };
+
+    /**
+     * base64 encoding of plain_text buffer
+     * @param string_view_t& data to encode using base64 encoding
+     * @returns string_t encoded data
+     */
+    __hint_base64_encode__ inline const string_t base64_encode(const string_view_t &plain_text)
+    {
+        string_t b64_encoded;
+        string_source_t(plain_text.data(), true, new base64_encoder_t(new string_sink_t(b64_encoded)));
+        return b64_encoded;
+    };
+
+    /**
+     * decode encoded_cipher using base64.
+     * @param string_view_t& encoded cipher to decode
+     * @returns string_t base64 decoded data
+     */
+    __hint_base64_decode__ inline const string_t base64_decode(const string_view_t &encoded_cipher)
+    {
+        string_t b64_decoded;
+        string_source_t(encoded_cipher.data(), true, new base64_decoder_t(new string_sink_t(b64_decoded)));
+        return b64_decoded;
+    };
+
+    /**
+     * encode plain_text with hex
+     * @param string_view_t& data to encode
+     * @returns string_t hex encoded data
+     */
+    __hint_hex_encode__ inline const string_t hex_encode(const string_view_t &plain_text)
+    {
+        std::ostringstream parser;
+        for (const unsigned char _byte : plain_text)
+            parser << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(_byte);
+        return parser.str();
+    };
+
+    /**
+     * decode hex_encoded data
+     * @param string_view_t& hex encoded data
+     * @returns string_t hex decoded data
+     */
+    __hint_hex_decode__ inline const string_t hex_decode(const string_view_t &hex_encoded)
+    {
+        if (hex_encoded.length() % 2 != 0 || hex_encoded.length() >= UINT64_MAX) [[unlikely]]
+        {
+            std::cerr << "hex encoded buffer length error!\n";
+            return "";
+        }
+        string_t hex_decoded;
+        hex_decoded.reserve(hex_encoded.length() / 2);
+        for (std::size_t _i{0}; _i < hex_encoded.length(); _i += 2)
+            hex_decoded.push_back(static_cast<char>(std::stoi(std::move(string_t(hex_encoded.substr(_i, 2))), nullptr, 16)));
+
+        return hex_decoded;
+    };
+
+    /**
+     *
+     * Set cipher iteration count value.
+     * @param std::size_t new number of iterations.
+     * @returns void
+     *
+     */
+    __hint_set_iter_counter__ inline void set_cipher_iteration_counter(const std::size_t iterations) noexcept
+    {
+        if (iterations < 10000000UL)
+        {
+            this->cipher_iteration_count = iterations;
+        }
+    };
+
+    /**
+     *
+     * Set default secure block key size.
+     * @param std::uint16_t key size
+     * @returns void
+     *
+     */
+    __hint_set_def_key_size__ inline void set_sec_block_key_size(const std::uint16_t key_size) noexcept
+    {
+        if (key_size >= 8u && key_size <= 256u)
+            this->default_sec_key_size = key_size;
+    };
+
+    /**
+     *
+     * Set default secure initialization vector size.
+     * @param std::uint16_t initialization vector size
+     * @returns void
+     *
+     */
+    __hint_set_def_iv_size__ inline void set_sec_block_iv_size(const std::uint16_t iv_size) noexcept
+    {
+        if (iv_size >= 8u && iv_size <= 256u)
+            this->default_sec_iv_size = iv_size;
+    };
 
     ~ByteCrypt() {};
 
   private:
-    __temp_cipher_exec__ void __cbc_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &source, string_t &output)
+    __temp_cipher_exec__ inline void __cbc_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &source, string_t &output)
     {
         cipher_mode executor;
         executor.SetKeyWithIV(key, key.size(), iv);
         string_source_t(source, true, new transformer_filter_t(executor, new string_sink_t(output)));
     };
 
-    __temp_cipher_exec__ void __gcm_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &plaintext_cipher, string_t &encrypted_block, string_t &encoded_block)
+    __temp_cipher_exec__ inline void __gcm_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &plaintext_cipher, string_t &encrypted_block, string_t &encoded_block)
     {
         cipher_mode encryption;
         encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
@@ -1394,8 +1485,8 @@ class ByteCrypt
         string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
     };
 
-    __temp_cipher_exec__ void __gcm_reverse_execution(sec_byte_block_t &key, sec_byte_block_t &iv, const std::uint16_t iv_block_size, const string_t &decoded_block,
-                                                      string_t &decrypted_block)
+    __temp_cipher_exec__ inline void __gcm_reverse_execution(sec_byte_block_t &key, sec_byte_block_t &iv, const std::uint16_t iv_block_size, const string_t &decoded_block,
+                                                             string_t &decrypted_block)
     {
         iv = sec_byte_block_t((const byte *)decoded_block.data(), iv_block_size);
         string_t ciphertext = decoded_block.substr(iv_block_size);
@@ -1404,7 +1495,7 @@ class ByteCrypt
         string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
     };
 
-    __temp_cipher_exec__ void __eax_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &plaintext_cipher, string_t &encrypted_block, string_t &encoded_block)
+    __temp_cipher_exec__ inline void __eax_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &plaintext_cipher, string_t &encrypted_block, string_t &encoded_block)
     {
         cipher_mode encryption;
         encryption.SetKeyWithIV(key, key.size(), iv, iv.size());
@@ -1413,8 +1504,8 @@ class ByteCrypt
         string_source_t(encrypted_block, true, new hex_encoder_t(new string_sink_t(encoded_block)));
     };
 
-    __temp_cipher_exec__ void __eax_reverse_execution(sec_byte_block_t &key, sec_byte_block_t &iv, const std::uint16_t iv_block_size, const string_t &decoded_block,
-                                                      string_t &decrypted_block)
+    __temp_cipher_exec__ inline void __eax_reverse_execution(sec_byte_block_t &key, sec_byte_block_t &iv, const std::uint16_t iv_block_size, const string_t &decoded_block,
+                                                             string_t &decrypted_block)
     {
         iv = sec_byte_block_t((const byte *)decoded_block.data(), iv_block_size);
         string_t ciphertext = decoded_block.substr(iv_block_size);
@@ -1512,7 +1603,7 @@ class ByteCrypt
             rsa_key_var += RSA_PRIVATE_KEY_FOOTER;
     };
 
-    __hint_is_rsa_key_size_valid__ constexpr bool __is_rsa_key_size_valid(const std::size_t &key_size) const noexcept
+    __hint_is_rsa_key_size_valid__ inline constexpr bool __is_rsa_key_size_valid(const std::size_t &key_size) const noexcept
     {
         for (std::uint8_t ksi = 0; ksi < rsa_key_size_options.size(); ksi++)
         {
@@ -1524,7 +1615,7 @@ class ByteCrypt
         return false;
     };
 
-    __hint_is_rsa_key_pem__ const bool __is_rsa_key_pem(const string_view_t &rsa_key, const e_rsa_key_pem_version version) noexcept
+    __hint_is_rsa_key_pem__ inline const bool __is_rsa_key_pem(const string_view_t &rsa_key, const e_rsa_key_pem_version version) noexcept
     {
         if (version == e_rsa_key_pem_version::PUBLIC)
         {
