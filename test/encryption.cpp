@@ -1,4 +1,4 @@
-#include "modules/ByteCrypt-module/ByteCrypt.hpp" // NOTE: assuming the ByteCrypt.hpp is in the same directory
+#include "ByteCrypt.hpp" // NOTE: assuming the ByteCrypt.hpp is in the same directory
 
 using string_t = std::string;
 using namespace ByteCryptModule;
