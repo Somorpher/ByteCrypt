@@ -8,7 +8,7 @@
 
 Versatile cryptographic utility that provides a collection of tools and functions for various cryptographic operations, including encryption, decryption, hashing, and digital signatures. Built on top of the Crypto++ library, ByteCrypt is organized within the ByteCryptModule namespace and supports multiple encryption algorithms and hashing functions.
 
-
+Note: use `ByteCrypt.hpp` from root, includes all `less-code` entities in a single unit, S = >
 
 ### Modes of Operation
 `CBC`  `GCM` `EAX` `CFB` `OFB` `CTR`
