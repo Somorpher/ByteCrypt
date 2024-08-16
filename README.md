@@ -10,8 +10,8 @@ Versatile cryptographic utility that provides a collection of tools and function
 
 
 
-### Mode of Operation
-`CBC`  `GCM` `EAX`
+### Modes of Operation
+`CBC`  `GCM` `EAX` `CFB` `OFB` `CTR`
 
 ### Symmetric Ciphers
 `AES` `BlowFish` `twofish` `Cast128` `Cast256` `Idea` `RC2` `RC5` `RC6` `Mars` `Serpent` `GOST` `ARIA` `HIGHT` `LEA` `SEED` `SPECK128` `SIMON128`
