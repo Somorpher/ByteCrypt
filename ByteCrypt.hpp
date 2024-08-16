@@ -1537,7 +1537,7 @@ __hint_cipher_transformation__ const encryption_result ctr_encrypt(const string_
         string_t target, r0;
         entropy_seed_t entropy;
         byte salt[16u];
-        entropy.GenerateBlock(salt, sizeof(salt))
+        entropy.GenerateBlock(salt, sizeof(salt));
 
         sec_byte_block_t secure_key, initialization_vector;
         this->__prepare_ctr_secure_keys(secret, secure_key, initialization_vector, salt, sizeof(salt), algorithm);
