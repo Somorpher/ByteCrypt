@@ -52,12 +52,15 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #define PATH_SEPARATOR "\\"
-#include <windows.h> 
+#include <windows.h>
 #else
 #define PATH_SEPARATOR "/" // not about this as well, it should be inferred by the compiler ...
 #endif
 
 #include <assert.h>
+#include <errno.h>
+#include <stdio.h>
+
 #include <bitset>
 #include <chrono>
 #include <cstdint>
@@ -65,7 +68,6 @@
 #include <cstring>
 #include <ctime>
 #include <deque>
-#include <errno.h>
 #include <exception>
 #include <fstream>
 #include <functional>
@@ -74,7 +76,6 @@
 #include <optional>
 #include <sstream>
 #include <stdexcept>
-#include <stdio.h>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -303,6 +304,40 @@ enum class e_eax_algorithm
     __COUNT
 };
 
+enum class e_cfb_algorithm
+{
+    AES = 0,
+    BLOWFISH,
+    CAST128,
+    CAST256,
+    IDEA,
+    RC2,
+    RC5,
+    __COUNT
+};
+enum class e_ofb_algorithm
+{
+    AES = 0,
+    BLOWFISH,
+    CAST128,
+    CAST256,
+    IDEA,
+    RC2,
+    RC5,
+    __COUNT
+};
+enum class e_ctr_algorithm
+{
+    AES = 0,
+    BLOWFISH,
+    CAST128,
+    CAST256,
+    IDEA,
+    RC2,
+    RC5,
+    __COUNT
+};
+
 /**
  *
  */
@@ -331,7 +366,6 @@ struct e_iv_block_size
                                ARIA = CryptoPP::ARIA::BLOCKSIZE, HIGHT = CryptoPP::HIGHT::BLOCKSIZE * 2, LEA = CryptoPP::LEA::BLOCKSIZE, SEED = CryptoPP::SEED::BLOCKSIZE,
                                SIMON128 = CryptoPP::SIMON128::BLOCKSIZE, SPECK128 = CryptoPP::SPECK128::BLOCKSIZE;
 };
-
 
 /*                      Type Alias                       *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -453,6 +487,54 @@ using eax_lea_decryption_t = CryptoPP::EAX<CryptoPP::LEA>::Decryption;
 using eax_simon128_decryption_t = CryptoPP::EAX<CryptoPP::SIMON128>::Decryption;
 using eax_hight_decryption_t = CryptoPP::EAX<CryptoPP::HIGHT>::Decryption;
 
+using cfb_aes_encryption_t = CryptoPP::CFB_Mode<CryptoPP::AES>::Encryption;
+using cfb_blowfish_encryption_t = CryptoPP::CFB_Mode<CryptoPP::Blowfish>::Encryption;
+using cfb_cast128_encryption_t = CryptoPP::CFB_Mode<CryptoPP::CAST128>::Encryption;
+using cfb_cast256_encryption_t = CryptoPP::CFB_Mode<CryptoPP::CAST256>::Encryption;
+using cfb_idea_encryption_t = CryptoPP::CFB_Mode<CryptoPP::IDEA>::Encryption;
+using cfb_rc2_encryption_t = CryptoPP::CFB_Mode<CryptoPP::RC2>::Encryption;
+using cfb_rc5_encryption_t = CryptoPP::CFB_Mode<CryptoPP::RC5>::Encryption;
+
+using cfb_aes_decryption_t = CryptoPP::CFB_Mode<CryptoPP::AES>::Decryption;
+using cfb_blowfish_decryption_t = CryptoPP::CFB_Mode<CryptoPP::Blowfish>::Decryption;
+using cfb_cast128_decryption_t = CryptoPP::CFB_Mode<CryptoPP::CAST128>::Decryption;
+using cfb_cast256_decryption_t = CryptoPP::CFB_Mode<CryptoPP::CAST256>::Decryption;
+using cfb_idea_decryption_t = CryptoPP::CFB_Mode<CryptoPP::IDEA>::Decryption;
+using cfb_rc2_decryption_t = CryptoPP::CFB_Mode<CryptoPP::RC2>::Decryption;
+using cfb_rc5_decryption_t = CryptoPP::CFB_Mode<CryptoPP::RC5>::Decryption;
+
+using ofb_aes_encryption_t = CryptoPP::OFB_Mode<CryptoPP::AES>::Encryption;
+using ofb_blowfish_encryption_t = CryptoPP::OFB_Mode<CryptoPP::Blowfish>::Encryption;
+using ofb_cast128_encryption_t = CryptoPP::OFB_Mode<CryptoPP::CAST128>::Encryption;
+using ofb_cast256_encryption_t = CryptoPP::OFB_Mode<CryptoPP::CAST256>::Encryption;
+using ofb_idea_encryption_t = CryptoPP::OFB_Mode<CryptoPP::IDEA>::Encryption;
+using ofb_rc2_encryption_t = CryptoPP::OFB_Mode<CryptoPP::RC2>::Encryption;
+using ofb_rc5_encryption_t = CryptoPP::OFB_Mode<CryptoPP::RC5>::Encryption;
+
+using ofb_aes_decryption_t = CryptoPP::OFB_Mode<CryptoPP::AES>::Decryption;
+using ofb_blowfish_decryption_t = CryptoPP::OFB_Mode<CryptoPP::Blowfish>::Decryption;
+using ofb_cast128_decryption_t = CryptoPP::OFB_Mode<CryptoPP::CAST128>::Decryption;
+using ofb_cast256_decryption_t = CryptoPP::OFB_Mode<CryptoPP::CAST256>::Decryption;
+using ofb_idea_decryption_t = CryptoPP::OFB_Mode<CryptoPP::IDEA>::Decryption;
+using ofb_rc2_decryption_t = CryptoPP::OFB_Mode<CryptoPP::RC2>::Decryption;
+using ofb_rc5_decryption_t = CryptoPP::OFB_Mode<CryptoPP::RC5>::Decryption;
+
+using ctr_aes_encryption_t = CryptoPP::CTR_Mode<CryptoPP::AES>::Encryption;
+using ctr_blowfish_encryption_t = CryptoPP::CTR_Mode<CryptoPP::Blowfish>::Encryption;
+using ctr_cast128_encryption_t = CryptoPP::CTR_Mode<CryptoPP::CAST128>::Encryption;
+using ctr_cast256_encryption_t = CryptoPP::CTR_Mode<CryptoPP::CAST256>::Encryption;
+using ctr_idea_encryption_t = CryptoPP::CTR_Mode<CryptoPP::IDEA>::Encryption;
+using ctr_rc2_encryption_t = CryptoPP::CTR_Mode<CryptoPP::RC2>::Encryption;
+using ctr_rc5_encryption_t = CryptoPP::CTR_Mode<CryptoPP::RC5>::Encryption;
+
+using ctr_aes_decryption_t = CryptoPP::CTR_Mode<CryptoPP::AES>::Decryption;
+using ctr_blowfish_decryption_t = CryptoPP::CTR_Mode<CryptoPP::Blowfish>::Decryption;
+using ctr_cast128_decryption_t = CryptoPP::CTR_Mode<CryptoPP::CAST128>::Decryption;
+using ctr_cast256_decryption_t = CryptoPP::CTR_Mode<CryptoPP::CAST256>::Decryption;
+using ctr_idea_decryption_t = CryptoPP::CTR_Mode<CryptoPP::IDEA>::Decryption;
+using ctr_rc2_decryption_t = CryptoPP::CTR_Mode<CryptoPP::RC2>::Decryption;
+using ctr_rc5_decryption_t = CryptoPP::CTR_Mode<CryptoPP::RC5>::Decryption;
+
 /*                      Structure                        *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 typedef struct alignas(void *)
@@ -502,6 +584,9 @@ typedef struct alignas(void *)
     std::unordered_map<e_cbc_algorithm, mode_of_operation_map> cbc{};
     std::unordered_map<e_gcm_algorithm, mode_of_operation_map> gcm{};
     std::unordered_map<e_eax_algorithm, mode_of_operation_map> eax{};
+    std::unordered_map<e_cfb_algorithm, mode_of_operation_map> cfb{};
+    std::unordered_map<e_ofb_algorithm, mode_of_operation_map> ofb{};
+    std::unordered_map<e_ctr_algorithm, mode_of_operation_map> ctr{};
 } operation_mode;
 
 /**
@@ -510,6 +595,10 @@ typedef struct alignas(void *)
  * Available algorithms for each operation mode available, add more algorithms if required.   |
  *
  * --------------------------------------------------------------------------------------------
+ */
+
+/**
+ * CBC Mode of Operation Secure Key/Initialization-Vector block size aggregation.
  */
 std::unordered_map<e_cbc_algorithm, mode_of_operation_map> cbc_map_block{
     {e_cbc_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
@@ -529,11 +618,19 @@ std::unordered_map<e_cbc_algorithm, mode_of_operation_map> cbc_map_block{
     {e_cbc_algorithm::SIMON128, mode_of_operation_map{.secure_key{e_key_block_size::SIMON128}, .secure_ivector{e_iv_block_size::SIMON128}}},
     {e_cbc_algorithm::SPECK128, mode_of_operation_map{.secure_key{e_key_block_size::SPECK128}, .secure_ivector{e_iv_block_size::SPECK128}}},
 };
+
+/**
+ * GCM Mode of Operation Secure Key/Initialization-Vector block size aggregation.
+ */
 std::unordered_map<e_gcm_algorithm, mode_of_operation_map> gcm_map_block{
     {e_gcm_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
     {e_gcm_algorithm::MARS, mode_of_operation_map{.secure_key{e_key_block_size::MARS}, .secure_ivector{e_iv_block_size::MARS}}},
     {e_gcm_algorithm::RC6, mode_of_operation_map{.secure_key{e_key_block_size::RC6}, .secure_ivector{e_iv_block_size::RC6}}},
     {e_gcm_algorithm::TWOFISH, mode_of_operation_map{.secure_key{e_key_block_size::TWOFISH}, .secure_ivector{e_iv_block_size::TWOFISH}}}};
+
+/**
+ * EAX Mode of Operation Secure Key/Initialization-Vector block size aggregation.
+ */
 std::unordered_map<e_eax_algorithm, mode_of_operation_map> eax_map_block{
     {e_eax_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
     {e_eax_algorithm::BLOWFISH, mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH}, .secure_ivector{e_iv_block_size::BLOWFISH}}},
@@ -552,6 +649,45 @@ std::unordered_map<e_eax_algorithm, mode_of_operation_map> eax_map_block{
     {e_eax_algorithm::SPECK128, mode_of_operation_map{.secure_key{e_key_block_size::SPECK128}, .secure_ivector{e_iv_block_size::SPECK128}}},
 };
 
+/**
+ * CFB Mode of Operation Secure Key/Initialization-Vector block size aggregation.
+ */
+std::unordered_map<e_cfb_algorithm, mode_of_operation_map> cfb_map_block{
+    {e_cfb_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
+    {e_cfb_algorithm::BLOWFISH, mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH}, .secure_ivector{e_iv_block_size::BLOWFISH}}},
+    {e_cfb_algorithm::CAST128, mode_of_operation_map{.secure_key{e_key_block_size::CAST128}, .secure_ivector{e_iv_block_size::CAST128}}},
+    {e_cfb_algorithm::CAST256, mode_of_operation_map{.secure_key{e_key_block_size::CAST256}, .secure_ivector{e_iv_block_size::CAST256}}},
+    {e_cfb_algorithm::IDEA, mode_of_operation_map{.secure_key{e_key_block_size::IDEA}, .secure_ivector{e_iv_block_size::IDEA}}},
+    {e_cfb_algorithm::RC2, mode_of_operation_map{.secure_key{e_key_block_size::RC2}, .secure_ivector{e_iv_block_size::RC2}}},
+    {e_cfb_algorithm::RC5, mode_of_operation_map{.secure_key{e_key_block_size::RC5}, .secure_ivector{e_iv_block_size::RC5}}},
+};
+
+/**
+ * OFB Mode of Operation Secure Key/Initialization-Vector block size aggregation.
+ */
+std::unordered_map<e_ofb_algorithm, mode_of_operation_map> ofb_map_block{
+    {e_ofb_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
+    {e_ofb_algorithm::BLOWFISH, mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH}, .secure_ivector{e_iv_block_size::BLOWFISH}}},
+    {e_ofb_algorithm::CAST128, mode_of_operation_map{.secure_key{e_key_block_size::CAST128}, .secure_ivector{e_iv_block_size::CAST128}}},
+    {e_ofb_algorithm::CAST256, mode_of_operation_map{.secure_key{e_key_block_size::CAST256}, .secure_ivector{e_iv_block_size::CAST256}}},
+    {e_ofb_algorithm::IDEA, mode_of_operation_map{.secure_key{e_key_block_size::IDEA}, .secure_ivector{e_iv_block_size::IDEA}}},
+    {e_ofb_algorithm::RC2, mode_of_operation_map{.secure_key{e_key_block_size::RC2}, .secure_ivector{e_iv_block_size::RC2}}},
+    {e_ofb_algorithm::RC5, mode_of_operation_map{.secure_key{e_key_block_size::RC5}, .secure_ivector{e_iv_block_size::RC5}}},
+};
+
+/**
+ * CTR Mode of Operation Secure Key/Initialization-Vector block size aggregation.
+ */
+std::unordered_map<e_ctr_algorithm, mode_of_operation_map> ctr_map_block{
+    {e_ctr_algorithm::AES, mode_of_operation_map{.secure_key{e_key_block_size::AES}, .secure_ivector{e_iv_block_size::AES}}},
+    {e_ctr_algorithm::BLOWFISH, mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH}, .secure_ivector{e_iv_block_size::BLOWFISH}}},
+    {e_ctr_algorithm::CAST128, mode_of_operation_map{.secure_key{e_key_block_size::CAST128}, .secure_ivector{e_iv_block_size::CAST128}}},
+    {e_ctr_algorithm::CAST256, mode_of_operation_map{.secure_key{e_key_block_size::CAST256}, .secure_ivector{e_iv_block_size::CAST256}}},
+    {e_ctr_algorithm::IDEA, mode_of_operation_map{.secure_key{e_key_block_size::IDEA}, .secure_ivector{e_iv_block_size::IDEA}}},
+    {e_ctr_algorithm::RC2, mode_of_operation_map{.secure_key{e_key_block_size::RC2}, .secure_ivector{e_iv_block_size::RC2}}},
+    {e_ctr_algorithm::RC5, mode_of_operation_map{.secure_key{e_key_block_size::RC5}, .secure_ivector{e_iv_block_size::RC5}}},
+};
+
 /*                      Class                            *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 class ByteCrypt
@@ -566,22 +702,22 @@ class ByteCrypt
         .cbc{cbc_map_block}, // CBC mode of operation supported algorithms and key/initialization vector block size
         .gcm{gcm_map_block}, // GCM mode of operation supported algorithms and key/initialization vector block size
         .eax{eax_map_block}, // EAX mode of operation supported algorithms and key/initialization vector block size
+        .cfb{cfb_map_block}, // CFB mode of operation supported algorithms and key/initialization vector block size
+        .ofb{ofb_map_block}, // OFB mode of operation supported algorithms and key/initialization vector block size
+        .ctr{ctr_map_block}, // CTR mode of operation supported algorithms and key/initialization vector block size
     };
 
   public:
-    inline ByteCrypt() noexcept {};
-
+    inline ByteCrypt() noexcept = default;
     inline ByteCrypt(const ByteCrypt &o_instance) noexcept
     {
         this->__constructor_copy_handler(o_instance);
     };
-
     inline ByteCrypt &operator=(const ByteCrypt &o_instance) noexcept
     {
         this->__constructor_copy_handler(o_instance);
         return *this;
     };
-
     inline ByteCrypt(ByteCrypt &&o_instance) noexcept
     {
         this->__constructor_copy_handler(o_instance);
@@ -595,12 +731,10 @@ class ByteCrypt
     {
         *this->secret_key = initial_secret_key;
     };
-
     inline ByteCrypt(const string_view_t &initial_secret_key, const byte key[], const byte iv[], const std::uint16_t key_size, const std::uint16_t iv_size) noexcept
     {
         *this->secret_key = (string_t)initial_secret_key;
     };
-
     inline const bool operator==(const ByteCrypt &o_instance) const noexcept
     {
         return this->secret_key.get()->compare(o_instance.secret_key.get()->c_str()) == 0;
@@ -611,10 +745,10 @@ class ByteCrypt
     };
 
     /**
-     * Hash buffer with sha algorithm and return hashed result.
+     * Hash buffer with specified algorithm and return digest.
      * @param string_view_t buffer to hash
      * @param e_hash_algo_option hash algorithm
-     * @returns op_frame<string_t> structure containing error and result blocks.
+     * @returns op_frame<string_t> structure containing error and result.
      */
     __hint_hash__ const op_frame<string_t> hash(const string_view_t buffer, const e_hash_algo_option sha = e_hash_algo_option::SHA256) const
     {
@@ -1366,6 +1500,265 @@ class ByteCrypt
         return result;
     };
 
+    __hint_cipher_transformation__ const encryption_result cfb_encrypt(const string_t &buffer, const string_t &secret, const e_cfb_algorithm algorithm = e_cfb_algorithm::AES)
+    {
+        encryption_result result{.error{.has_error{false}}};
+        try
+        {
+            if (buffer.empty() || secret.empty())
+                throw std::runtime_error("Secret of buffer cannot be empty!");
+            string_t target, r0;
+            entropy_seed_t entropy;
+            byte salt[16u];
+            entropy.GenerateBlock(salt, sizeof(salt));
+
+            sec_byte_block_t secure_key, initialization_vector;
+            this->__prepare_cfb_secure_keys(secret, secure_key, initialization_vector, salt, sizeof(salt), algorithm);
+            if (secure_key.empty() || initialization_vector.empty())
+                throw std::runtime_error("Error during secure key/iv prepare!");
+            else if (algorithm == e_cfb_algorithm::AES)
+                this->__cfb_execute<cfb_aes_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_cfb_algorithm::BLOWFISH)
+                this->__cfb_execute<cfb_blowfish_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_cfb_algorithm::CAST128)
+                this->__cfb_execute<cfb_cast128_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_cfb_algorithm::CAST256)
+                this->__cfb_execute<cfb_cast256_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_cfb_algorithm::IDEA)
+                this->__cfb_execute<cfb_idea_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_cfb_algorithm::RC2)
+                this->__cfb_execute<cfb_rc2_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_cfb_algorithm::RC5)
+                this->__cfb_execute<cfb_rc5_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else
+                throw std::invalid_argument("invalid cfb algorithm!");
+
+            const string_t r2(string_t(reinterpret_cast<char *>(salt), sizeof(salt)) + r0);
+            string_source_t(r2, true, new hex_encoder_t(new string_sink_t(target)));
+            result.result = std::move(target);
+        }
+        catch (const std::exception &e)
+        {
+            result.error.has_error = true;
+            result.error.error_msg = e.what();
+        }
+        return result;
+    };
+
+    __hint_cipher_transformation__ const decryption_result cfb_decrypt(const string_t &buffer, const string_t &secret, const e_cfb_algorithm algorithm = e_cfb_algorithm::AES)
+    {
+        decryption_result result{.error{.has_error{false}}};
+        try
+        {
+            byte salt[16];
+            string_t rd, r0;
+            string_source_t(buffer, true, new hex_decoder_t(new string_sink_t(rd)));
+            memcpy(salt, rd.data(), sizeof(salt));
+            string_t ciphertext(rd.substr(sizeof(salt)));
+            sec_byte_block_t secure_key, initialization_vector;
+            this->__prepare_cfb_secure_keys(secret, secure_key, initialization_vector, salt, sizeof(salt), algorithm);
+            if (secure_key.empty() || initialization_vector.empty())
+                throw std::runtime_error("error during key/iv preparation!");
+
+            if (algorithm == e_cfb_algorithm::AES)
+                this->__cfb_execute<cfb_aes_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_cfb_algorithm::BLOWFISH)
+                this->__cfb_execute<cfb_blowfish_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_cfb_algorithm::CAST128)
+                this->__cfb_execute<cfb_cast128_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_cfb_algorithm::CAST256)
+                this->__cfb_execute<cfb_cast256_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_cfb_algorithm::IDEA)
+                this->__cfb_execute<cfb_idea_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_cfb_algorithm::RC2)
+                this->__cfb_execute<cfb_rc2_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_cfb_algorithm::RC5)
+                this->__cfb_execute<cfb_rc5_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else
+                throw std::invalid_argument("invalid cfb algorithm!");
+
+            result.result = std::move(r0);
+        }
+        catch (const std::exception &e)
+        {
+            result.error.has_error = true;
+            result.error.error_msg = e.what();
+        }
+        return result;
+    };
+
+    __hint_cipher_transformation__ const encryption_result ofb_encrypt(const string_t &buffer, const string_t &secret, const e_ofb_algorithm algorithm = e_ofb_algorithm::AES)
+    {
+        encryption_result result{.error{.has_error{false}}};
+        try
+        {
+            if (buffer.empty() || secret.empty())
+                throw std::runtime_error("Secret of buffer cannot be empty!");
+            string_t target, r0;
+            entropy_seed_t entropy;
+            byte salt[16u];
+            entropy.GenerateBlock(salt, sizeof(salt));
+
+            sec_byte_block_t secure_key, initialization_vector;
+            this->__prepare_ofb_secure_keys(secret, secure_key, initialization_vector, salt, sizeof(salt), algorithm);
+            if (secure_key.empty() || initialization_vector.empty())
+                throw std::runtime_error("Error during secure key/iv prepare!");
+            else if (algorithm == e_ofb_algorithm::AES)
+                this->__ofb_execute<ofb_aes_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ofb_algorithm::BLOWFISH)
+                this->__ofb_execute<ofb_blowfish_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ofb_algorithm::CAST128)
+                this->__ofb_execute<ofb_cast128_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ofb_algorithm::CAST256)
+                this->__ofb_execute<ofb_cast256_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ofb_algorithm::IDEA)
+                this->__ofb_execute<ofb_idea_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ofb_algorithm::RC2)
+                this->__ofb_execute<ofb_rc2_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ofb_algorithm::RC5)
+                this->__ofb_execute<ofb_rc5_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else
+                throw std::invalid_argument("invalid ofb algorithm!");
+
+            const string_t r2(string_t(reinterpret_cast<char *>(salt), sizeof(salt)) + r0);
+            string_source_t(r2, true, new hex_encoder_t(new string_sink_t(target)));
+            result.result = std::move(target);
+        }
+        catch (const std::exception &e)
+        {
+            result.error.has_error = true;
+            result.error.error_msg = e.what();
+        }
+        return result;
+    };
+
+    __hint_cipher_transformation__ const decryption_result ofb_decrypt(const string_t &buffer, const string_t &secret, const e_ofb_algorithm algorithm = e_ofb_algorithm::AES)
+    {
+        decryption_result result{.error{.has_error{false}}};
+        try
+        {
+            byte salt[16];
+            string_t rd, r0;
+            string_source_t(buffer, true, new hex_decoder_t(new string_sink_t(rd)));
+            memcpy(salt, rd.data(), sizeof(salt));
+            string_t ciphertext(rd.substr(sizeof(salt)));
+            sec_byte_block_t secure_key, initialization_vector;
+            this->__prepare_ofb_secure_keys(secret, secure_key, initialization_vector, salt, sizeof(salt), algorithm);
+            if (secure_key.empty() || initialization_vector.empty())
+                throw std::runtime_error("error during key/iv preparation!");
+            else if (algorithm == e_ofb_algorithm::AES)
+                this->__ofb_execute<ofb_aes_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ofb_algorithm::BLOWFISH)
+                this->__ofb_execute<ofb_blowfish_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ofb_algorithm::CAST128)
+                this->__ofb_execute<ofb_cast128_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ofb_algorithm::CAST256)
+                this->__ofb_execute<ofb_cast256_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ofb_algorithm::IDEA)
+                this->__ofb_execute<ofb_idea_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ofb_algorithm::RC2)
+                this->__ofb_execute<ofb_rc2_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ofb_algorithm::RC5)
+                this->__ofb_execute<ofb_rc5_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else
+                throw std::invalid_argument("invalid ofb algorithm!");
+
+            result.result = std::move(r0);
+        }
+        catch (const std::exception &e)
+        {
+            result.error.has_error = true;
+            result.error.error_msg = e.what();
+        }
+        return result;
+    };
+
+    __hint_cipher_transformation__ const encryption_result ctr_encrypt(const string_t &buffer, const string_t &secret, const e_ctr_algorithm algorithm = e_ctr_algorithm::AES)
+    {
+        encryption_result result{.error{.has_error{false}}};
+        try
+        {
+            if (buffer.empty() || secret.empty())
+                throw std::runtime_error("Secret of buffer cannot be empty!");
+            string_t target, r0;
+            entropy_seed_t entropy;
+            byte salt[16u];
+            entropy.GenerateBlock(salt, sizeof(salt));
+
+            sec_byte_block_t secure_key, initialization_vector;
+            this->__prepare_ctr_secure_keys(secret, secure_key, initialization_vector, salt, sizeof(salt), algorithm);
+            if (secure_key.empty() || initialization_vector.empty())
+                throw std::runtime_error("Error during secure key/iv prepare!");
+            if (algorithm == e_ctr_algorithm::AES)
+                this->__ctr_execute<ctr_aes_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ctr_algorithm::BLOWFISH)
+                this->__ctr_execute<ctr_blowfish_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ctr_algorithm::CAST128)
+                this->__ctr_execute<ctr_cast128_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ctr_algorithm::CAST256)
+                this->__ctr_execute<ctr_cast256_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ctr_algorithm::IDEA)
+                this->__ctr_execute<ctr_idea_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ctr_algorithm::RC2)
+                this->__ctr_execute<ctr_rc2_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ctr_algorithm::RC5)
+                this->__ctr_execute<ctr_rc5_encryption_t>(secure_key, initialization_vector, buffer, r0);
+            else
+                throw std::invalid_argument("invalid ctr algorithm!");
+
+            const string_t r2(string_t(reinterpret_cast<char *>(salt), sizeof(salt)) + r0);
+            string_source_t(r2, true, new hex_encoder_t(new string_sink_t(target)));
+            result.result = std::move(target);
+        }
+        catch (const std::exception &e)
+        {
+            result.error.has_error = true;
+            result.error.error_msg = e.what();
+        }
+        return result;
+    };
+
+    __hint_cipher_transformation__ const decryption_result ctr_decrypt(const string_t &buffer, const string_t &secret, const e_ctr_algorithm algorithm = e_ctr_algorithm::AES)
+    {
+        decryption_result result{.error{.has_error{false}}};
+        try
+        {
+            byte salt[16];
+            string_t rd, r0;
+            string_source_t(buffer, true, new hex_decoder_t(new string_sink_t(rd)));
+            memcpy(salt, rd.data(), sizeof(salt));
+            string_t ciphertext(rd.substr(sizeof(salt)));
+            sec_byte_block_t secure_key, initialization_vector;
+            this->__prepare_ctr_secure_keys(secret, secure_key, initialization_vector, salt, sizeof(salt), algorithm);
+            if (secure_key.empty() || initialization_vector.empty())
+                throw std::runtime_error("error during key/iv preparation!");
+            else if (algorithm == e_ctr_algorithm::AES)
+                this->__ctr_execute<ctr_aes_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ctr_algorithm::BLOWFISH)
+                this->__ctr_execute<ctr_blowfish_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ctr_algorithm::CAST128)
+                this->__ctr_execute<ctr_cast128_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ctr_algorithm::CAST256)
+                this->__ctr_execute<ctr_cast256_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ctr_algorithm::IDEA)
+                this->__ctr_execute<ctr_idea_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ctr_algorithm::RC2)
+                this->__ctr_execute<ctr_rc2_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else if (algorithm == e_ctr_algorithm::RC5)
+                this->__ctr_execute<ctr_rc5_decryption_t>(secure_key, initialization_vector, buffer, r0);
+            else
+                throw std::invalid_argument("invalid ctr algorithm!");
+
+            result.result = std::move(r0);
+        }
+        catch (const std::exception &e)
+        {
+            result.error.has_error = true;
+            result.error.error_msg = e.what();
+        }
+        return result;
+    };
+
     /**
      * base64 encoding of plain_text buffer
      * @param string_view_t& data to encode using base64 encoding
@@ -1412,7 +1805,6 @@ class ByteCrypt
     {
         if (hex_encoded.length() % 2 != 0 || hex_encoded.length() >= UINT64_MAX) [[unlikely]]
         {
-            std::cerr << "hex encoded buffer length error!\n";
             return "";
         }
         string_t hex_decoded;
@@ -1512,6 +1904,27 @@ class ByteCrypt
         string_source_t(ciphertext, true, new auth_decryption_filter_t(decryption, new string_sink_t(decrypted_block)));
     };
 
+    __temp_cipher_exec__ inline void __cfb_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &source, string_t &output)
+    {
+        cipher_mode executor;
+        executor.SetKeyWithIV(key, key.size(), iv);
+        string_source_t(source, true, new transformer_filter_t(executor, new string_sink_t(output)));
+    };
+
+    __temp_cipher_exec__ inline void __ofb_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &source, string_t &output)
+    {
+        cipher_mode executor;
+        executor.SetKeyWithIV(key, key.size(), iv);
+        string_source_t(source, true, new transformer_filter_t(executor, new string_sink_t(output)));
+    };
+
+    __temp_cipher_exec__ inline void __ctr_execute(sec_byte_block_t &key, sec_byte_block_t &iv, const string_t &source, string_t &output)
+    {
+        cipher_mode executor;
+        executor.SetKeyWithIV(key, key.size(), iv);
+        string_source_t(source, true, new transformer_filter_t(executor, new string_sink_t(output)));
+    };
+
     __hint_prepare_secure_keys__ inline void __prepare_cbc_secure_keys(const string_t &cipher, sec_byte_block_t &key, sec_byte_block_t &iv, const byte *salt, const std::size_t salt_size,
                                                                        const e_cbc_algorithm algorithm)
     {
@@ -1543,6 +1956,45 @@ class ByteCrypt
         iv.resize(this->op_mode.eax.at(algorithm).secure_ivector);
         entropy_seed_t e_gen;
         e_gen.GenerateBlock(iv, iv.size());
+    };
+
+    __hint_prepare_secure_keys__ inline void __prepare_cfb_secure_keys(const string_t &cipher, sec_byte_block_t &key, sec_byte_block_t &iv, const byte *salt, const std::size_t salt_size,
+                                                                       const e_cfb_algorithm algorithm)
+    {
+        sha256_hmac_t hmac;
+        const std::uint16_t key_size = this->op_mode.cfb.at(algorithm).secure_key;
+        const std::uint16_t iv_size = this->op_mode.cfb.at(algorithm).secure_ivector;
+
+        key.CleanNew(key_size);
+        iv.CleanNew(iv_size);
+        hmac.DeriveKey(key, key.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt, salt_size, this->cipher_iteration_count);
+        hmac.DeriveKey(iv, iv.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt, salt_size, this->cipher_iteration_count);
+    };
+
+    __hint_prepare_secure_keys__ inline void __prepare_ofb_secure_keys(const string_t &cipher, sec_byte_block_t &key, sec_byte_block_t &iv, const byte *salt, const std::size_t salt_size,
+                                                                       const e_ofb_algorithm algorithm)
+    {
+        sha256_hmac_t hmac;
+        const std::uint16_t key_size = this->op_mode.ofb.at(algorithm).secure_key;
+        const std::uint16_t iv_size = this->op_mode.ofb.at(algorithm).secure_ivector;
+
+        key.CleanNew(key_size);
+        iv.CleanNew(iv_size);
+        hmac.DeriveKey(key, key.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt, salt_size, this->cipher_iteration_count);
+        hmac.DeriveKey(iv, iv.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt, salt_size, this->cipher_iteration_count);
+    };
+
+    __hint_prepare_secure_keys__ inline void __prepare_ctr_secure_keys(const string_t &cipher, sec_byte_block_t &key, sec_byte_block_t &iv, const byte *salt, const std::size_t salt_size,
+                                                                       const e_ctr_algorithm algorithm)
+    {
+        sha256_hmac_t hmac;
+        const std::uint16_t key_size = this->op_mode.ctr.at(algorithm).secure_key;
+        const std::uint16_t iv_size = this->op_mode.ctr.at(algorithm).secure_ivector;
+
+        key.CleanNew(key_size);
+        iv.CleanNew(iv_size);
+        hmac.DeriveKey(key, key.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt, salt_size, this->cipher_iteration_count);
+        hmac.DeriveKey(iv, iv.size(), 0, reinterpret_cast<const byte *>(cipher.data()), cipher.length(), salt, salt_size, this->cipher_iteration_count);
     };
 
     __hint_rsa_key_pair_verify__ const bool __rsa_key_pair_verify(const rsa_key_pair_struct &key_block)
