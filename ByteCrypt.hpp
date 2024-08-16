@@ -46,9 +46,7 @@
 #if defined(__linux__) || defined(__APPLE__) || defined(_WIN32) || defined(_WIN64) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__) ||       \
     defined(__sun) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__MINGW64__) || defined(__ANDROID__) || defined(__unix__) || defined(__HAIKU__)
 
-#if defined(__x86_64__) || defined(__amd64__) || defined(__i386__) || defined(__M_X64) || defined(__aarch64__) || defined(__arm__) || defined(__powerpc64__) || defined(__ppc64__) ||        \
-    defined(__powerpc__) || defined(__ppc__) || defined(__sparc__) || defined(__mips__) || defined(__mips64__) || defined(__s390__) || defined(__s390x__) || defined(__riscv) ||             \
-    defined(__riscv64__)
+#if defined(__x86_64__) || defined(__amd64__) || defined(__aarch64__) || defined(__mips64__) || defined(__s390x__) || defined(__riscv64__)
 
 #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__) || defined(_MSC_VER)
 
@@ -1420,7 +1418,7 @@ class ByteCrypt
         string_t hex_decoded;
         hex_decoded.reserve(hex_encoded.length() / 2);
         for (std::size_t _i{0}; _i < hex_encoded.length(); _i += 2)
-            hex_decoded.push_back(static_cast<char>(std::stoi(std::move(string_t(hex_encoded.substr(_i, 2))), nullptr, 16)));
+            hex_decoded.push_back(static_cast<char>(std::stoi(string_t(hex_encoded.substr(_i, 2)), nullptr, 16)));
 
         return hex_decoded;
     };
@@ -1665,7 +1663,7 @@ class ByteCrypt
                 return wipe_rsa_meta;
             }
         }
-        return std::move(rsa_key);
+        return rsa_key;
     };
 
     inline void __constructor_copy_handler(const ByteCrypt &o_instance) noexcept
