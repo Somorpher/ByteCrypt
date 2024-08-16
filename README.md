@@ -16,11 +16,11 @@ Versatile cryptographic utility that provides a collection of tools and function
 ### Symmetric Ciphers
 `AES` `BlowFish` `twofish` `Cast128` `Cast256` `Idea` `RC2` `RC5` `RC6` `Mars` `Serpent` `GOST` `ARIA` `HIGHT` `LEA` `SEED` `SPECK128` `SIMON128`
 
-### Asymmetric Ciphers
+### Asymmetric
 `RSA`
 
 ### Hash Algorithms
-`SHA1` `SHA224` `SHA256` `SHA384` `SHA512`
+`SHA1` `SHA224` `SHA256` `SHA384` `SHA512` `Blake2` `Tiger` `MD5` `Whirlpool` `Ripemd160`
 
 ## Acknowledgements
 
@@ -209,82 +209,6 @@ brew install cryptopp
 ```
 
 
-### Class Structures
-
-```cpp
-typedef struct alignas(void *)
-{
-    std::optional<string_t> public_key{std::nullopt};
-    std::optional<string_t> private_key{std::nullopt};
-    bool state{false};
-} rsa_key_pair_struct;
-
-typedef struct alignas(void *)
-{
-    string_t key{};
-    string_t error{};
-    bool status{false};
-} rsa_key_block_load;
-
-struct e_key_block_size {
-    static const std::size_t
-    AES = CryptoPP::AES::DEFAULT_KEYLENGTH,
-    BLOWFISH = CryptoPP::Blowfish::DEFAULT_KEYLENGTH,
-    CAST128 = CryptoPP::CAST128::DEFAULT_KEYLENGTH,
-    CAST256 = CryptoPP::CAST256::DEFAULT_KEYLENGTH,
-    IDEA = CryptoPP::IDEA::DEFAULT_KEYLENGTH,
-    RC2 = CryptoPP::RC2::DEFAULT_KEYLENGTH,
-    RC5 = CryptoPP::RC5::DEFAULT_KEYLENGTH,
-    RC6 = CryptoPP::RC6::DEFAULT_KEYLENGTH,
-    MARS = CryptoPP::MARS::DEFAULT_KEYLENGTH,
-    SERPENT = CryptoPP::Serpent::DEFAULT_KEYLENGTH,
-    GOST = CryptoPP::GOST::DEFAULT_KEYLENGTH;
-};
-
-struct e_iv_block_size {
-    static const std::size_t
-    AES = CryptoPP::AES::BLOCKSIZE,
-    BLOWFISH = CryptoPP::Blowfish::BLOCKSIZE,
-    CAST128 = CryptoPP::CAST128::BLOCKSIZE,
-    CAST256 = CryptoPP::CAST256::BLOCKSIZE,
-    IDEA = CryptoPP::IDEA::BLOCKSIZE,
-    RC2 = CryptoPP::RC2::BLOCKSIZE,
-    RC5 = CryptoPP::RC5::BLOCKSIZE,
-    RC6 = CryptoPP::RC6::BLOCKSIZE,
-    MARS = CryptoPP::MARS::BLOCKSIZE,
-    SERPENT = CryptoPP::Serpent::BLOCKSIZE,
-    GOST = CryptoPP::AES::BLOCKSIZE;
-};
-```
-
-## Class Public Functions
-
-**`hash`**
-
-**`cbc_encrypt`**
-**`cbc_decrypt`**
-
-**`gcm_encrypt`**
-**`gcm_decrypt`**
-
-**`base64_encode`**
-**`base64_decode`**
-
-**`hex_encode`**
-**`hex_decode`**
-
-**`generate_rsa_key_der_pair`**
-
-**`generate_rsa_key_pem_pair`**
-
-**`sign_message`**
-
-**`verify_signature`**
-
-**`save_rsa_key`**
-
-**`load_rsa_key`**
-
 
 
 ## Usage/Examples
@@ -298,23 +222,17 @@ using namespace ByteCryptModule;
 
 int main(){
 
-/**
-*  No template type specification, this will not work with GOST or Serpent algorithms.
-**/
 ByteCrypt bCrypt;
 
-/**
-* For GOST and Serpent algorithms...
-**/
-ByteCrypt<32, 16> byteCryptGost;
+ByteCrypt byteCryptGost;
 
 string buffer = "your mother"; // buffer to encrypt using "secret" key
 
 string secret = "secret_key_for_decryption"; // this is the key used for encryption/decryption
 
-string encrypted = bCrypt.cbc_encrypt(buffer, secret, e_symmetric_algo::AES); // encrypt buffer block and return result
+auto encrypted = bCrypt.cbc_encrypt(buffer, secret, e_symmetric_algo::AES); // encrypt buffer block and return result
 
-std::cout << "encrypted: " << encrypted << "\n"; // print result
+std::cout << "encrypted: " << encrypted.result << "\n"; // print result
 
 return 0;
 
@@ -332,9 +250,9 @@ int main(){
 
 ByteCrypt bCrypt;
 
-string decrypted = bCrypt.cbc_decrypt(encrypted, e_symmetric_algo::AES);
+auto decrypted = bCrypt.cbc_decrypt(encrypted); // can omit algorithm specification as AES is the default mode
 
-std::cout << "decrypted: " << decrypted << "\n";
+std::cout << "decrypted: " << decrypted.result << "\n";
 
 return 0;
 
@@ -359,27 +277,21 @@ using namespace ByteCryptModule;
 
 int main(){
 
-string encrypted = bCrypt.gcm_encrypt(buffer, secret, e_symmetric_algo::AES);
+auto encrypted = bCrypt.gcm_encrypt(buffer, secret, e_symmetric_algo::AES);
 
-std::cout << "encrypted: " << encrypted << "\n";
+std::cout << "encrypted: " << encrypted.result << "\n";
 
-string decrypted = bCrypt.gcm_decrypt(encrypted, e_symmetric_algo::AES);
+auto decrypted = bCrypt.gcm_decrypt(encrypted, e_symmetric_algo::AES);
 
-std::cout << "decrypted: " << decrypted << "\n";
+std::cout << "decrypted: " << decrypted.result << "\n";
 
 return 0;
 
 }
 ```
 
-### Hashing
-> optional paramater(2) values:
-* e_hash_algo_option::SHA1
-* e_hash_algo_option::SHA224
-* e_hash_algo_option::SHA256
-* e_hash_algo_option::SHA384
-* e_hash_algo_option::SHA512
-  
+### EAX Encryption/Decryption example
+
 ```cpp
 #include "/path/to/ByteCrypt.hpp"
 
@@ -387,9 +299,30 @@ using namespace ByteCryptModule;
 
 int main(){
 
-string hashed = bCrypt.hash(buffer); // default hash with SHA256
+auto encrypted = bCrypt.eax_encrypt(buffer, secret, e_symmetric_algo::AES);
 
-std::cout << "Hashed: " << hashed << "\n"; // print result
+std::cout << "encrypted: " << encrypted.result << "\n";
+
+auto decrypted = bCrypt.eax_decrypt(encrypted, e_symmetric_algo::AES);
+
+std::cout << "decrypted: " << decrypted.result << "\n";
+
+return 0;
+
+}
+```
+
+### Hashing  
+```cpp
+#include "/path/to/ByteCrypt.hpp"
+
+using namespace ByteCryptModule;
+
+int main(){
+
+auto hashed = bCrypt.hash(buffer); // default hash with SHA256
+
+std::cout << "Hashed: " << hashed.result << "\n"; // print result
 
 return 0;
 
@@ -428,11 +361,11 @@ using namespace ByteCryptModule;
 
 int main(){
 
-const rsa_key_pair_struct key_pair = bCrypt.generate_rsa_key_der_pair(2048); 
+const auto key_pair = bCrypt.generate_rsa_key_der_pair(2048); 
 
 // use keys...
-const string public_key  = key_pair.public_key; 
-const string private_key = key_pair.private_key; 
+const string public_key  = key_pair.result.public_key; 
+const string private_key = key_pair.result.private_key; 
 
 return 0;
 
@@ -447,7 +380,7 @@ return 0;
 using namespace ByteCryptModule;
 
 int main(){
-const rsa_key_pair_struct key_pair = bCrypt.generate_rsa_key_pem_pair(2048);
+const auto key_pair = bCrypt.generate_rsa_key_pem_pair(2048);
 
 return 0;
 }
@@ -464,13 +397,13 @@ using namespace ByteCryptModule;
 
 int main(){
 
-const rsa_key_pair_struct key_pair = bCrypt.generate_rsa_key_der_pair(3072);
+const auto key_pair = bCrypt.generate_rsa_key_der_pair(3072);
 
-const string public_key  = key_pair.public_key,  private_key = key_pair.private_key;
+const string public_key  = key_pair.result.public_key,  private_key = key_pair.result.private_key;
 
 // --- Store ---
-bCrypt.save_rsa_key("/home/user/Documents/RSA/priv.pem", key_pair.private_key.value()); 
-bCrypt.save_rsa_key("/home/user/Documents/RSA/pub.pem", key_pair.public_key.value());
+bCrypt.save_rsa_key("/home/user/Documents/RSA/priv.pem", key_pair.result.private_key.value()); 
+bCrypt.save_rsa_key("/home/user/Documents/RSA/pub.pem", key_pair.result.public_key.value());
 
 // --- Load ---
 const rsa_key_block_load gpublic_key = bCrypt.load_rsa_key("/home/user/Documents/RSA/pub.pem");
@@ -483,11 +416,11 @@ return 0;
 ```cpp
 int main(){
     
-std::string signature = byte_crypt.sign_message(message, private_key);
+auto signature = byte_crypt.sign_message(message, private_key);
 
-if (signature.empty()) 
+if (signature.result.empty()) 
     return EXIT_FAILURE;
-std::cout << "Signature: " << signature << std::endl;
+std::cout << "Signature: " << signature.result << std::endl;
 
 return 0;
 }
@@ -503,8 +436,6 @@ if (is_verified)
     std::cout << "Signature verification succeeded." << std::endl;
 else 
     std::cerr << "Signature verification failed." << std::endl;
-
-
 return 0;
 }
 ```
