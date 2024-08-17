@@ -64,7 +64,7 @@ currently being supported with security updates.
 
 If you discover any security vulnerabilities within this project, please report them as soon as possible. We appreciate your help in improving the security of this project.
 
-Please send a detailed email to [security@somorpher.com](mailto:somorpher___@proton.me) with the following information:
+Please send a detailed email to [somorpher@proton.me](mailto:somorpher___@proton.me) with the following information:
 
 - Description of the vulnerability
 - Steps to reproduce the issue
