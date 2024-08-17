@@ -9,148 +9,148 @@ currently being supported with security updates.
 
 | Version | Supported          | Operation Mode  |
 | ------- | ------------------ | --------------- |
-| 0.0.1   | :white_check_mark: | CBC             |
-| 0.0.1   | :white_check_mark: | GCM             |
-| 0.0.1   | :white_check_mark: | EAX             |
-| 0.0.1   | :white_check_mark: | CTR             |
-| 0.0.1   | :white_check_mark: | CFB             |
-| 0.0.1   | :white_check_mark: | OFB             |
+| 1.0.0   | :white_check_mark: | CBC             |
+| 1.0.0   | :white_check_mark: | GCM             |
+| 1.0.0   | :white_check_mark: | EAX             |
+| 1.0.0   | :white_check_mark: | CTR             |
+| 1.0.0   | :white_check_mark: | CFB             |
+| 1.0.0   | :white_check_mark: | OFB             |
 
 ### CBC Mode Algorithm Support
     
 | Version | Supported          | Operation Mode  | Algorithm   |
 | ------- | ------------------ | --------------- | ----------- |
-| 0.0.1   | :white_check_mark: | CBC             | AES         |
-| 0.0.1   | :white_check_mark: | CBC             | BLOWFISH    |
-| 0.0.1   | :white_check_mark: | CBC             | CAST128     |
-| 0.0.1   | :white_check_mark: | CBC             | CAST256     |
-| 0.0.1   | :white_check_mark: | CBC             | IDEA        |
-| 0.0.1   | :white_check_mark: | CBC             | RC2         |
-| 0.0.1   | :white_check_mark: | CBC             | RC5         |
-| 0.0.1   | :white_check_mark: | CBC             | RC6         |
-| 0.0.1   | :white_check_mark: | CBC             | MARS        |
-| 0.0.1   | :white_check_mark: | CBC             | SERPENT     |
-| 0.0.1   | :white_check_mark: | CBC             | GOST        |
-| 0.0.1   | :white_check_mark: | CBC             | SPECK128    |
-| 0.0.1   | :white_check_mark: | CBC             | SIMON       |
-| 0.0.1   | :white_check_mark: | CBC             | HIGHT       |
-| 0.0.1   | :white_check_mark: | CBC             | ARIA        |
-| 0.0.1   | :x:                | CBC             | CHACHA      |
-| 0.0.1   | :x:                | CBC             | TWOFISH     |
-| 0.0.1   | :x:                | CBC             | SEAL        |
+| 1.0.0   | :white_check_mark: | CBC             | AES         |
+| 1.0.0   | :white_check_mark: | CBC             | BLOWFISH    |
+| 1.0.0   | :white_check_mark: | CBC             | CAST128     |
+| 1.0.0   | :white_check_mark: | CBC             | CAST256     |
+| 1.0.0   | :white_check_mark: | CBC             | IDEA        |
+| 1.0.0   | :white_check_mark: | CBC             | RC2         |
+| 1.0.0   | :white_check_mark: | CBC             | RC5         |
+| 1.0.0   | :white_check_mark: | CBC             | RC6         |
+| 1.0.0   | :white_check_mark: | CBC             | MARS        |
+| 1.0.0   | :white_check_mark: | CBC             | SERPENT     |
+| 1.0.0   | :white_check_mark: | CBC             | GOST        |
+| 1.0.0   | :white_check_mark: | CBC             | SPECK128    |
+| 1.0.0   | :white_check_mark: | CBC             | SIMON       |
+| 1.0.0   | :white_check_mark: | CBC             | HIGHT       |
+| 1.0.0   | :white_check_mark: | CBC             | ARIA        |
+| 1.0.0   | :x:                | CBC             | CHACHA      |
+| 1.0.0   | :x:                | CBC             | TWOFISH     |
+| 1.0.0   | :x:                | CBC             | SEAL        |
 
 ### EAX Mode Algorithm Support
 
 | Version | Supported          | Operation Mode  | Algorithm   |
 | ------- | ------------------ | --------------- | ----------- |
-| 0.0.1   | :white_check_mark: | EAX             | AES         |
-| 0.0.1   | :white_check_mark: | EAX             | BLOWFISH    |
-| 0.0.1   | :white_check_mark: | EAX             | CAST128     |
-| 0.0.1   | :white_check_mark: | EAX             | CAST256     |
-| 0.0.1   | :white_check_mark: | EAX             | IDEA        |
-| 0.0.1   | :x:                | EAX             | RC2         |
-| 0.0.1   | :white_check_mark: | EAX             | RC5         |
-| 0.0.1   | :white_check_mark: | EAX             | RC6         |
-| 0.0.1   | :white_check_mark: | EAX             | MARS        |
-| 0.0.1   | :white_check_mark: | EAX             | SERPENT     |
-| 0.0.1   | :white_check_mark: | EAX             | GOST        |
-| 0.0.1   | :white_check_mark: | EAX             | SPECK128    |
-| 0.0.1   | :white_check_mark: | EAX             | SIMON       |
-| 0.0.1   | :white_check_mark: | EAX             | HIGHT       |
-| 0.0.1   | :x:                | EAX             | ARIA        |
-| 0.0.1   | :x:                | EAX             | CHACHA      |
-| 0.0.1   | :x:                | EAX             | TWOFISH     |
-| 0.0.1   | :x:                | EAX             | SEAL        |
+| 1.0.0   | :white_check_mark: | EAX             | AES         |
+| 1.0.0   | :white_check_mark: | EAX             | BLOWFISH    |
+| 1.0.0   | :white_check_mark: | EAX             | CAST128     |
+| 1.0.0   | :white_check_mark: | EAX             | CAST256     |
+| 1.0.0   | :white_check_mark: | EAX             | IDEA        |
+| 1.0.0   | :x:                | EAX             | RC2         |
+| 1.0.0   | :white_check_mark: | EAX             | RC5         |
+| 1.0.0   | :white_check_mark: | EAX             | RC6         |
+| 1.0.0   | :white_check_mark: | EAX             | MARS        |
+| 1.0.0   | :white_check_mark: | EAX             | SERPENT     |
+| 1.0.0   | :white_check_mark: | EAX             | GOST        |
+| 1.0.0   | :white_check_mark: | EAX             | SPECK128    |
+| 1.0.0   | :white_check_mark: | EAX             | SIMON       |
+| 1.0.0   | :white_check_mark: | EAX             | HIGHT       |
+| 1.0.0   | :x:                | EAX             | ARIA        |
+| 1.0.0   | :x:                | EAX             | CHACHA      |
+| 1.0.0   | :x:                | EAX             | TWOFISH     |
+| 1.0.0   | :x:                | EAX             | SEAL        |
 
 ### GCM Mode Algorithm Support
 | Version | Supported          | Operation Mode  | Algorithm   |
 | ------- | ------------------ | --------------- | ----------- |
-| 0.0.1   | :white_check_mark: | GCM             | AES         |
-| 0.0.1   | :x:                | GCM             | BLOWFISH    |
-| 0.0.1   | :x:                | GCM             | CAST128     |
-| 0.0.1   | :x:                | GCM             | CAST256     |
-| 0.0.1   | :x:                | GCM             | IDEA        |
-| 0.0.1   | :x:                | GCM             | RC2         |
-| 0.0.1   | :x:                | GCM             | RC5         |
-| 0.0.1   | :white_check_mark: | GCM             | RC6         |
-| 0.0.1   | :white_check_mark: | GCM             | MARS        |
-| 0.0.1   | :x:                | GCM             | SERPENT     |
-| 0.0.1   | :x:                | GCM             | GOST        |
-| 0.0.1   | :x:                | GCM             | SPECK128    |
-| 0.0.1   | :x:                | GCM             | SIMON       |
-| 0.0.1   | :x:                | GCM             | HIGHT       |
-| 0.0.1   | :x:                | GCM             | ARIA        |
-| 0.0.1   | :x:                | GCM             | CHACHA      |
-| 0.0.1   | :white_check_mark: | GCM             | TWOFISH     |
-| 0.0.1   | :x:                | GCM             | SEAL        |
+| 1.0.0   | :white_check_mark: | GCM             | AES         |
+| 1.0.0   | :x:                | GCM             | BLOWFISH    |
+| 1.0.0   | :x:                | GCM             | CAST128     |
+| 1.0.0   | :x:                | GCM             | CAST256     |
+| 1.0.0   | :x:                | GCM             | IDEA        |
+| 1.0.0   | :x:                | GCM             | RC2         |
+| 1.0.0   | :x:                | GCM             | RC5         |
+| 1.0.0   | :white_check_mark: | GCM             | RC6         |
+| 1.0.0   | :white_check_mark: | GCM             | MARS        |
+| 1.0.0   | :x:                | GCM             | SERPENT     |
+| 1.0.0   | :x:                | GCM             | GOST        |
+| 1.0.0   | :x:                | GCM             | SPECK128    |
+| 1.0.0   | :x:                | GCM             | SIMON       |
+| 1.0.0   | :x:                | GCM             | HIGHT       |
+| 1.0.0   | :x:                | GCM             | ARIA        |
+| 1.0.0   | :x:                | GCM             | CHACHA      |
+| 1.0.0   | :white_check_mark: | GCM             | TWOFISH     |
+| 1.0.0   | :x:                | GCM             | SEAL        |
 
 ### CFB Mode Algorithm Support
 | Version | Supported          | Operation Mode  | Algorithm   |
 | ------- | ------------------ | --------------- | ----------- |
-| 0.0.1   | :white_check_mark: | CFB             | AES         |
-| 0.0.1   | :white_check_mark: | CFB             | BLOWFISH    |
-| 0.0.1   | :white_check_mark: | CFB             | CAST128     |
-| 0.0.1   | :white_check_mark: | CFB             | CAST256     |
-| 0.0.1   | :white_check_mark: | CFB             | IDEA        |
-| 0.0.1   | :white_check_mark: | CFB             | RC2         |
-| 0.0.1   | :white_check_mark: | CFB             | RC5         |
-| 0.0.1   | :x:                | CFB             | RC6         |
-| 0.0.1   | :x:                | CFB             | MARS        |
-| 0.0.1   | :x:                | CFB             | SERPENT     |
-| 0.0.1   | :x:                | CFB             | GOST        |
-| 0.0.1   | :x:                | CFB             | SPECK128    |
-| 0.0.1   | :x:                | CFB             | SIMON       |
-| 0.0.1   | :x:                | CFB             | HIGHT       |
-| 0.0.1   | :x:                | CFB             | ARIA        |
-| 0.0.1   | :x:                | CFB             | CHACHA      |
-| 0.0.1   | :white_check_mark: | CFB             | TWOFISH     |
-| 0.0.1   | :x:                | CFB             | SEAL        |
+| 1.0.0   | :white_check_mark: | CFB             | AES         |
+| 1.0.0   | :white_check_mark: | CFB             | BLOWFISH    |
+| 1.0.0   | :white_check_mark: | CFB             | CAST128     |
+| 1.0.0   | :white_check_mark: | CFB             | CAST256     |
+| 1.0.0   | :white_check_mark: | CFB             | IDEA        |
+| 1.0.0   | :white_check_mark: | CFB             | RC2         |
+| 1.0.0   | :white_check_mark: | CFB             | RC5         |
+| 1.0.0   | :x:                | CFB             | RC6         |
+| 1.0.0   | :x:                | CFB             | MARS        |
+| 1.0.0   | :x:                | CFB             | SERPENT     |
+| 1.0.0   | :x:                | CFB             | GOST        |
+| 1.0.0   | :x:                | CFB             | SPECK128    |
+| 1.0.0   | :x:                | CFB             | SIMON       |
+| 1.0.0   | :x:                | CFB             | HIGHT       |
+| 1.0.0   | :x:                | CFB             | ARIA        |
+| 1.0.0   | :x:                | CFB             | CHACHA      |
+| 1.0.0   | :white_check_mark: | CFB             | TWOFISH     |
+| 1.0.0   | :x:                | CFB             | SEAL        |
 
 
 ### OFB Mode Algorithm Support
 | Version | Supported          | Operation Mode  | Algorithm   |
 | ------- | ------------------ | --------------- | ----------- |
-| 0.0.1   | :white_check_mark: | OFB             | AES         |
-| 0.0.1   | :white_check_mark: | OFB             | BLOWFISH    |
-| 0.0.1   | :white_check_mark: | OFB             | CAST128     |
-| 0.0.1   | :white_check_mark: | OFB             | CAST256     |
-| 0.0.1   | :white_check_mark: | OFB             | IDEA        |
-| 0.0.1   | :white_check_mark: | OFB             | RC2         |
-| 0.0.1   | :white_check_mark: | OFB             | RC5         |
-| 0.0.1   | :x:                | OFB             | RC6         |
-| 0.0.1   | :x:                | OFB             | MARS        |
-| 0.0.1   | :x:                | OFB             | SERPENT     |
-| 0.0.1   | :x:                | OFB             | GOST        |
-| 0.0.1   | :x:                | OFB             | SPECK128    |
-| 0.0.1   | :x:                | OFB             | SIMON       |
-| 0.0.1   | :x:                | OFB             | HIGHT       |
-| 0.0.1   | :x:                | OFB             | ARIA        |
-| 0.0.1   | :x:                | OFB             | CHACHA      |
-| 0.0.1   | :white_check_mark: | OFB             | TWOFISH     |
-| 0.0.1   | :x:                | OFB             | SEAL        |
+| 1.0.0   | :white_check_mark: | OFB             | AES         |
+| 1.0.0   | :white_check_mark: | OFB             | BLOWFISH    |
+| 1.0.0   | :white_check_mark: | OFB             | CAST128     |
+| 1.0.0   | :white_check_mark: | OFB             | CAST256     |
+| 1.0.0   | :white_check_mark: | OFB             | IDEA        |
+| 1.0.0   | :white_check_mark: | OFB             | RC2         |
+| 1.0.0   | :white_check_mark: | OFB             | RC5         |
+| 1.0.0   | :x:                | OFB             | RC6         |
+| 1.0.0   | :x:                | OFB             | MARS        |
+| 1.0.0   | :x:                | OFB             | SERPENT     |
+| 1.0.0   | :x:                | OFB             | GOST        |
+| 1.0.0   | :x:                | OFB             | SPECK128    |
+| 1.0.0   | :x:                | OFB             | SIMON       |
+| 1.0.0   | :x:                | OFB             | HIGHT       |
+| 1.0.0   | :x:                | OFB             | ARIA        |
+| 1.0.0   | :x:                | OFB             | CHACHA      |
+| 1.0.0   | :white_check_mark: | OFB             | TWOFISH     |
+| 1.0.0   | :x:                | OFB             | SEAL        |
 
 
 ### CTR Mode Algorithm Support
 | Version | Supported          | Operation Mode  | Algorithm   |
 | ------- | ------------------ | --------------- | ----------- |
-| 0.0.1   | :white_check_mark: | CTR             | AES         |
-| 0.0.1   | :white_check_mark: | CTR             | BLOWFISH    |
-| 0.0.1   | :white_check_mark: | CTR             | CAST128     |
-| 0.0.1   | :white_check_mark: | CTR             | CAST256     |
-| 0.0.1   | :white_check_mark: | CTR             | IDEA        |
-| 0.0.1   | :white_check_mark: | CTR             | RC2         |
-| 0.0.1   | :white_check_mark: | CTR             | RC5         |
-| 0.0.1   | :x:                | CTR             | RC6         |
-| 0.0.1   | :x:                | CTR             | MARS        |
-| 0.0.1   | :x:                | CTR             | SERPENT     |
-| 0.0.1   | :x:                | CTR             | GOST        |
-| 0.0.1   | :x:                | CTR             | SPECK128    |
-| 0.0.1   | :x:                | CTR             | SIMON       |
-| 0.0.1   | :x:                | CTR             | HIGHT       |
-| 0.0.1   | :x:                | CTR             | ARIA        |
-| 0.0.1   | :x:                | CTR             | CHACHA      |
-| 0.0.1   | :white_check_mark: | CTR             | TWOFISH     |
-| 0.0.1   | :x:                | CTR             | SEAL        |
+| 1.0.0   | :white_check_mark: | CTR             | AES         |
+| 1.0.0   | :white_check_mark: | CTR             | BLOWFISH    |
+| 1.0.0   | :white_check_mark: | CTR             | CAST128     |
+| 1.0.0   | :white_check_mark: | CTR             | CAST256     |
+| 1.0.0   | :white_check_mark: | CTR             | IDEA        |
+| 1.0.0   | :white_check_mark: | CTR             | RC2         |
+| 1.0.0   | :white_check_mark: | CTR             | RC5         |
+| 1.0.0   | :x:                | CTR             | RC6         |
+| 1.0.0   | :x:                | CTR             | MARS        |
+| 1.0.0   | :x:                | CTR             | SERPENT     |
+| 1.0.0   | :x:                | CTR             | GOST        |
+| 1.0.0   | :x:                | CTR             | SPECK128    |
+| 1.0.0   | :x:                | CTR             | SIMON       |
+| 1.0.0   | :x:                | CTR             | HIGHT       |
+| 1.0.0   | :x:                | CTR             | ARIA        |
+| 1.0.0   | :x:                | CTR             | CHACHA      |
+| 1.0.0   | :white_check_mark: | CTR             | TWOFISH     |
+| 1.0.0   | :x:                | CTR             | SEAL        |
 
 ## Reporting a Vulnerability
 # Security Policy for ByteCrypt
