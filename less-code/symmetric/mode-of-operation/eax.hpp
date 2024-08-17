@@ -234,6 +234,8 @@ using hex_encoder_t = CryptoPP::HexEncoder;
 using hex_decoder_t = CryptoPP::HexDecoder;
 using sha256_hmac_t = CryptoPP::PKCS5_PBKDF2_HMAC<CryptoPP::SHA256>;
 using sec_byte_block_t = CryptoPP::SecByteBlock;
+using auth_decryption_filter_t = CryptoPP::AuthenticatedDecryptionFilter;
+using auth_encryption_filter_t = CryptoPP::AuthenticatedEncryptionFilter;
 
 using eax_aes_encryption_t = CryptoPP::EAX<CryptoPP::AES>::Encryption;
 using eax_blowfish_encryption_t = CryptoPP::EAX<CryptoPP::Blowfish>::Encryption;
