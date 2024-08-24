@@ -138,7 +138,7 @@ It is essential to consider the security implications of using hashing and encry
 
 ## Test Screenshots
 
-> For Encryption Operation mode and algorithm testing use PE file `./test` which is `test.cpp` compiled source with g++.
+> For Encryption Operation mode and algorithm testing use PE file `./test/encryption` which is `./test/extended_test` compiled source with g++.
 
 > For extended test(encoding, hashing, RSA loading, Signature Based operations, etc...) use `./extended_test`.
 
