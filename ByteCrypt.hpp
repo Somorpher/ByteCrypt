@@ -54,7 +54,7 @@
 #define PATH_SEPARATOR "\\"
 #include <windows.h>
 #else
-#define PATH_SEPARATOR "/" // not about this as well, it should be inferred by the compiler ...
+#define PATH_SEPARATOR "/"
 #endif
 
 #include <assert.h>
@@ -125,10 +125,6 @@
 #ifndef __MODULE_BYTE_CRYPT__
 
 #define __MODULE_BYTE_CRYPT__
-
-/**
- * Utility within namespace to avoid namespace pollution.
- */
 namespace ByteCryptModule
 {
 
@@ -144,13 +140,6 @@ namespace ByteCryptModule
 #define DEFAULT_CIPHER_ITERATION_COUNTER 10000
 #define DEFAULT_SEC_BLOCK_KEY_SIZE CryptoPP::AES::DEFAULT_KEYLENGTH
 #define DEFAULT_SEC_BLOCK_IV_SIZE CryptoPP::AES::BLOCKSIZE
-
-/**
- * defining some top level macros, these are compiler optimization attributes, some of them are very strict with
- * argument ordering for example access attribute might be affected if function signature changes but not
- * the macro definition as well. Defining these macros here makes the code more readable also, but they
- * only work with g++ or clang compilers.
- */
 
 /*                      Attribution                      *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -329,10 +318,6 @@ enum class e_ctr_algorithm
     RC5,
     __COUNT
 };
-
-/**
- * Algorithm specific key block size, refers to the key size used by the function.
- */
 struct e_key_block_size
 {
     static const std::uint16_t 
@@ -356,9 +341,6 @@ SPECK128     = CryptoPP::SPECK128::DEFAULT_KEYLENGTH,
 SIMON128     = CryptoPP::SIMON128::DEFAULT_KEYLENGTH;
 };
 
-/**
- * Algorithm specific initialization vector block size reference
- */
 struct e_iv_block_size
 {
     static const std::uint16_t 
@@ -385,9 +367,6 @@ SPECK128    = CryptoPP::SPECK128::BLOCKSIZE;
 /*                      Type Alias                       *\
 \*+++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 
-/**
- * type alias for more readability, camel case makes it look like shit otherwise...
- */
 using byte                             = CryptoPP::byte;
 using string_t                         = std::basic_string<char>;
 using string_view_t                    = std::basic_string_view<char>;
@@ -602,18 +581,6 @@ typedef struct alignas(void *)
     std::unordered_map<e_ofb_algorithm, mode_of_operation_map> ofb{};
     std::unordered_map<e_ctr_algorithm, mode_of_operation_map> ctr{};
 } operation_mode;
-
-/**
- * --------------------------------------------------------------------------------------------
- *
- * Available algorithms for each operation mode available, add more algorithms if required.   |
- *
- * --------------------------------------------------------------------------------------------
- */
-
-/**
- * CBC Mode of Operation Secure Key/Initialization-Vector block size aggregation.
- */
 std::unordered_map<e_cbc_algorithm, mode_of_operation_map> cbc_map_block{
     {e_cbc_algorithm::AES,         mode_of_operation_map{.secure_key{e_key_block_size::AES},         .secure_ivector{e_iv_block_size::AES}}},
     {e_cbc_algorithm::ARIA,        mode_of_operation_map{.secure_key{e_key_block_size::ARIA},        .secure_ivector{e_iv_block_size::ARIA}}},
@@ -632,10 +599,6 @@ std::unordered_map<e_cbc_algorithm, mode_of_operation_map> cbc_map_block{
     {e_cbc_algorithm::SIMON128,    mode_of_operation_map{.secure_key{e_key_block_size::SIMON128},    .secure_ivector{e_iv_block_size::SIMON128}}},
     {e_cbc_algorithm::SPECK128,    mode_of_operation_map{.secure_key{e_key_block_size::SPECK128},    .secure_ivector{e_iv_block_size::SPECK128}}},
 };
-
-/**
- * GCM Mode of Operation Secure Key/Initialization-Vector block size aggregation.
- */
 std::unordered_map<e_gcm_algorithm, mode_of_operation_map> gcm_map_block{
     {e_gcm_algorithm::AES,     mode_of_operation_map{.secure_key{e_key_block_size::AES},     .secure_ivector{e_iv_block_size::AES}}},
     {e_gcm_algorithm::MARS,    mode_of_operation_map{.secure_key{e_key_block_size::MARS},    .secure_ivector{e_iv_block_size::MARS}}},
@@ -663,9 +626,6 @@ std::unordered_map<e_eax_algorithm, mode_of_operation_map> eax_map_block{
     {e_eax_algorithm::SPECK128,    mode_of_operation_map{.secure_key{e_key_block_size::SPECK128},     .secure_ivector{e_iv_block_size::SPECK128}}},
 };
 
-/**
- * CFB Mode of Operation Secure Key/Initialization-Vector block size aggregation.
- */
 std::unordered_map<e_cfb_algorithm, mode_of_operation_map> cfb_map_block{
     {e_cfb_algorithm::AES,         mode_of_operation_map{.secure_key{e_key_block_size::AES},        .secure_ivector{e_iv_block_size::AES}}},
     {e_cfb_algorithm::BLOWFISH,    mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH},   .secure_ivector{e_iv_block_size::BLOWFISH}}},
@@ -676,9 +636,6 @@ std::unordered_map<e_cfb_algorithm, mode_of_operation_map> cfb_map_block{
     {e_cfb_algorithm::RC5,         mode_of_operation_map{.secure_key{e_key_block_size::RC5},        .secure_ivector{e_iv_block_size::RC5}}},
 };
 
-/**
- * OFB Mode of Operation Secure Key/Initialization-Vector block size aggregation.
- */
 std::unordered_map<e_ofb_algorithm, mode_of_operation_map> ofb_map_block{
     {e_ofb_algorithm::AES,         mode_of_operation_map{.secure_key{e_key_block_size::AES},       .secure_ivector{e_iv_block_size::AES}}},
     {e_ofb_algorithm::BLOWFISH,    mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH},  .secure_ivector{e_iv_block_size::BLOWFISH}}},
@@ -689,9 +646,6 @@ std::unordered_map<e_ofb_algorithm, mode_of_operation_map> ofb_map_block{
     {e_ofb_algorithm::RC5,         mode_of_operation_map{.secure_key{e_key_block_size::RC5},       .secure_ivector{e_iv_block_size::RC5}}},
 };
 
-/**
- * CTR Mode of Operation Secure Key/Initialization-Vector block size aggregation.
- */
 std::unordered_map<e_ctr_algorithm, mode_of_operation_map> ctr_map_block{
     {e_ctr_algorithm::AES,          mode_of_operation_map{.secure_key{e_key_block_size::AES},        .secure_ivector{e_iv_block_size::AES}}},
     {e_ctr_algorithm::BLOWFISH,     mode_of_operation_map{.secure_key{e_key_block_size::BLOWFISH},   .secure_ivector{e_iv_block_size::BLOWFISH}}},
